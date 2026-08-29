@@ -1,0 +1,30 @@
+# Credenciais e segredos
+.env
+*.env
+secrets.json
+config.local.js
+token.txt
+
+# Material da disciplina — não redistribuir
+*.pdf
+*.jpeg
+*.jpg
+*.png
+*.zip
+
+# Guia local
+githubGuia.md
+
+# Dependências
+node_modules/
+vendor/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build
+dist/
+build/
+.cache/
