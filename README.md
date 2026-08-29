@@ -5,7 +5,8 @@ Bacharelado em Sistemas de Informação.
 
 **➜ https://matheusmerlim1.github.io/simulado-ppc**
 
-Página única, sem dependências além das fontes do Google. É só abrir o `index.html`.
+Site estático, sem build e sem dependências além das fontes do Google.
+É só abrir o `index.html`.
 
 ---
 
@@ -52,6 +53,55 @@ Recortes que começam direto, sem configurar nada:
 - Refazer só os erros
 - Tema claro e escuro
 - Atalhos: `1`–`4` escolhem a alternativa, `Enter` verifica e avança
+
+## Estrutura
+
+```
+index.html              só marcação e a ordem de carregamento
+css/estilo.css          tokens de cor e tipografia, claro e escuro
+js/
+├── nucleo.js           MODULOS, BANCO e registrar() — carrega primeiro
+├── questoes/           um arquivo por assunto
+│   ├── processos.js        25 questões
+│   ├── exclusao.js         31
+│   ├── padroes.js          24
+│   ├── deadlocks.js        24
+│   ├── petri.js            14
+│   ├── hardware.js         17
+│   ├── desempenho.js       16
+│   └── openmp.js           16
+├── resumo.js           fichas da aba "consulta rápida"
+├── materia.js          os 73 tópicos explicados
+├── colecoes.js         as coleções prontas
+│
+├── base.js             utilitários, estado, tema e navegação
+├── configurar.js       tela inicial: filtros e contagens
+├── questao.js          execução: trilha, renderização e correção
+├── resultado.js        nota, desempenho por assunto e revisão
+├── estudo.js           matéria e consulta rápida
+└── main.js             liga tudo e monta a tela inicial
+build.py                gera uma versão de arquivo único em dist/
+```
+
+Os arquivos JS são scripts clássicos, carregados na ordem declarada em
+`index.html` — nada de módulos ES, para o site funcionar também ao abrir o
+`index.html` direto do disco, sem servidor.
+
+### Adicionar uma questão
+
+Abra o arquivo do assunto em `js/questoes/` e acrescente um objeto ao
+`registrar([...])`. Os campos estão documentados em `js/nucleo.js`.
+O `id` é o prefixo de duas letras do assunto mais dois dígitos.
+
+### Versão de arquivo único
+
+```bash
+python build.py
+```
+
+Gera `dist/simulado-ppc.html` — tudo embutido, abre com duplo clique,
+bom para mandar por e-mail ou usar offline. A pasta `dist/` fica fora
+do controle de versão.
 
 ## Fontes
 
