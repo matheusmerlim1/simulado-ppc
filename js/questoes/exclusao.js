@@ -1,5 +1,5 @@
 /* ─── Exclusão Mútua ────────────────────────────────────────
-   P1 · 31 questões
+   P1 · 45 questões
    ─────────────────────────────────────────────────────────── */
 registrar([
 
@@ -389,6 +389,178 @@ registrar([
   ],
   correta:0,
   gabarito:"O truque é o <b>gesto de cortesia</b>: cada processo escreve <code>vez = outro</code>. Se os dois chegam juntos, a segunda escrita sobrescreve a primeira, e apenas um fica preso no <code>while</code> — o desempate é garantido. E, ao contrário da alternância estrita, quando o outro processo <b>não</b> tem interesse (<code>interesse[outro] == 0</code>) a entrada é imediata, sem precisar esperar a vez chegar. Peterson resolve as quatro condições, mas ainda usa espera ocupada e só funciona para dois processos."
+},
+{
+  id:"em23", mod:"exclusao", dif:"dificil", tipo:"mc",
+  fonte:"Slides · Exclusão Mútua · buffer compartilhado",
+  enunciado:"Dois processos inserem num buffer compartilhado. O escalonador intercalou as duas execuções exatamente como mostrado abaixo. Qual é o <b>estado final</b>?",
+  cod:"in = 7;                    /* proxima posicao livre */\n\nvoid insert(char *s) {\n    vetor[in] = s;         /* (1) grava   */\n    in++;                  /* (2) avanca  */\n}\n\nESCALONAMENTO OBSERVADO\n  A: insert(\"exemplo1.s\")   executa (1)  ->  vetor[7] = \"exemplo1.s\"\n     -- PREEMPCAO: o escalonador troca de processo --\n  B: insert(\"exemplo2.s\")   executa (1)  ->  vetor[7] = \"exemplo2.s\"\n                            executa (2)  ->  in = 8\n  A: retoma                 executa (2)  ->  in = 9",
+  opcoes:[
+    "<code>exemplo1.s</code> desapareceu — B gravou por cima da posição 7 — e <code>in</code> terminou em 9, deixando a posição 8 nunca preenchida.",
+    "Os dois arquivos foram gravados corretamente, <code>exemplo1.s</code> em 7 e <code>exemplo2.s</code> em 8; só a ordem ficou invertida.",
+    "O programa aborta com acesso inválido ao vetor, porque <code>in</code> foi incrementado duas vezes seguidas.",
+    "Nada se perde: cada processo tem sua própria cópia de <code>in</code>, então os dois valores acabam em posições distintas."
+  ],
+  correta:0,
+  gabarito:"O prejuízo é <b>duplo</b>, e é isso que torna o exemplo tão didático:<br><br>&bull; <b>um item somado a menos</b> — <code>exemplo1.s</code> foi sobrescrito antes que alguém o lesse;<br>&bull; <b>um buraco no vetor</b> — <code>in</code> foi incrementado duas vezes para uma única gravação sobrevivente, então a posição 8 fica com lixo e será tratada como preenchida.<br><br>A causa é o intervalo entre <b>(1)</b> e <b>(2)</b>: nesse instante o buffer está num estado <b>inconsistente</b> — o dado já foi escrito, mas o índice ainda não avançou. Qualquer processo que entre aí enxerga a posição 7 como livre.<br><br>Repare que <b>não há erro de lógica</b> em <code>insert</code>: sozinha, a função está correta. O defeito só aparece na intercalação, e só em <i>algumas</i> intercalações — por isso o programa passa nos testes na maioria das execuções."
+},
+{
+  id:"em24", mod:"exclusao", dif:"medio", tipo:"disc",
+  fonte:"Slides · Exclusão Mútua · buffer compartilhado",
+  enunciado:"Ainda no exemplo do buffer: qual é <b>exatamente</b> a região crítica de <code>insert</code>, e o que a exclusão mútua precisa garantir ali?",
+  chaves:[
+    ["as duas linhas juntas","vetor[in]","in++","corpo do insert","a funcao insert","gravar e incrementar","as duas instruções"],
+    ["região crítica","seção crítica"],
+    ["tratadas como indivisíveis","indivisível","atômic","uma unidade","de uma vez","sem ser interrompid"],
+    ["um processo por vez","um por vez","apenas um","somente um","exclusão mútua"],
+    ["in é compartilhado","compartilhad","índice compartilhado","variável global"],
+    ["senão o item é sobrescrito","sobrescrev","por cima","perde","buraco","inconsistent"]
+  ],
+  gabarito:"A região crítica é o <b>par de instruções</b> <code>vetor[in] = s;</code> e <code>in++;</code> — as duas <b>juntas</b>, não cada uma de per si.<br><br>O motivo: o recurso compartilhado é o índice <code>in</code>, e entre gravar e incrementar o buffer fica num estado <b>inconsistente</b> (dado escrito, índice desatualizado). Quem entrar nesse intervalo enxerga a posição como livre e grava por cima.<br><br><b>O que a exclusão mútua precisa garantir:</b> que as duas instruções sejam executadas por <b>um processo de cada vez</b>, como se fossem uma operação indivisível. Não basta proteger <code>in++</code> sozinho.<br><br><b>Erro comum:</b> apontar só o <code>in++</code> como região crítica, por analogia com o <code>contador++</code>. Aqui o problema não é o incremento em si ser lê-soma-escreve — é o <b>intervalo</b> entre a escrita do dado e a atualização do índice."
+},
+{
+  id:"em25", mod:"exclusao", dif:"facil", tipo:"mc",
+  fonte:"Slides · Exclusão Mútua · soluções iniciais",
+  enunciado:"Uma das primeiras soluções estudadas é <b>desabilitar as interrupções</b> ao entrar na região crítica. Por que ela é descartada?",
+  opcoes:[
+    "É perigosa — um erro pode deixar as interrupções desligadas para sempre, travando a máquina — e só vale num sistema de <b>1 CPU</b>: desligar a interrupção de um núcleo não impede outro núcleo de entrar na região crítica.",
+    "Porque desabilitar interrupções é uma operação lenta demais para ser usada em laços apertados.",
+    "Porque ela não garante exclusão mútua nem mesmo com uma única CPU.",
+    "Porque só funciona para threads do mesmo processo, e não para processos distintos."
+  ],
+  correta:0,
+  gabarito:"São dois problemas independentes:<br><br>&bull; <b>Confiabilidade</b> — desabilitar interrupções é um privilégio que o sistema operacional não pode entregar a um programa de usuário. Um único caminho de código que esqueça de reabilitá-las mata a máquina.<br>&bull; <b>Multiprocessador</b> — a instrução afeta apenas <b>o processador que a executou</b>. Com 4 núcleos, os outros 3 continuam livres para entrar na região crítica.<br><br>Repare que esse segundo ponto viola diretamente a condição <b>(2)</b> de uma boa solução: <i>não assumir nada sobre a velocidade ou o número de CPUs</i>.<br><br>Ela <b>funciona</b> num sistema monoprocessado — e é justamente assim que o próprio núcleo do sistema operacional protege algumas estruturas internas, por poucas instruções."
+},
+{
+  id:"em26", mod:"exclusao", dif:"facil", tipo:"mc",
+  fonte:"Slides · Semáforos",
+  enunciado:"O semáforo foi proposto por <b>Dijkstra, em 1965</b>. Que estrutura de dados ele é, exatamente?",
+  opcoes:[
+    "Uma variável inteira acompanhada de uma <b>lista dos processos bloqueados</b> à espera da região crítica — e as duas operações sobre ela são atômicas.",
+    "Um único bit, indicando se a região crítica está livre ou ocupada.",
+    "Uma fila de mensagens em que cada processo deposita e retira avisos.",
+    "Um ponteiro para a thread que atualmente detém a região crítica."
+  ],
+  correta:0,
+  gabarito:"São <b>duas partes</b>, e a segunda é a que costuma ser esquecida na prova:<br><br>&bull; a <b>variável inteira</b>, que conta quantas permissões ainda existem;<br>&bull; a <b>lista de processos bloqueados</b>, onde ficam os que chamaram <code>wait</code> e não puderam passar.<br><br>É essa lista que separa o semáforo da espera ocupada: quem não pode entrar <b>sai da fila do escalonador</b> e não gasta mais CPU, em vez de ficar girando num <code>while</code>.<br><br>O valor do contador ficar <b>negativo</b> tem significado: <code>-3</code> quer dizer três processos dormindo nessa lista."
+},
+{
+  id:"em27", mod:"exclusao", dif:"dificil", tipo:"mc",
+  fonte:"Slides · Semáforos · pseudo-código",
+  enunciado:"No pseudo-código do <code>wait()</code>, a trava interna do semáforo é liberada <b>antes</b> de o processo dormir. Por que essa ordem é obrigatória?",
+  cod:"void wait() {\n    mutex_lock();\n    valor--;\n\n    if (valor < 0) {\n        colocar_na_lista_espera();\n        mutex_unlock();          /* <-- solta ANTES de dormir */\n        sleep(processo);\n    } else {\n        mutex_unlock();\n    }\n}",
+  opcoes:[
+    "Porque dormir segurando a trava interna impediria qualquer outro processo de executar <code>post()</code> — ninguém conseguiria acordá-lo, e o semáforo travaria de vez.",
+    "Porque a operação <code>sleep</code> não pode ser chamada de dentro de uma região crítica por imposição do sistema operacional.",
+    "Porque assim o contador <code>valor</code> pode continuar sendo decrementado por outros processos enquanto este dorme.",
+    "Porque liberar a trava depois de dormir deixaria o valor do contador incorreto."
+  ],
+  correta:0,
+  gabarito:"É a mesma armadilha do <b>Banheiro UNISSEX</b>, aqui dentro da própria implementação do semáforo: <b>nunca bloqueie segurando uma trava de que outro precisa para te liberar</b>.<br><br>Se o <code>sleep</code> viesse antes do <code>mutex_unlock</code>, o processo dormiria com a trava interna na mão. O <code>post()</code> começa exatamente por <code>mutex_lock()</code> — logo ele nunca chegaria a <code>acordar_processo_da_fila()</code>. Resultado: <b>posse-e-espera + espera circular</b>, ou seja, deadlock.<br><br><b>O detalhe fino:</b> <code>colocar_na_lista_espera()</code> acontece <b>antes</b> de soltar a trava. Assim, se um <code>post()</code> entrar na janela entre o <code>unlock</code> e o <code>sleep</code>, ele já encontra o processo na lista e o sinal não se perde. É a resposta do semáforo ao problema do <i>lost wakeup</i>.<br><br>Isso também explica por que o semáforo <b>não</b> elimina a necessidade de exclusão mútua — ele apenas a esconde, resolvida por dentro, numa região crítica curtíssima."
+},
+{
+  id:"em28", mod:"exclusao", dif:"facil", tipo:"mc",
+  fonte:"Slides · Produtor-Consumidor",
+  enunciado:"O que caracteriza o problema do <b>produtor-consumidor</b>, e por que ele é usado como <i>benchmark</i> de concorrência?",
+  opcoes:[
+    "Uma ou mais tarefas inserem itens numa <b>fila de tamanho limitado</b> enquanto outras retiram, tudo concorrentemente — ele reúne exclusão mútua sobre a fila <b>e</b> sincronização por condição (esperar quando cheia ou vazia).",
+    "Dois processos disputam a mesma variável e o vencedor é sempre o que chegou primeiro; serve para medir a justiça do escalonador.",
+    "Um processo lento e um rápido dividem a CPU; serve para comparar algoritmos de escalonamento.",
+    "Vários processos leem um dado que apenas um pode escrever; serve para medir o custo da trava de leitura."
+  ],
+  correta:0,
+  gabarito:"O problema junta os <b>dois tipos de sincronização</b> num só enunciado, e é isso que o torna o teste padrão:<br><br>&bull; <b>Exclusão mútua</b> — a fila e o contador de itens são região crítica; produtor e consumidor mexem neles ao mesmo tempo.<br>&bull; <b>Sincronização por condição</b> — o produtor precisa <b>esperar</b> quando a fila está cheia, e o consumidor quando está vazia. Isso é ordem de execução, não proteção de dado, e nenhum mutex sozinho resolve.<br><br>Daí a solução clássica com <b>três semáforos</b>: <code>vazios</code> (lugares livres), <code>cheios</code> (itens prontos) e <code>mutex</code> (a trava da fila). Os dois primeiros contam; o terceiro protege.<br><br>É também o exemplo que reaparece nos monitores e nos canais de Go — sempre o mesmo problema, resolvido por mecanismos diferentes."
+},
+{
+  id:"em29", mod:"exclusao", dif:"dificil", tipo:"mc",
+  fonte:"Slides · Produtor-Consumidor · solução errada",
+  enunciado:"A solução do produtor-consumidor com <code>sleep</code>/<code>wakeup</code> abaixo está <b>errada</b>. Quais são os defeitos?",
+  cod:"/* PRODUTOR */                      /* CONSUMIDOR */\nwhile (1) {                        while (1) {\n    item = produzir();                 if (size == 0)\n    if (size == N)                         sleep(consumidor);\n        sleep(produtor);\n                                       item = consumir();\n    inserir(item);                     size--;\n    size++;\n                                       if (size == N-1)\n    if (size == 1)                         wakeup(produtor);\n        wakeup(consumidor);        }\n}",
+  opcoes:[
+    "<code>size</code> é lido e escrito pelos dois sem proteção nenhuma — é região crítica exposta — e o <code>wakeup</code> pode chegar <b>antes</b> de a outra tarefa conseguir dormir, perdendo-se: as duas podem acabar dormindo para sempre.",
+    "Os testes <code>size == 1</code> e <code>size == N-1</code> estão trocados; corrigindo-os a solução passa a funcionar.",
+    "O erro é usar <code>while (1)</code>: o laço infinito impede que o escalonador preempte as tarefas.",
+    "Faltam apenas os <code>join</code> ao final, para que o programa principal espere as duas tarefas terminarem."
+  ],
+  correta:0,
+  gabarito:"São <b>dois</b> defeitos independentes, e a prova costuma cobrar os dois:<br><br><b>1. Condição de corrida em <code>size</code></b> — as duas tarefas fazem <code>size++</code> e <code>size--</code> sem exclusão mútua. É o mesmo lê-soma-escreve do <code>contador++</code>, com o agravante de que os testes (<code>size == 0</code>, <code>size == N</code>) também leem esse valor sujo.<br><br><b>2. Sinal perdido (<i>lost wakeup</i>)</b> — o consumidor testa <code>size == 0</code> e é preemptado <b>antes</b> de executar o <code>sleep</code>. O produtor insere um item e dispara <code>wakeup(consumidor)</code> — para alguém que ainda não está dormindo, e o aviso <b>se perde</b>. O consumidor volta, dorme, e ninguém mais o acordará. Com a fila enchendo, o produtor também dorme: <b>os dois travam</b>.<br><br><b>Por que o semáforo resolve:</b> ele <b>guarda o sinal no contador</b>. Um <code>post</code> que chega cedo não se perde — deixa o contador maior, e o <code>wait</code> seguinte passa direto.<br><br>Trocar os testes (alternativa B) não muda nada: o problema não é qual valor se testa, é que <b>testar e dormir não são atômicos</b>."
+},
+{
+  id:"em30", mod:"exclusao", dif:"medio", tipo:"vf",
+  fonte:"Slides · Semáforos",
+  enunciado:"O semáforo resolve o problema do <b>sinal perdido</b> do <code>sleep</code>/<code>wakeup</code> porque guarda o aviso no seu contador, em vez de descartá-lo quando não há ninguém dormindo.",
+  correta:0,
+  gabarito:"<b>Verdadeiro.</b> É a diferença essencial entre os dois mecanismos. O <code>wakeup</code> é um sinal <b>volátil</b>: se não houver ninguém dormindo naquele instante, ele simplesmente evapora. O <code>post</code> de um semáforo é <b>persistente</b> — incrementa o contador, e esse crédito fica guardado para o próximo <code>wait</code>, que passa direto sem bloquear.<br><br>É por isso que um semáforo iniciado em <b>0</b> serve para impor <b>ordem</b> entre threads: A faz <code>wait</code> e espera; B faz <code>post</code> quando termina. Funciona independentemente de quem chegou primeiro."
+},
+{
+  id:"em31", mod:"exclusao", dif:"medio", tipo:"mc",
+  fonte:"Slides · Monitores",
+  enunciado:"Como o Java implementa monitores na prática?",
+  opcoes:[
+    "<b>Todo objeto</b> tem uma trava implícita; um método ou bloco <code>synchronized</code> adquire a trava daquele objeto, e a JVM garante que só uma thread execute lá dentro por vez.",
+    "Através da classe <code>Semaphore</code>, que o programador precisa instanciar e liberar manualmente em cada método.",
+    "Desabilitando as interrupções da máquina virtual enquanto o método marcado executa.",
+    "Fazendo o coletor de lixo serializar as threads que acessam o mesmo objeto."
+  ],
+  correta:0,
+  gabarito:"A ideia do monitor é transferir a responsabilidade da exclusão mútua do <b>programador</b> para o <b>compilador / a linguagem</b>. Em Java isso aparece de forma bem concreta: cada objeto carrega uma trava implícita (o <i>monitor lock</i>), e a palavra <code>synchronized</code> num método ou bloco significa \"adquira a trava <b>deste</b> objeto antes de entrar e solte ao sair\".<br><br><b>A vantagem que vale ponto:</b> não existe \"esquecer o <code>unlock</code>\". A trava é liberada mesmo se o método terminar por uma exceção — algo que com <code>pthread_mutex_lock</code> em C depende inteiramente da disciplina de quem escreve.<br><br>Por isso a segurança cresce de <b>semáforo &rarr; mutex &rarr; monitor</b>, e o poder de expressão cresce no sentido contrário: o monitor não sabe contar N instâncias de um recurso."
+},
+{
+  id:"em32", mod:"exclusao", dif:"medio", tipo:"mc",
+  fonte:"Slides · Monitores · variáveis de condição",
+  enunciado:"Num monitor Java, o que fazem <code>wait()</code>, <code>notify()</code> e <code>notifyAll()</code>?",
+  opcoes:[
+    "<code>wait()</code> põe a thread para dormir <b>liberando a trava</b>, deixando outras entrarem; <code>notify()</code> acorda <b>uma</b> das threads que esperam e <code>notifyAll()</code> acorda <b>todas</b>.",
+    "<code>wait()</code> espera com a trava na mão para não perder a vez; <code>notify()</code> e <code>notifyAll()</code> são sinônimos.",
+    "<code>wait()</code> suspende o programa inteiro até que o usuário libere; os dois outros retomam a execução.",
+    "<code>wait()</code> bloqueia apenas threads de menor prioridade; <code>notify()</code> as promove e <code>notifyAll()</code> reinicia o escalonador."
+  ],
+  correta:0,
+  gabarito:"O ponto crítico é o <code>wait()</code> <b>liberar a trava</b> ao dormir. Sem isso, nenhuma outra thread conseguiria entrar no monitor para mudar a condição e sinalizar — o monitor inteiro travaria. É a mesma exigência do <code>mutex_unlock</code> antes do <code>sleep</code> dentro do semáforo.<br><br><b><code>notify</code> ou <code>notifyAll</code>?</b> Com threads esperando por <b>condições diferentes</b> na mesma trava (produtores esperando \"não cheia\", consumidores esperando \"não vazia\"), o <code>notify</code> pode acordar justamente quem não tem como prosseguir — que volta a dormir enquanto quem podia agir continua parado. Na dúvida, <code>notifyAll</code>.<br><br>E o teste da condição vai sempre num <code>while</code>, nunca num <code>if</code>: ao acordar, a thread precisa <b>reconferir</b> a condição, porque outra pode ter consumido o item nesse meio-tempo."
+},
+{
+  id:"em33", mod:"exclusao", dif:"medio", tipo:"mc",
+  fonte:"Slides · Troca de Mensagens · canais em Go",
+  enunciado:"Qual é a mudança de abordagem que a <b>troca de mensagens</b> (os canais de Go, por exemplo) propõe em relação a mutexes e semáforos?",
+  opcoes:[
+    "Em vez de <b>compartilhar memória e protegê-la</b>, as tarefas trocam dados por um canal — o próprio canal sincroniza quem envia e quem recebe, e <code>close(ch)</code> avisa que não haverá mais envios.",
+    "O canal é apenas um mutex com outro nome: continua sendo preciso travá-lo antes de cada envio.",
+    "Os canais eliminam a concorrência, forçando as tarefas a executarem em sequência.",
+    "A troca de mensagens só funciona entre máquinas diferentes, em rede; dentro de um mesmo processo é obrigatório usar mutex."
+  ],
+  correta:0,
+  gabarito:"O lema da linguagem resume a inversão: <i>\"não se comunique compartilhando memória; compartilhe memória comunicando-se\"</i>.<br><br>Não existe região crítica a proteger porque <b>não há dado compartilhado</b>: o valor é <b>enviado</b> de uma tarefa para outra pelo canal. A sincronização vem de brinde — num canal sem buffer, o envio só completa quando alguém recebe, o que é uma barreira entre as duas tarefas.<br><br><code>close(ch)</code> não destrói o canal: sinaliza <b>fim de transmissão</b>. Quem estiver recebendo em laço sai do laço, em vez de esperar para sempre por um item que não vem — é a forma idiomática de encerrar um produtor-consumidor.<br><br>Isso não torna o problema fácil por mágica: continua sendo possível criar deadlock (todos esperando num canal que ninguém alimenta) e vazamento de goroutines."
+},
+{
+  id:"em34", mod:"exclusao", dif:"medio", tipo:"vf",
+  fonte:"Slides · Troca de Mensagens",
+  enunciado:"Num programa que se comunica apenas por <b>troca de mensagens</b>, ainda é obrigatório proteger cada canal com um mutex para evitar condição de corrida.",
+  correta:1,
+  gabarito:"<b>Falso.</b> O canal já é seguro para uso concorrente — a exclusão mútua está implementada <b>dentro</b> dele, não é responsabilidade de quem o usa. É exatamente esse o argumento a favor do modelo: some a classe inteira de bugs em que alguém esquece de travar.<br><br>O que <b>não</b> some é o deadlock. Se todas as tarefas ficam esperando por uma mensagem que ninguém vai enviar, o programa trava do mesmo jeito — só que o sintoma agora é um canal vazio, e não um mutex retido."
+},
+{
+  id:"em35", mod:"exclusao", dif:"medio", tipo:"disc",
+  fonte:"Lab · Exclusão Mútua, Q4",
+  enunciado:"O laboratório pede a <b>soma dos N inteiros de um arquivo</b> usando várias threads. Como você organiza o programa, e por que a leitura do arquivo <b>não</b> entra na parte paralela?",
+  chaves:[
+    ["o main lê o arquivo antes","le o arquivo","leitura","carrega","carregar","abrir o arquivo"],
+    ["guarda os números num vetor em memória","vetor","array","memória","buffer"],
+    ["divide o vetor em faixas","faixa","divide","particiona","intervalo","fatia","bloco"],
+    ["uma thread por faixa","cada thread","por thread","n threads","threads recebem"],
+    ["acumula com proteção ou soma parcial","mutex","semáforo","soma parcial","acumulador","região crítica","variável compartilhada"],
+    ["join antes de imprimir o total","join","esperar todas","depois que todas","ao final"]
+  ],
+  gabarito:"<b>Organização:</b><br><br>1. O <code>main</code> abre o arquivo, lê os N inteiros e os guarda num <b>vetor em memória</b>.<br>2. Divide o vetor em <b>faixas</b> (<code>inicio</code>, <code>fim</code>) e cria uma thread por faixa.<br>3. Cada thread soma a sua faixa. Como esta questão é do laboratório de <b>exclusão mútua</b>, o acúmulo vai numa <b>variável compartilhada</b> protegida por mutex — e o jeito eficiente é somar a faixa inteira num acumulador local e travar <b>uma única vez</b>, no fim, para adicioná-lo ao total.<br>4. <code>join</code> em todas e só então imprimir o total.<br><br><b>Por que a leitura fica de fora:</b> o arquivo é um recurso <b>sequencial</b> — há um só ponteiro de posição, compartilhado. Várias threads lendo do mesmo descritor disputariam esse ponteiro (região crítica) e ainda por cima o disco entrega os dados em ordem, então não haveria ganho: a E/S é o <b>gargalo</b>, e paralelizá-la só acrescentaria sincronização.<br><br>A regra geral que a questão ensina: <b>paralelize o processamento, não a entrada e saída</b> — carregue primeiro, distribua depois."
+},
+{
+  id:"em36", mod:"exclusao", dif:"dificil", tipo:"code",
+  fonte:"Slides · Produtor-Consumidor com semáforos",
+  enunciado:"Escreva <b>apenas a função do produtor</b>, usando os três semáforos já declarados. Atenção à <b>ordem</b> dos <code>sem_wait</code>.",
+  cod:"#define N 100\nint   buffer[N];\n\nsem_t vazios;     /* sem_init(&vazios, 0, N)  -> lugares livres  */\nsem_t cheios;     /* sem_init(&cheios, 0, 0)  -> itens prontos   */\nsem_t mutex;      /* sem_init(&mutex,  0, 1)  -> trava do buffer */\n\nint  produzir(void);          /* ja pronta */\nvoid inserir(int item);       /* ja pronta: poe o item no buffer */",
+  chaves:["sem_wait","vazios","mutex","inserir","sem_post","cheios"],
+  modelo:"void *produtor(void *arg) {\n    while (1) {\n        int item = produzir();       /* fora da regiao critica! */\n\n        sem_wait(&vazios);           /* ha lugar livre? senao espera */\n        sem_wait(&mutex);            /* entra na regiao critica      */\n\n        inserir(item);\n\n        sem_post(&mutex);            /* sai da regiao critica        */\n        sem_post(&cheios);           /* avisa: ha mais um item       */\n    }\n    return NULL;\n}",
+  gabarito:"<b>A ordem dos dois <code>sem_wait</code> é a questão inteira.</b><br><br>Invertendo-os — <code>mutex</code> primeiro, <code>vazios</code> depois — o produtor que encontra o buffer <b>cheio</b> vai dormir em <code>vazios</code> <b>segurando o mutex</b>. O consumidor precisa desse mesmo mutex para retirar um item e liberar um lugar. Nenhum dos dois anda: <b>deadlock</b>.<br><br>A regra é a mesma do Banheiro UNISSEX e a mesma do <code>wait()</code> por dentro do semáforo: <b>nunca bloqueie segurando uma trava de que outro precisa para te liberar</b>. Semáforos de contagem vêm sempre <b>por fora</b> do mutex.<br><br><b>Os outros dois cuidados:</b><br>&bull; <code>produzir()</code> fica <b>fora</b> da região crítica — travar durante o trabalho útil serializa o programa e mata o paralelismo;<br>&bull; na saída, <code>sem_post(&mutex)</code> antes de <code>sem_post(&cheios)</code>: solta a trava o quanto antes, para que quem for acordado já encontre o caminho livre.<br><br>O consumidor é o espelho exato: <code>sem_wait(&cheios)</code>, <code>sem_wait(&mutex)</code>, consome, <code>sem_post(&mutex)</code>, <code>sem_post(&vazios)</code>."
 }
+
 
 ]);

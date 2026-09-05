@@ -12,7 +12,7 @@ Site estático, sem build e sem dependências além das fontes do Google.
 
 ## O que tem
 
-**167 questões** com gabarito comentado, montadas a partir das provas teórica e prática
+**181 questões** com gabarito comentado, montadas a partir das provas teórica e prática
 anteriores, dos laboratórios e dos slides da disciplina.
 
 | Prova | Assuntos |
@@ -74,7 +74,7 @@ js/
 ├── nucleo.js           MODULOS, BANCO e registrar() — carrega primeiro
 ├── questoes/           um arquivo por assunto
 │   ├── processos.js        25 questões
-│   ├── exclusao.js         31
+│   ├── exclusao.js         45
 │   ├── padroes.js          24
 │   ├── deadlocks.js        24
 │   ├── petri.js            14
