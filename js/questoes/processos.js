@@ -27,7 +27,7 @@ registrar([
     "Não há diferença — <code>waitpid()</code> é apenas o nome POSIX moderno de <code>wait()</code>."
   ],
   correta:0,
-  gabarito:"Atenção ao detalhe que o professor destaca nos slides: <code>wait()</code> devolve assim que <b>um filho qualquer</b> termina. Se você criou 26 filhos e quer esperar todos, precisa chamar <code>wait(NULL)</code> 26 vezes (ou usar <code>waitpid()</code> para cada PID específico)."
+  gabarito:"Atenção ao detalhe que os slides destacam: <code>wait()</code> devolve assim que <b>um filho qualquer</b> termina. Se você criou 26 filhos e quer esperar todos, precisa chamar <code>wait(NULL)</code> 26 vezes (ou usar <code>waitpid()</code> para cada PID específico)."
 },
 {
   id:"pt03", mod:"processos", dif:"facil", tipo:"mc",

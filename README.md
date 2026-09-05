@@ -118,11 +118,11 @@ do controle de versão.
 
 Provas Teórica e Prática de semestres anteriores; laboratórios de Processos e Threads,
 Exclusão Mútua, Padrões de Projeto Concorrente, Deadlocks, Redes de Petri, Introdução,
-Hardware Paralelo, Projeto e Análise de Programas Paralelos e OpenMP; slides da disciplina
-(Prof. Bruno Policarpo Toledo Freitas); Tanenbaum, *Sistemas Operacionais Modernos*, 4ª ed.;
+Hardware Paralelo, Projeto e Análise de Programas Paralelos e OpenMP; slides da disciplina;
+Tanenbaum, *Sistemas Operacionais Modernos*, 4ª ed.;
 Pacheco, *An Introduction to Parallel Programming*.
 
-> As respostas são um estudo dirigido, **não** um gabarito oficial do professor.
+> As respostas são um estudo dirigido, **não** um gabarito oficial da disciplina.
 
 O material da disciplina (PDFs, listas e provas digitalizadas) **não** faz parte deste
 repositório — só o simulado.
