@@ -22,8 +22,10 @@ const conf = {
 };
 
 /* rodada em andamento: { fila:[questões], i:índice atual, resp:[respostas] }
-   uma resposta é { escolha?, texto?, verificado, correto }
-   com correto = true | false | null (aguardando autoavaliação)         */
+   uma resposta é { escolha?, texto?, achadas?, total?, verificado, pontos }
+   pontos vai de 0 a 1 e é o quanto a questão valeu: objetivas dão 0 ou 1,
+   escritas dão a fração de palavras-chave encontradas (0,6 para 60%).
+   Enquanto pontos for undefined a questão ainda não entrou no placar.      */
 let run = null;
 
 /* ── armazenamento local, tolerante a falha ──────────────── */
@@ -107,4 +109,76 @@ function voltarInicio() {
 
   run = null;
   mostrar("#telaInicio");
+}
+
+/* ── correção por palavras-chave ─────────────────────── */
+
+/* A nota da questão é o próprio percentual — 60% valem 0,6 no placar.
+   Este limite não corta pontos: só separa o que ainda merece revisão
+   (abaixo dele a questão fica vermelha e volta no "refazer os erros"). */
+const NOTA_MINIMA = 60;
+
+/* Nota no formato da terra: 7,5 — e 7, não 7,0, quando for redonda. */
+function fmtNota(valor) {
+  const arred = Math.round(valor * 10) / 10;
+  return (Number.isInteger(arred) ? String(arred) : arred.toFixed(1)).replace(".", ",");
+}
+
+/* Verde só com a questão inteira; âmbar da nota mínima para cima. */
+function faixaDaNota(pontos) {
+  if (pontos >= 1)                 return "ok";
+  if (pontos >= NOTA_MINIMA / 100) return "parcial";
+  return "err";
+}
+
+/* Compara ignorando caixa e acento: "Exclusão Mútua" casa com "exclusao mutua". */
+function normalizar(texto) {
+  return String(texto).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+/* Casa por início de palavra, e não por pedaço solto: "up" não vale ponto
+   dentro de "grupo". O fim fica livre de propósito, para que um radical como
+   "compartilhad" continue pegando compartilhado, compartilhada e afins.
+   Pedaço que já começa com símbolo ("+=", "->") casa como texto puro. */
+function padraoParte(parte) {
+  const escapado = parte.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(/^[a-z0-9_]/.test(parte)
+    ? "(^|[^a-z0-9_])" + escapado
+    : escapado);
+}
+
+/* A ordem das palavras é livre: cada pedaço da variante é procurado por conta
+   própria e todos precisam aparecer em algum lugar da resposta. Assim
+   "recurso compartilhado" também casa com "compartilhado — esse recurso". */
+function achouVariante(escrito, variante) {
+  const bruto = normalizar(variante).trim();
+  if (!bruto) return false;
+
+  let partes = bruto.split(/\s+/);
+  if (partes.length > 1)
+    partes = partes.filter(p => /[a-z0-9_]/.test(p));   /* descarta "/" e "—" soltos */
+
+  return partes.every(p => padraoParte(p).test(escrito));
+}
+
+/* Uma chave é uma string ou um array de sinônimos aceitos.
+   Quando é array, o primeiro item é o rótulo exibido na correção. */
+function corrigirChaves(texto, chaves) {
+  const escrito = normalizar(texto || "").trim();
+
+  const itens = chaves.map(chave => {
+    const variantes = Array.isArray(chave) ? chave : [chave];
+    return {
+      rotulo: variantes[0],
+      tem: escrito !== "" && variantes.some(v => achouVariante(escrito, v))
+    };
+  });
+
+  const achadas = itens.filter(i => i.tem).length;
+  return {
+    itens: itens,
+    achadas: achadas,
+    total: itens.length,
+    pct: itens.length ? Math.round(100 * achadas / itens.length) : 0
+  };
 }

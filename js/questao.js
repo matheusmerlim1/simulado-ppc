@@ -2,15 +2,19 @@
    Execução do simulado — trilha, renderização e correção.
    ═══════════════════════════════════════════════════════════ */
 
-/* Uma questão só entra no placar depois de ter um veredito.
-   Discursivas e código ficam com correto = null até a autoavaliação. */
+/* Uma questão só entra no placar depois de receber nota.
+   Sem palavras-chave para corrigir, ela espera a autoavaliação. */
 function avaliada(resposta) {
-  return !!resposta && resposta.verificado && typeof resposta.correto === "boolean";
+  return !!resposta && resposta.verificado && typeof resposta.pontos === "number";
 }
 
+/* Soma as notas parciais: 3 questões com 1, 0,75 e 0,4 dão 2,15 de 3. */
 function placar() {
   const feitas = run.resp.filter(avaliada);
-  return { acertos: feitas.filter(r => r.correto).length, feitas: feitas.length };
+  return {
+    pontos: feitas.reduce((soma, r) => soma + r.pontos, 0),
+    feitas: feitas.length
+  };
 }
 
 /* ── início da rodada ────────────────────────────────────── */
@@ -34,7 +38,7 @@ function atualizarTrilha() {
     const seg = segmentos[k];
     if (!seg) return;
     seg.className = "";
-    if (avaliada(resposta)) seg.classList.add(resposta.correto ? "is-ok" : "is-err");
+    if (avaliada(resposta)) seg.classList.add("is-" + faixaDaNota(resposta.pontos));
     if (k === run.i) seg.classList.add("is-now");
   });
 }
@@ -42,7 +46,7 @@ function atualizarTrilha() {
 function atualizarPlacar() {
   const p = placar();
   $("#statQNum").textContent = (run.i + 1) + "/" + run.fila.length;
-  $("#statANum").textContent = p.acertos + "/" + p.feitas;
+  $("#statANum").textContent = fmtNota(p.pontos) + "/" + p.feitas;
 }
 
 /* ── renderização ────────────────────────────────────────── */
@@ -160,9 +164,9 @@ function montarCampoTexto(alvo, q, resposta, travado) {
 
   const dica = document.createElement("p");
   dica.className = "dica-campo";
-  dica.textContent = q.tipo === "disc"
-    ? "Sem resposta automática: você compara com o gabarito e marca você mesmo."
-    : "A verificação procura os elementos essenciais e mostra uma solução de referência.";
+  dica.textContent = q.chaves
+    ? "A correção procura as palavras-chave da resposta e dá uma nota percentual."
+    : "Sem resposta automática: você compara com o gabarito e marca você mesmo.";
   alvo.appendChild(dica);
 }
 
@@ -173,23 +177,34 @@ function montarRetorno(q, resposta) {
   if (!resposta || !resposta.verificado) return;
 
   const automatica = q.tipo === "mc" || q.tipo === "vf";
+  const porChaves  = !automatica && typeof resposta.achadas === "number";
   const caixa = document.createElement("div");
   caixa.className = "retorno" +
-    (resposta.correto === true ? " r-ok" : resposta.correto === false ? " r-err" : "");
+    (avaliada(resposta) ? " r-" + faixaDaNota(resposta.pontos) : "");
 
   const cabecalho = document.createElement("div");
   cabecalho.className = "retorno-cab";
+  const marca = { ok:"✓", parcial:"◐", err:"✗" };
   cabecalho.textContent = automatica
-    ? (resposta.correto ? "✓ Certo" : "✗ Errado")
-    : resposta.correto === true  ? "✓ Marcado como acerto"
-    : resposta.correto === false ? "✗ Marcado como erro"
+    ? (resposta.pontos ? "✓ Certo" : "✗ Errado")
+    : porChaves
+    ? marca[faixaDaNota(resposta.pontos)] +
+      (resposta.ajustada ? " Nota ajustada à mão"
+                         : " Nota " + Math.round(resposta.pontos * 100) + "%") +
+      " — vale " + fmtNota(resposta.pontos) + " da questão"
+    : resposta.pontos === 1 ? "✓ Marcado como acerto"
+    : resposta.pontos === 0 ? "✗ Marcado como erro"
     : "Gabarito";
   caixa.appendChild(cabecalho);
 
   const corpo = document.createElement("div");
   corpo.className = "retorno-corpo";
 
-  if (q.tipo === "code" && q.chaves) corpo.appendChild(montarChecklist(q, resposta));
+  if (porChaves) {
+    const nota = corrigirChaves(resposta.texto, q.chaves);
+    corpo.appendChild(montarNota(nota));
+    corpo.appendChild(montarChecklist(nota));
+  }
 
   const explicacao = document.createElement("div");
   explicacao.innerHTML = q.gabarito;
@@ -209,41 +224,72 @@ function montarRetorno(q, resposta) {
 
   caixa.appendChild(corpo);
 
-  if (!automatica && resposta.correto === null)
-    caixa.appendChild(montarAutoavaliacao());
+  if (!automatica) caixa.appendChild(montarAutoavaliacao(resposta, porChaves));
 
   alvo.appendChild(caixa);
 }
 
-/* elementos essenciais encontrados (ou não) na resposta de código */
-function montarChecklist(q, resposta) {
-  const escrito = (resposta.texto || "").toLowerCase();
+/* nota percentual: quantas palavras-chave apareceram na resposta */
+function montarNota(nota) {
+  const bloco = document.createElement("div");
+  bloco.className = "nota-chaves";
+  bloco.innerHTML =
+    '<div class="nota-topo"><b>Nota automática</b>' +
+    '<span class="nota-val">' + nota.pct + "%</span></div>" +
+    '<div class="nota-trilho"><span class="nota-fill"></span></div>' +
+    '<p class="nota-obs">' + nota.achadas + " de " + nota.total +
+    " palavras-chave · abaixo de " + NOTA_MINIMA +
+    "% a questão volta no refazer os erros</p>";
+
+  /* mesma faixa da trilha e da caixa, para o cartoão contar uma história só */
+  const cor = { ok:"var(--ok)", parcial:"var(--sinal)", err:"var(--err)" };
+
+  /* largura aplicada no quadro seguinte, para a transição acontecer */
+  requestAnimationFrame(() => {
+    const barra = bloco.querySelector(".nota-fill");
+    barra.style.width = nota.pct + "%";
+    barra.style.background = cor[faixaDaNota(nota.pct / 100)];
+  });
+
+  return bloco;
+}
+
+/* palavras-chave encontradas (ou não) na resposta escrita */
+function montarChecklist(nota) {
   const lista = document.createElement("ul");
   lista.className = "checklist";
 
-  q.chaves.forEach(chave => {
-    const tem = escrito.indexOf(chave.toLowerCase()) !== -1;
-    const item = document.createElement("li");
-    item.className = tem ? "tem" : "falta";
-    item.textContent = (tem ? "✓ " : "✗ ") + chave;
-    lista.appendChild(item);
+  nota.itens.forEach(item => {
+    const li = document.createElement("li");
+    li.className = item.tem ? "tem" : "falta";
+    li.textContent = (item.tem ? "✓ " : "✗ ") + item.rotulo;
+    lista.appendChild(li);
   });
 
   return lista;
 }
 
-function montarAutoavaliacao() {
+/* A nota por palavras-chave é um indicador, não um juiz: o gabarito manda, e
+   depois de lê-lo o aluno pode dar a questão por inteira ou zerá-la. */
+function montarAutoavaliacao(resposta, porChaves) {
   const bloco = document.createElement("div");
   bloco.className = "autoaval";
-  bloco.innerHTML = '<span class="lbl">Como você foi?</span>';
+  bloco.innerHTML = '<span class="lbl">' +
+    (porChaves ? "Leu o gabarito? A nota é sua para ajustar:"
+               : "Como você foi?") + "</span>";
 
-  [["Acertei", true], ["Errei", false]].forEach(([rotulo, valor]) => {
+  const rotulos = porChaves ? ["Vale inteira", "Zerar"] : ["Acertei", "Errei"];
+
+  [[rotulos[0], 1], [rotulos[1], 0]].forEach(([rotulo, valor]) => {
     const botao = document.createElement("button");
-    botao.className = "btn " + (valor ? "btn-primario" : "btn-sec");
+    const ativo = resposta.pontos === valor;
+    botao.className = "btn " + (ativo ? "btn-primario" : "btn-sec");
     botao.style.padding = "8px 18px";
+    botao.setAttribute("aria-pressed", String(ativo));
     botao.textContent = rotulo;
     botao.addEventListener("click", () => {
-      run.resp[run.i].correto = valor;
+      run.resp[run.i].pontos = valor;
+      run.resp[run.i].ajustada = true;
       render();
     });
     bloco.appendChild(botao);
@@ -263,9 +309,14 @@ function verificar() {
       if (primeira) primeira.focus();
       return;
     }
-    resposta.correto = resposta.escolha === q.correta;
+    resposta.pontos = resposta.escolha === q.correta ? 1 : 0;
+  } else if (q.chaves) {
+    const nota = corrigirChaves(resposta.texto, q.chaves);
+    resposta.achadas = nota.achadas;
+    resposta.total   = nota.total;
+    resposta.pontos  = nota.pct / 100;         /* 60% viram 0,6 no placar */
   } else {
-    resposta.correto = null;                   /* aguarda autoavaliação */
+    delete resposta.pontos;                    /* aguarda autoavaliação */
   }
 
   resposta.verificado = true;

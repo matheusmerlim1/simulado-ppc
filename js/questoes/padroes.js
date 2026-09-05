@@ -7,36 +7,83 @@ registrar([
   id:"pp01a", mod:"padroes", dif:"facil", tipo:"disc",
   fonte:"Prova Teórica · Questão 3(a)",
   enunciado:"Explique o padrão de projeto concorrente <b>Fork/Join</b>.",
+  chaves:[
+    ["divide o trabalho (fork)","divide","fork","dividir","cria n"],
+    ["executa em paralelo","paralelo","simultaneamente","ao mesmo tempo"],
+    ["espera todos terminarem (join)","espera","join","aguarda","esperar"],
+    ["fork() / pthread_create()","pthread_create","fork()","criar threads","criação"],
+    ["wait() / pthread_join()","pthread_join","wait()"],
+    ["combina com redução","reduç","resultado parcial","parciais","combina","mestre"]
+  ],
   gabarito:"O fluxo principal <b>divide</b> (fork) o trabalho criando N fluxos que executam em paralelo, e depois <b>espera</b> (join) todos terminarem antes de seguir.<br><br>É o padrão base de toda a disciplina: <code>fork()</code> + <code>wait()</code> para processos, <code>pthread_create()</code> + <code>pthread_join()</code> para threads.<br><br>Combina naturalmente com <b>redução</b>: cada thread produz um resultado parcial numa variável privada e o mestre combina tudo depois do join — sem região crítica nenhuma."
 },
 {
   id:"pp01b", mod:"padroes", dif:"facil", tipo:"disc",
   fonte:"Prova Teórica · Questão 3(b)",
   enunciado:"Explique o padrão <b>Travar &amp; Destravar</b>.",
+  chaves:[
+    ["protege a região crítica","região crítica","seção crítica"],
+    ["trava antes de entrar","antes","adquire","trava antes"],
+    ["destrava depois de sair","depois","libera","destrava","solta"],
+    ["lock / sem_wait","lock","sem_wait","travar","down"],
+    ["unlock / sem_post","unlock","sem_post","destravar","up"],
+    ["riscos: esquecer de destravar, deadlock, granularidade","esquecer","deadlock","granularidade","serializ"]
+  ],
   gabarito:"Proteger uma região crítica adquirindo uma trava <b>antes</b> de entrar e liberando <b>depois</b> de sair: <code>lock</code>/<code>unlock</code>, <code>sem_wait</code>/<code>sem_post</code>.<br><br>É o padrão da <b>exclusão mútua</b>.<br><br><b>Riscos:</b> esquecer de destravar (o programa trava para sempre); travar dois recursos em ordens diferentes em threads diferentes (deadlock); e usar granularidade grossa demais, o que serializa o programa e mata o paralelismo."
 },
 {
   id:"pp01c", mod:"padroes", dif:"medio", tipo:"disc",
   fonte:"Prova Teórica · Questão 3(c)",
   enunciado:"Explique o padrão <b>Dormir e Acordar</b>.",
+  chaves:[
+    ["evita a espera ocupada","espera ocupada","busy wait","busy-wait","espera ativa"],
+    ["a thread se bloqueia (sleep)","bloquei","dorme","sleep","dormir"],
+    ["e é acordada por outra (wakeup)","acorda","wakeup","acordad","despert"],
+    ["economiza CPU","economiza","poupa","não gasta cpu","sai da fila","libera a cpu"],
+    ["problema do sinal perdido","sinal perdido","lost wakeup","perde o sinal","aviso se perde","acorda antes"],
+    ["o semáforo guarda o sinal no contador","contador","guarda o sinal","while","variável de condição","atomicamente"]
+  ],
   gabarito:"Em vez de espera ocupada, a thread que não pode prosseguir se <b>bloqueia</b> (<code>sleep</code>) e é <b>acordada</b> por outra (<code>wakeup</code>) quando a condição muda. Economiza CPU, porque a thread bloqueada sai da fila do escalonador.<br><br><b>Problema clássico — o sinal perdido (<i>lost wakeup</i>):</b> se o <code>wakeup</code> chega <i>antes</i> de a thread conseguir dormir, o aviso se perde e ela dorme para sempre.<br><br><b>Como se resolve:</b> o semáforo <b>guarda o sinal num contador</b> — um <code>post</code> anterior faz o <code>wait</code> seguinte passar direto. Com variáveis de condição, testa-se a condição num <code>while</code> sob a mesma trava que o <code>wait</code> libera atomicamente."
 },
 {
   id:"pp01d", mod:"padroes", dif:"medio", tipo:"disc",
   fonte:"Prova Teórica · Questão 3(d)",
   enunciado:"Explique o padrão <b>Despachante-Operário</b>.",
+  chaves:[
+    ["uma thread despachante distribui","despachante","dispatcher","distribui"],
+    ["threads operárias fixas","operári","worker","trabalhador","conjunto fixo"],
+    ["fila de tarefas","fila"],
+    ["também chamado thread pool","thread pool","pool"],
+    ["threads criadas uma vez e reaproveitadas","uma única vez","reaproveit","reutiliz","custo de criação","some o custo"],
+    ["o pool limita a concorrência","limita","tamanho do pool","não vira 10"]
+  ],
   gabarito:"Uma thread <b>despachante</b> recebe as tarefas e as distribui para um conjunto fixo de threads <b>operárias</b>, que ficam esperando numa fila. Também se chama <i>thread pool</i>.<br><br><b>Vantagens:</b><br>&bull; as threads são criadas <b>uma única vez</b> e reaproveitadas — some o custo de criação por tarefa;<br>&bull; o tamanho do pool <b>limita a concorrência</b>: 10 000 tarefas não viram 10 000 threads disputando a CPU.<br><br><b>Atenção:</b> a fila de tarefas continua sendo <b>região crítica</b> e precisa de proteção — tipicamente um produtor/consumidor com semáforos."
 },
 {
   id:"pp01e", mod:"padroes", dif:"medio", tipo:"disc",
   fonte:"Prova Teórica · Questão 3(e)",
   enunciado:"Explique o padrão <b>Pipeline</b>.",
+  chaves:[
+    ["tarefa quebrada em estágios sequenciais","estágio","estagio","etapas","fases"],
+    ["cada estágio é uma thread","cada estágio","uma thread","thread por estágio"],
+    ["melhora a vazão","vazão","throughput","produtividade"],
+    ["no ritmo do estágio mais lento","mais lento","gargalo","estágio lento"],
+    ["não melhora a latência de um item","latência","latencia","tempo de um item"]
+  ],
   gabarito:"A tarefa é quebrada em <b>estágios sequenciais</b> e cada estágio vira uma thread. O dado atravessa os estágios enquanto novos dados entram no início.<br><br><b>O que melhora:</b> a <b>vazão</b> — com o pipeline cheio, sai um item completo a cada tempo do <b>estágio mais lento</b>, e não a cada soma de todos os estágios.<br><b>O que não melhora:</b> a <b>latência</b> de um item individual, que ainda precisa passar por todos os estágios.<br><br><i>Exemplo do laboratório:</i> soma &rarr; média &rarr; variância &rarr; desvio padrão, em que cada estágio consome o resultado do anterior. Otimizar um pipeline significa atacar o estágio gargalo."
 },
 {
   id:"pp01f", mod:"padroes", dif:"medio", tipo:"disc",
   fonte:"Prova Teórica · Questão 3(f)",
   enunciado:"Explique o padrão <b>Barreiras</b>.",
+  chaves:[
+    ["ponto de sincronização","sincroniz"],
+    ["ninguém passa até que todas cheguem","todas cheguem","todas chegarem","esperar todas","até que todas","todas as threads"],
+    ["separa fases do cálculo","fase","etapa","depende do resultado anterior"],
+    ["contador protegido por mutex","contador","mutex","conta"],
+    ["bloqueiam num semáforo e a última libera","semáforo","post","a última","libera"],
+    ["custo: todas presas à thread mais lenta","mais lenta","nowait","desperdíci","custo"]
+  ],
   gabarito:"Ponto de sincronização em que <b>nenhuma thread passa até que todas cheguem</b>.<br><br><b>Para que serve:</b> separar fases de um cálculo em que a fase seguinte depende do resultado que <b>todas</b> as threads produziram na fase anterior.<br><br><b>Como se implementa:</b> um contador protegido por mutex conta quem chegou; todas bloqueiam num semáforo iniciado em 0, e a última a chegar faz N&minus;1 <code>post</code>, liberando as demais.<br><br><b>Custo:</b> todas ficam limitadas à thread mais lenta — barreira desnecessária é desperdício puro. Em OpenMP, a cláusula <code>nowait</code> existe justamente para remover a barreira implícita quando ela não é necessária."
 },
 {

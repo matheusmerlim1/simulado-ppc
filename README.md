@@ -23,9 +23,20 @@ anteriores, dos laboratórios e dos slides da disciplina.
 Quatro formatos de questão:
 
 - **Múltipla escolha** e **V/F** — correção automática
-- **Discursiva** — você escreve, revela o gabarito e se autoavalia (é o formato da Prova Teórica)
+- **Discursiva** — você escreve e a correção procura as palavras-chave da resposta.
+  A busca é folgada de propósito: aceita sinônimos, ignora acento e maiúscula, não
+  cobra ordem das palavras e pega as flexões (“compartilhado”, “compartilhadas”).
+  O gabarito vem junto, e a nota é sua para ajustar — dá para dar a questão por
+  inteira ou zerá-la depois de ler (é o formato da Prova Teórica)
 - **Código** — um método por questão, com o contexto já dado; a verificação procura os
-  elementos essenciais e mostra uma solução de referência comentada
+  elementos essenciais, pontua do mesmo jeito e mostra uma solução de referência
+  comentada
+
+**A nota é fracionada.** Cada questão vale 1, e as escritas valem o percentual de
+palavras-chave que você acertou: 3 de 4 valem **0,75**. O placar soma essas frações
+— uma rodada de 10 pode terminar em **7,4/10**. Objetivas continuam valendo 0 ou 1.
+Abaixo de **60%** a questão fica vermelha e volta no “refazer só os erros”; entre 60%
+e 99% ela fica âmbar, com os pontos que ganhou.
 
 Além do simulado, a aba **Matéria** traz o resumo explicado da disciplina inteira:
 73 tópicos com exemplos de código e os casos numéricos resolvidos passo a passo

@@ -7,48 +7,106 @@ registrar([
   id:"em01a", mod:"exclusao", dif:"facil", tipo:"disc",
   fonte:"Prova Teórica · Questão 1",
   enunciado:"Defina <b>Região Crítica</b>.",
+  chaves:[
+    ["trecho de código","trecho","parte do código","região do código","pedaço do código"],
+    ["recurso compartilhado","compartilhad","variável global","memória comum"],
+    ["acesso simultâneo","ao mesmo tempo","simultân","concorrent","dois fluxos"],
+    ["corromper o resultado","corromp","inconsistent","resultado errado","dado errado"]
+  ],
   gabarito:"<b>Região crítica</b> é o trecho de código em que um fluxo de execução acessa um <b>recurso compartilhado</b> (variável, arquivo, estrutura de dados) de forma que o acesso simultâneo de outro fluxo possa corromper o resultado.<br><br><i>Exemplo:</i> em <code>contador++</code>, a região crítica é justamente esse incremento, porque ele vira <i>ler &rarr; somar &rarr; escrever</i> na memória."
 },
 {
   id:"em01b", mod:"exclusao", dif:"facil", tipo:"disc",
   fonte:"Prova Teórica · Questão 1",
   enunciado:"Defina <b>Condição de Corrida</b>.",
+  chaves:[
+    ["depende da ordem","ordem de execução","ordem das instruções","intercal","entrelaç"],
+    ["escalonador","escalonamento","sistema operacional decide"],
+    ["não determinismo","nao deterministico","indetermin","imprevisível"],
+    ["mesma entrada, resultados diferentes","mesma entrada","execuções diferentes","resultados diferentes","resultado diferente","às vezes dá certo"]
+  ],
   gabarito:"<b>Condição de corrida</b> é a situação em que o resultado final do programa depende da <b>ordem em que as instruções dos fluxos são intercaladas</b> pelo escalonador.<br><br>O sintoma é o <b>não determinismo</b>: com a mesma entrada, execuções diferentes dão resultados diferentes — e às vezes o resultado sai certo por acaso, o que faz o bug passar nos testes."
 },
 {
   id:"em01c", mod:"exclusao", dif:"facil", tipo:"disc",
   fonte:"Prova Teórica · Questão 1",
   enunciado:"Defina <b>Exclusão Mútua</b>.",
+  chaves:[
+    ["no máximo um por vez","um por vez","apenas um","somente um","só um","um único"],
+    ["região crítica","seção crítica"],
+    ["fluxo de execução","thread","processo"],
+    ["mutex, semáforo ou monitor","mutex","semáforo","trava","lock","monitor"]
+  ],
   gabarito:"<b>Exclusão mútua</b> é a propriedade — e o conjunto de mecanismos que a garantem — que assegura que <b>no máximo um fluxo de execução por vez</b> esteja dentro da região crítica.<br><br>É implementada com travas, semáforos, mutexes ou monitores."
 },
 {
   id:"em01d", mod:"exclusao", dif:"medio", tipo:"disc",
   fonte:"Prova Teórica · Questão 1",
   enunciado:"Qual é a <b>relação</b> entre região crítica, condição de corrida e exclusão mútua?",
+  chaves:[
+    ["condição de corrida","corrida"],
+    ["é o problema","problema"],
+    ["região crítica"],
+    ["é onde acontece","onde","local","lugar"],
+    ["exclusão mútua"],
+    ["é a solução","solução","resolve","elimina","corrige"]
+  ],
   gabarito:"&bull; A <b>condição de corrida</b> é o <i>problema</i>.<br>&bull; A <b>região crítica</b> é <i>onde</i> o problema acontece.<br>&bull; A <b>exclusão mútua</b> é a <i>solução</i>.<br><br>Na prática: identifica-se a região crítica e aplica-se exclusão mútua sobre ela, eliminando a condição de corrida.<br><br><b>Observação que vale ponto:</b> a exclusão mútua também é uma das quatro condições de Coffman para deadlock. Ou seja, a solução de um problema é ingrediente do outro — travar demais, ou em ordens diferentes, troca a corrida por travamento."
 },
 {
   id:"em02a", mod:"exclusao", dif:"medio", tipo:"disc",
   fonte:"Prova Teórica · Questão 2",
   enunciado:"O que é um <b>semáforo</b>? Quais são suas primitivas e como elas funcionam?",
+  chaves:[
+    ["variável inteira","inteiro","contador","valor inteiro","número"],
+    ["operações atômicas","atômic","atomic","indivisível"],
+    ["down / wait / P(s)","down","wait","p(s)","sem_wait"],
+    ["up / signal / V(s)","up","signal","v(s)","sem_post"],
+    ["bloqueia numa fila de espera","bloquei","fila de espera","dorme","adormece"],
+    ["valor inicial: 1, N ou 0","valor inicial","binário","de contagem","inicializ","inicial"]
+  ],
   gabarito:"<b>Semáforo</b> é uma variável inteira não-negativa com duas operações <b>atômicas</b>:<br><br>&bull; <code>down / wait / P(s)</code> — decrementa o contador; se ele ficar negativo, o processo <b>bloqueia</b> numa fila de espera.<br>&bull; <code>up / signal / V(s)</code> — incrementa o contador; se havia alguém bloqueado, <b>acorda</b> um deles.<br><br>O valor inicial define o uso:<br>&bull; <b>1</b> &rarr; semáforo binário, para exclusão mútua;<br>&bull; <b>N</b> &rarr; semáforo de contagem, controla N instâncias de um recurso;<br>&bull; <b>0</b> &rarr; sinalização, para impor <b>ordem</b> de execução entre threads.<br><br>Em POSIX: <code>sem_init</code>, <code>sem_wait</code>, <code>sem_post</code>, <code>sem_destroy</code>."
 },
 {
   id:"em02b", mod:"exclusao", dif:"medio", tipo:"disc",
   fonte:"Prova Teórica · Questão 2",
   enunciado:"O que é um <b>mutex</b>? Quais suas primitivas e qual a diferença essencial para um semáforo binário?",
+  chaves:[
+    ["trava binária","binári","trava","travar"],
+    ["tem dono (ownership)","dono","ownership","proprietári","quem travou"],
+    ["lock","lock","pthread_mutex_lock","travar"],
+    ["unlock","unlock","pthread_mutex_unlock","destravar"],
+    ["trylock","trylock","sem bloquear","tenta travar"],
+    ["só quem travou pode destravar","quem travou pode destravar","mesma thread","a própria thread","só a thread"]
+  ],
   gabarito:"<b>Mutex</b> é uma trava binária <b>com dono</b>. Primitivas: <code>lock</code> (trava, bloqueando se já estiver travado), <code>unlock</code> (destrava) e <code>trylock</code> (tenta sem bloquear). Em POSIX: <code>pthread_mutex_lock/unlock</code>.<br><br><b>Diferença essencial:</b> só a thread que travou pode destravar (<i>ownership</i>). O semáforo binário não tem dono — qualquer thread pode dar <code>post</code>.<br><br><b>Consequência prática:</b> o mutex serve <i>exclusivamente</i> para exclusão mútua, mas em troca permite detectar erros e implementar herança de prioridade. O semáforo, por não ter dono, também serve para <b>sinalizar</b> entre threads (A espera, B libera) — algo que o mutex não faz."
 },
 {
   id:"em02c", mod:"exclusao", dif:"medio", tipo:"disc",
   fonte:"Prova Teórica · Questão 2",
   enunciado:"O que é um <b>monitor</b>? Como ele garante exclusão mútua e o que são as variáveis de condição?",
+  chaves:[
+    ["construção de linguagem","linguagem","compilador","synchronized"],
+    ["exclusão mútua implícita","implícit","automátic","garantida pelo compilador"],
+    ["variáveis de condição","variável de condição","condition"],
+    ["wait","wait","espera"],
+    ["signal","signal","acorda","sinaliz"],
+    ["o wait libera o monitor","libera o monitor","libera a trava","solta o monitor","libera o mutex"]
+  ],
   gabarito:"<b>Monitor</b> é uma construção de <b>linguagem</b> (não de biblioteca): um módulo em que os dados são privados e <b>todos os procedimentos têm exclusão mútua implícita</b>, garantida pelo compilador. Apenas um processo fica ativo dentro do monitor por vez.<br><br>Para esperar por condições usa-se <b>variáveis de condição</b>, com duas primitivas:<br>&bull; <code>wait(c)</code> — <b>libera o monitor</b> e bloqueia a thread;<br>&bull; <code>signal(c)</code> — acorda uma thread que esperava em <code>c</code>.<br><br>O detalhe crítico é o <code>wait</code> liberar o monitor ao bloquear: sem isso ninguém mais conseguiria entrar para sinalizar, e o monitor travaria.<br><br><b>Vantagem:</b> o programador não pode esquecer de destravar. Exemplo real: <code>synchronized</code> em Java. Em C não existe monitor nativo — daí a disciplina trabalhar com semáforos e mutexes."
 },
 {
   id:"em02d", mod:"exclusao", dif:"medio", tipo:"disc",
   fonte:"Prova Teórica · Questão 2",
   enunciado:"Compare semáforo, mutex e monitor: quando usar cada um?",
+  chaves:[
+    ["mutex"],
+    ["semáforo"],
+    ["monitor"],
+    ["proteger a região crítica","região crítica","exclusão mútua"],
+    ["contar N instâncias ou impor ordem","n instâncias","contar","impor ordem","sinaliz","ordem de execução"],
+    ["monitor é o mais seguro","mais seguro","compilador","linguagem oferece"]
+  ],
   gabarito:"<b>Mutex</b> — quando o problema é <b>só</b> proteger uma região crítica. É o mais simples e o mais seguro dos dois de biblioteca, porque tem dono.<br><br><b>Semáforo</b> — quando é preciso mais que exclusão mútua: contar N instâncias de um recurso (<code>=N</code>) ou impor <b>ordem</b> de execução entre threads (<code>=0</code>). É o mais poderoso e o mais fácil de errar: nada amarra o <code>wait</code> ao <code>post</code>, e bloquear nele segurando um mutex é deadlock na certa.<br><br><b>Monitor</b> — quando a linguagem oferece. É o mais seguro dos três, porque a exclusão mútua é responsabilidade do compilador.<br><br><b>Resumo:</b> segurança cresce de semáforo &rarr; mutex &rarr; monitor; poder de expressão cresce no sentido contrário."
 },
 {
@@ -263,6 +321,14 @@ registrar([
   id:"em20a", mod:"exclusao", dif:"medio", tipo:"disc",
   fonte:"Prova Prática · Questão 4",
   enunciado:"No problema dos <b>Banheiros UNISSEX</b> (o banheiro fica VAZIO, COM MULHER ou COM HOMEM; várias pessoas do mesmo gênero podem entrar juntas), qual é a estrutura de sincronização correta? Descreva os semáforos e a regra.",
+  chaves:[
+    ["variante de leitores e escritores","leitores e escritores","leitores","escritores"],
+    ["mutex protege os contadores","mutex","contador"],
+    ["semáforo vazio = posse do banheiro","vazio","posse do banheiro","banheiro livre"],
+    ["o primeiro do gênero adquire vazio","o primeiro","primeiro a entrar"],
+    ["o último a sair libera vazio","o último","último a sair"],
+    ["nunca bloquear segurando o mutex","solta o mutex","libera o mutex antes","sem segurar o mutex","fora do mutex","antes de bloquear"]
+  ],
   gabarito:"É uma variante de <b>leitores e escritores</b>, com dois &ldquo;tipos de leitor&rdquo; mutuamente exclusivos.<br><br><b>Semáforos:</b><br>&bull; <code>sem_t mutex</code> = 1 — protege os contadores <code>homens_no_banheiro</code> e <code>mulheres_no_banheiro</code>.<br>&bull; <code>sem_t vazio</code> = 1 — representa a <b>posse do banheiro</b> por um gênero.<br><br><b>Regra de ouro:</b> o <b>primeiro</b> do seu gênero a entrar adquire <code>vazio</code>; o <b>último</b> a sair libera <code>vazio</code>. Quem está no meio apenas ajusta o contador e entra direto.<br><br><b>Restrição de implementação:</b> nunca chamar <code>sem_wait(&vazio)</code> segurando o <code>mutex</code> — é preciso soltar o mutex antes de bloquear e retomá-lo depois."
 },
 {
@@ -287,6 +353,14 @@ registrar([
   id:"em20d", mod:"exclusao", dif:"dificil", tipo:"disc",
   fonte:"Prova Prática · Questão 4",
   enunciado:"Na implementação entregue pelo aluno (a que veio do ChatGPT), onde surgem a <b>condição de corrida</b> e o <b>deadlock</b>? A solução correta ainda tem algum problema?",
+  chaves:[
+    ["sem_wait(&vazio) segurando o mutex","segurando o mutex","com o mutex","dentro do mutex","sem soltar o mutex"],
+    ["deadlock","deadlock","impasse","presos","travad"],
+    ["contador mexido fora do mutex","fora do mutex","sem o mutex","sem proteção","fora da região crítica"],
+    ["condição de corrida","corrida"],
+    ["duas leem 0 ao mesmo tempo / incremento perdido","duas mulheres","ambas","ao mesmo tempo","incremento perdido","se perde"],
+    ["ainda há starvation","starvation","inanição","fome","turnstile","fila justa","nunca entra"]
+  ],
   gabarito:"<b>Deadlock:</b> chamar <code>sem_wait(&vazio)</code> <b>segurando</b> o <code>mutex</code>. A primeira mulher a chegar com um homem dentro bloqueia ali e continua com o mutex; o homem precisa do mutex para sair e liberar <code>vazio</code>. Os dois ficam presos — posse-e-espera + espera circular.<br><br><b>Condição de corrida:</b> testar <code>if (mulheres_no_banheiro == 0)</code> ou fazer <code>mulheres_no_banheiro++</code> <b>fora</b> do mutex. Duas mulheres podem ler 0 ao mesmo tempo e <b>ambas</b> tentarem adquirir <code>vazio</code> (uma fica presa para sempre), ou os incrementos se perdem e o contador nunca zera — o banheiro fica ocupado eternamente.<br><br><b>Sim, a solução correta ainda tem um problema: <i>starvation</i>.</b> Um fluxo contínuo de mulheres impede qualquer homem de entrar, porque o contador nunca chega a zero. Corrige-se com um <i>turnstile</i> (um semáforo de entrada que os recém-chegados precisam atravessar) ou com uma fila justa por ordem de chegada."
 },
 {

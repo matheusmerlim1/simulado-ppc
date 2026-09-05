@@ -85,18 +85,42 @@ registrar([
   id:"rp07a", mod:"petri", dif:"medio", tipo:"disc",
   fonte:"Prova Teórica · Questão 7",
   enunciado:"Para modelar o Jantar dos Filósofos com <b>3 filósofos</b> em Rede de Petri, quais são os <b>lugares</b> e qual a <b>marcação inicial</b>?",
+  chaves:[
+    ["9 lugares","9 lugares","nove lugares","são 9"],
+    ["Pensando_i","pensando","pensa"],
+    ["Comendo_i","comendo","come"],
+    ["Garfo_i","garfo"],
+    ["1 ficha em Pensando e em cada Garfo","1 ficha","uma ficha","um token","1 token","1,1,1"],
+    ["Comendo começa vazio","vazio","zero","sem ficha","0,0,0"]
+  ],
   gabarito:"São <b>9 lugares</b>:<br><br>&bull; <code>Pensando_0</code>, <code>Pensando_1</code>, <code>Pensando_2</code> &mdash; marcação inicial: <b>1 ficha em cada</b> (todos começam pensando).<br>&bull; <code>Comendo_0</code>, <code>Comendo_1</code>, <code>Comendo_2</code> &mdash; inicialmente <b>vazios</b>.<br>&bull; <code>Garfo_0</code>, <code>Garfo_1</code>, <code>Garfo_2</code> &mdash; marcação inicial: <b>1 ficha em cada</b> (todos os garfos livres).<br><br>Escrevendo a marcação como um vetor [Pens0,Pens1,Pens2 | Com0,Com1,Com2 | G0,G1,G2]:<br><br><b>M<sub>0</sub> = [1,1,1 | 0,0,0 | 1,1,1]</b><br><br>Cada garfo tem exatamente 1 ficha porque é um recurso único — é isso que garante a exclusão mútua sobre ele."
 },
 {
   id:"rp07b", mod:"petri", dif:"medio", tipo:"disc",
   fonte:"Prova Teórica · Questão 7",
   enunciado:"Continuando o modelo: quais são as <b>transições</b> e seus arcos? Por que essa escolha evita o deadlock?",
+  chaves:[
+    ["6 transições, duas por filósofo","6 transições","seis transições","duas por filósofo","2 por filósofo"],
+    ["Pega_i","pega"],
+    ["Larga_i","larga","devolve","solta","libera"],
+    ["Pega_i tem 3 arcos de entrada","três arcos","3 arcos","dois garfos","ambos os garfos","os dois garfos"],
+    ["o disparo é atômico","atômic","atomic","de uma vez","indivisível"],
+    ["logo não existe posse-e-espera","posse e espera","posse-e-espera","um garfo só","estado intermediário","deadlock"]
+  ],
   gabarito:"São <b>6 transições</b>, duas por filósofo <i>i</i> (com <i>d</i> = (<i>i</i>+1) mod 3):<br><br>&bull; <code>Pega_i</code> &mdash; <b>entradas:</b> <code>Pensando_i</code>, <code>Garfo_i</code> e <code>Garfo_d</code>. <b>Saída:</b> <code>Comendo_i</code>.<br>&bull; <code>Larga_i</code> &mdash; <b>entrada:</b> <code>Comendo_i</code>. <b>Saídas:</b> <code>Pensando_i</code>, <code>Garfo_i</code> e <code>Garfo_d</code>.<br><br><b>Por que não há deadlock:</b> a transição <code>Pega_i</code> tem <b>três arcos de entrada</b> e só fica habilitada quando o filósofo está pensando <b>e</b> os dois garfos estão livres. Como o disparo é <b>atômico</b>, o estado intermediário &ldquo;segurando um garfo só&rdquo; <b>simplesmente não existe na rede</b>.<br><br>Isso ataca a condição de <b>posse-e-espera</b> por construção.<br><br><b>O que NÃO vale:</b> separar em <code>Pega_esquerdo_i</code> e <code>Pega_direito_i</code> — esse é o modelo (a) do laboratório, explicitamente chamado de implementação errada."
 },
 {
   id:"rp07c", mod:"petri", dif:"dificil", tipo:"disc",
   fonte:"Prova Teórica · Questão 7 · Lab Redes de Petri Q2",
   enunciado:"Prove, pela <b>árvore de alcançabilidade</b>, que esse modelo está livre de deadlocks.",
+  chaves:[
+    ["marcação inicial M0","marcação inicial","m0","1,1,1"],
+    ["transições habilitadas","habilitad","habilita"],
+    ["dispara Pega_0","dispar","pega"],
+    ["Larga_0 devolve a M0","larga","volta","retorna","devolve"],
+    ["os outros ramos são simétricos","simétric","simetria","rotação","análog","equivalente"],
+    ["nenhuma marcação morta: rede viva, sem deadlock","marcação morta","sem marcação morta","viva","livre de deadlock","sempre há uma transição habilitada"]
+  ],
   gabarito:"Marcação escrita como [Pens0,Pens1,Pens2 | Com0,Com1,Com2 | G0,G1,G2].<br><br><b>M<sub>0</sub> = [1,1,1 | 0,0,0 | 1,1,1]</b><br>Habilitadas: <code>Pega_0</code>, <code>Pega_1</code>, <code>Pega_2</code>.<br><br><b>Disparando <code>Pega_0</code></b> (consome Pens0, G0, G1):<br><b>M<sub>1</sub> = [0,1,1 | 1,0,0 | 0,0,1]</b><br>&bull; <code>Pega_1</code> precisa de G1 e G2 &rarr; G1 vazio. <b>Não habilitada.</b><br>&bull; <code>Pega_2</code> precisa de G2 e G0 &rarr; G0 vazio. <b>Não habilitada.</b><br>&bull; <code>Larga_0</code> precisa de Com0 &rarr; tem ficha. <b>Habilitada &check;</b><br><br>Disparando <code>Larga_0</code>, volta-se a M<sub>0</sub>.<br><br>Os ramos de <code>Pega_1</code> e <code>Pega_2</code> são <b>simétricos</b> por rotação dos índices, e levam a marcações análogas a M<sub>1</sub>.<br><br><b>Conclusão:</b> o conjunto de alcançabilidade tem apenas 4 marcações (M<sub>0</sub> e as três equivalentes a M<sub>1</sub>), e <b>todas têm pelo menos uma transição habilitada</b>. Não existe marcação morta &rArr; <b>a rede é viva e livre de deadlock</b>. Ela também é <b>segura</b> (1-limitada): nenhum lugar chega a ter 2 fichas.<br><br><i>Note ainda que com 3 filósofos e 3 garfos apenas <b>um</b> come por vez — o modelo é correto, mas com pouco paralelismo.</i>"
 },
 {

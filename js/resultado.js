@@ -5,13 +5,13 @@
 function finalizar() {
   const p = placar();
   const total = run.fila.length;
-  const pct = p.feitas ? Math.round(100 * p.acertos / p.feitas) : 0;
+  const pct = p.feitas ? Math.round(100 * p.pontos / p.feitas) : 0;
 
   $("#resEyebrow").textContent = p.feitas < total
     ? "Simulado encerrado · " + (total - p.feitas) + " sem resposta"
     : "Simulado encerrado";
 
-  $("#resNota").innerHTML = p.acertos + "<small>/" + p.feitas + "</small>";
+  $("#resNota").innerHTML = fmtNota(p.pontos) + "<small>/" + p.feitas + "</small>";
   $("#resFrase").textContent = fraseDoResultado(p.feitas, pct) +
                                " Aproveitamento: " + pct + "%.";
 
@@ -30,8 +30,10 @@ function fraseDoResultado(feitas, pct) {
   return "Vale voltar ao resumo de fórmulas e definições antes de repetir a rodada.";
 }
 
+/* Volta para a revisão o que ficou abaixo da nota mínima. */
 function erradas() {
-  return run.fila.filter((q, k) => avaliada(run.resp[k]) && !run.resp[k].correto);
+  return run.fila.filter((q, k) =>
+    avaliada(run.resp[k]) && faixaDaNota(run.resp[k].pontos) === "err");
 }
 
 /* ── desempenho por assunto, do pior para o melhor ───────── */
@@ -44,7 +46,7 @@ function montarBarras() {
     if (!avaliada(run.resp[k])) return;
     porMod[q.mod] = porMod[q.mod] || { ok: 0, n: 0 };
     porMod[q.mod].n++;
-    if (run.resp[k].correto) porMod[q.mod].ok++;
+    porMod[q.mod].ok += run.resp[k].pontos;
   });
 
   const mods = Object.keys(porMod);
@@ -65,7 +67,7 @@ function montarBarras() {
     linha.innerHTML =
       '<span class="barra-nome">' + MODULOS[mod].nome + "</span>" +
       '<span class="barra-trilho"><span class="barra-fill" style="width:0%"></span></span>' +
-      '<span class="barra-val">' + dado.ok + "/" + dado.n + "</span>";
+      '<span class="barra-val">' + fmtNota(dado.ok) + "/" + dado.n + "</span>";
     alvo.appendChild(linha);
 
     /* largura aplicada no quadro seguinte, para a transição acontecer */
@@ -88,8 +90,9 @@ function montarRevisao() {
     const item = document.createElement("div");
     item.className = "rev-item";
 
-    const marca = !avaliada(resposta) ? "–" : resposta.correto ? "✓" : "✗";
-    const classe = !avaliada(resposta) ? "" : resposta.correto ? "ok" : "err";
+    const faixa = avaliada(resposta) ? faixaDaNota(resposta.pontos) : "";
+    const marca = { ok:"✓", parcial:"◐", err:"✗" }[faixa] || "–";
+    const classe = faixa;
     const semTags = q.enunciado.replace(/<[^>]+>/g, "");
     const resumo = semTags.length > 150 ? semTags.slice(0, 150) + "…" : semTags;
 
@@ -106,6 +109,9 @@ function montarRevisao() {
     if (q.tipo === "mc" || q.tipo === "vf")
       html += "<p><b>Resposta certa:</b> " + "ABCD"[q.correta] + ") " +
               opcoesDe(q)[q.correta] + "</p><br>";
+    else if (resposta && typeof resposta.achadas === "number")
+      html += "<p><b>Sua nota:</b> " + fmtNota(resposta.pontos) + " — " +
+              resposta.achadas + " de " + resposta.total + " palavras-chave.</p><br>";
     corpo.innerHTML = html + q.gabarito;
 
     if (q.modelo) {

@@ -17,6 +17,7 @@
   --sinal:#C0500F;
   --sinal-2:#9A3F0C;
   --sinal-soft:#FAEDE4;
+  --sinal-line:#E3AE86;
   --petrol:#0F6377;
   --petrol-soft:#E0EEF1;
   --on-sinal:#FFFFFF;
@@ -50,6 +51,7 @@
     --sinal:#F2853F;
     --sinal-2:#FFA168;
     --sinal-soft:#2A1710;
+  --sinal-line:#6E3D22;
     --petrol:#4FB6CC;
     --petrol-soft:#0D2A32;
     --on-sinal:#1A0E06;
@@ -79,6 +81,7 @@
   --sinal:#F2853F;
   --sinal-2:#FFA168;
   --sinal-soft:#2A1710;
+  --sinal-line:#6E3D22;
   --petrol:#4FB6CC;
   --petrol-soft:#0D2A32;
   --on-sinal:#1A0E06;
@@ -163,6 +166,7 @@ code,kbd{font-family:var(--f-mono)}
   transition:background .25s ease;
 }
 .trilha span.is-ok{background:var(--ok)}
+.trilha span.is-parcial{background:var(--sinal)}
 .trilha span.is-err{background:var(--err)}
 .trilha span.is-now{background:var(--sinal)}
 
@@ -357,25 +361,48 @@ textarea.resp.disc{font-family:var(--f-body);font-size:1rem;min-height:150px}
 /* ── retorno ───────────────────────────────────────────── */
 .retorno{margin-top:20px;border-radius:11px;padding:16px 18px;border:1px solid var(--line);background:var(--surface-2)}
 .retorno.r-ok{border-color:var(--ok-line);background:var(--ok-soft)}
+.retorno.r-parcial{border-color:var(--sinal-line);background:var(--sinal-soft)}
 .retorno.r-err{border-color:var(--err-line);background:var(--err-soft)}
 .retorno-cab{
   display:flex;align-items:center;gap:9px;margin-bottom:9px;
   font-family:var(--f-disp);font-weight:700;font-size:.95rem;
 }
 .retorno.r-ok .retorno-cab{color:var(--ok)}
+.retorno.r-parcial .retorno-cab{color:var(--sinal)}
 .retorno.r-err .retorno-cab{color:var(--err)}
 .retorno-corpo{font-size:.95rem;line-height:1.62;color:var(--ink-2)}
 .retorno-corpo b{color:var(--ink);font-weight:600}
 .retorno-corpo code{background:var(--surface-3);padding:1px 5px;border-radius:4px;font-size:.88em}
 .retorno-corpo pre.cod{background:var(--surface);margin-top:12px}
 
-.checklist{list-style:none;padding:0;margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px}
-.checklist li{
-  font-family:var(--f-mono);font-size:11.5px;padding:3px 9px;border-radius:999px;
-  border:1px solid var(--line);display:inline-flex;gap:6px;align-items:center;
+.nota-chaves{
+  margin:0 0 15px;padding:13px 15px;border-radius:9px;
+  border:1px solid var(--line);background:var(--surface);
 }
-.checklist li.tem{color:var(--ok);border-color:var(--ok-line);background:var(--ok-soft)}
-.checklist li.falta{color:var(--err);border-color:var(--err-line);background:var(--err-soft)}
+.nota-topo{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.nota-topo b{font-family:var(--f-disp);font-size:.9rem;color:var(--ink);font-weight:600}
+.nota-val{
+  font-family:var(--f-disp);font-weight:700;font-size:1.55rem;line-height:1;
+  letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--ink);
+}
+.nota-trilho{height:7px;margin-top:10px;background:var(--surface-3);border-radius:4px;overflow:hidden}
+.nota-fill{
+  display:block;height:100%;width:0;border-radius:4px;background:var(--sinal);
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+}
+.nota-obs{margin-top:9px;font-family:var(--f-mono);font-size:11px;line-height:1.55;color:var(--muted)}
+
+/* palavras-chave: rótulos curtos no código, frases inteiras nas discursivas */
+.checklist{
+  list-style:none;padding:0;margin:0 0 14px;display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:5px 16px;
+}
+.checklist li{
+  font-family:var(--f-mono);font-size:11.5px;line-height:1.45;
+  display:flex;gap:6px;align-items:flex-start;
+}
+.checklist li.tem{color:var(--ok)}
+.checklist li.falta{color:var(--err)}
 
 .autoaval{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px;align-items:center}
 .autoaval .lbl{font-size:.86rem;color:var(--muted);margin-right:2px}
@@ -409,6 +436,7 @@ textarea.resp.disc{font-family:var(--f-body);font-size:1rem;min-height:150px}
 .rev-cab:hover{background:var(--surface-2)}
 .rev-mark{font-family:var(--f-mono);font-size:12px;font-weight:700;flex:none;margin-top:2px}
 .rev-mark.ok{color:var(--ok)}
+.rev-mark.parcial{color:var(--sinal)}
 .rev-mark.err{color:var(--err)}
 .rev-corpo{padding:0 16px 16px 42px;border-top:1px solid var(--line);padding-top:14px}
 

@@ -7,30 +7,68 @@ registrar([
   id:"dl01a", mod:"deadlocks", dif:"facil", tipo:"disc",
   fonte:"Prova Teórica · Questão 4",
   enunciado:"Explique a condição de <b>exclusão mútua</b>. Ela pode ser atacada para prevenir deadlocks? Como?",
+  chaves:[
+    ["recurso atribuído a um único processo","um processo","um por vez","exclusiv","não pode ser usado por dois"],
+    ["ou está disponível","disponível","livre"],
+    ["é a menos atacável","menos atacável","dificilmente","em geral não","quase nunca"],
+    ["spooling","spooling","spool","daemon","fila de impressão","enfileira"],
+    ["exemplo da impressora","impressora"]
+  ],
   gabarito:"<b>A condição:</b> cada recurso está ou atribuído a exatamente um processo, ou disponível. Não pode ser usado por dois ao mesmo tempo.<br><br><b>Pode ser atacada?</b> Só em alguns casos, e é a <b>menos atacável</b> das quatro.<br><br><b>Como:</b> por <b>spooling</b> — em vez de dar o recurso ao processo, um daemon monopoliza o dispositivo e enfileira os pedidos. O caso clássico é a impressora: nenhum processo trava a impressora, todos escrevem na fila.<br><br><b>Limite:</b> não funciona para recursos intrinsecamente exclusivos, como uma entrada de tabela ou um registro de banco de dados."
 },
 {
   id:"dl01b", mod:"deadlocks", dif:"facil", tipo:"disc",
   fonte:"Prova Teórica · Questão 4",
   enunciado:"Explique a condição de <b>posse e espera</b>. Ela pode ser atacada? Como?",
+  chaves:[
+    ["já detém recursos","já detém","já tem","já possui","segura","posse"],
+    ["e requisita novos","requisita","pede novos","solicita","espera por outro"],
+    ["sem soltar o que já tem","sem soltar","sem liberar","não libera","mantém"],
+    ["pedir todos os recursos de uma vez","todos de uma vez","todos no início","de uma só vez","atomicamente","tudo de uma vez","todos os recursos"],
+    ["ou liberar tudo antes de pedir mais","liberar tudo","soltar tudo","libera tudo"],
+    ["custo: baixa utilização e starvation","baixa utilização","utilização","desperdíci","starvation","inanição"]
+  ],
   gabarito:"<b>A condição:</b> um processo que já detém recursos pode requisitar novos e ficar bloqueado esperando por eles, <b>sem soltar</b> o que já tem.<br><br><b>Pode ser atacada? Sim</b> — é uma das duas estratégias práticas.<br><br><b>Como:</b> exigir que o processo requisite <b>todos os recursos de uma vez</b>, no início; se algum não estiver disponível, ele não recebe nenhum e espera. Alternativa: obrigá-lo a <b>liberar tudo</b> antes de pedir um novo conjunto.<br><br><b>Custos:</b> nem sempre se sabe de antemão o que será preciso; há baixa utilização (recursos ficam reservados sem uso); e há risco de <i>starvation</i> para processos que precisam de muitos recursos.<br><br><i>É o que faz a solução do Jantar dos Filósofos que pega os dois garfos atomicamente.</i>"
 },
 {
   id:"dl01c", mod:"deadlocks", dif:"facil", tipo:"disc",
   fonte:"Prova Teórica · Questão 4",
   enunciado:"Explique a condição de <b>não-preempção</b>. Ela pode ser atacada? Como?",
+  chaves:[
+    ["recurso não pode ser tomado à força","não pode ser tomado","não pode ser retirado","à força","não preempt","sem preempção"],
+    ["só o dono libera, voluntariamente","voluntariamente","voluntári","quem detém","o próprio processo"],
+    ["atacar seria tomar o recurso à força","tomar à força","preempção","retirar","tomar o recurso","preemptar"],
+    ["checkpoint e rollback","checkpoint","salvar o estado","rollback","restaurar"],
+    ["só serve para CPU e memória","cpu","memória"],
+    ["senão o sistema fica inconsistente","inconsistent","impressora","no meio","não dá"]
+  ],
   gabarito:"<b>A condição:</b> um recurso já concedido não pode ser tomado à força; apenas o processo que o detém pode liberá-lo, voluntariamente.<br><br><b>Pode ser atacada?</b> Em geral não — é a segunda menos atacável.<br><br><b>Como, quando dá:</b> permitir que o sistema <b>tome o recurso à força</b>, salvando e restaurando o estado depois (<i>checkpoint</i> e <i>rollback</i>). Só é viável para recursos cujo estado pode ser salvo: CPU e memória, por exemplo.<br><br><b>Limite:</b> tirar uma impressora no meio de uma impressão, ou um mutex no meio de uma região crítica, deixa o sistema inconsistente."
 },
 {
   id:"dl01d", mod:"deadlocks", dif:"facil", tipo:"disc",
   fonte:"Prova Teórica · Questão 4",
   enunciado:"Explique a condição de <b>espera circular</b>. Ela pode ser atacada? Como?",
+  chaves:[
+    ["cadeia circular de processos","cadeia circular","circular","ciclo","cadeia"],
+    ["cada um espera o recurso do próximo","espera por um recurso","detido pelo próximo","segurado pelo próximo","p1","espera o próximo"],
+    ["é a mais prática de atacar","mais prática","mais fácil","a preferida","sim"],
+    ["ordenação global / numeração dos recursos","ordenação","numeração","numerar","ordem global","numerados"],
+    ["requisitar em ordem crescente","ordem crescente","mesma ordem","ordem numérica","sempre na mesma ordem"]
+  ],
   gabarito:"<b>A condição:</b> existe uma cadeia circular de dois ou mais processos, cada um esperando por um recurso detido pelo próximo da cadeia (P1 &rarr; P2 &rarr; ... &rarr; P1).<br><br><b>Pode ser atacada? Sim — é a mais prática de todas.</b><br><br><b>Como:</b> impor uma <b>ordenação global (numeração) dos recursos</b> e exigir que todo processo os requisite em ordem numérica crescente.<br><br><b>Por que funciona:</b> para fechar um ciclo, algum processo teria de estar segurando o recurso <i>j</i> e pedindo o recurso <i>i</i> com <i>i &lt; j</i> — exatamente o que a regra proíbe.<br><br><i>É a solução para travar múltiplos mutexes sempre na mesma ordem, e para o Jantar dos Filósofos com garfos numerados (o &ldquo;filósofo canhoto&rdquo;).</i>"
 },
 {
   id:"dl01e", mod:"deadlocks", dif:"medio", tipo:"disc",
   fonte:"Prova Teórica · Questão 4",
   enunciado:"Das quatro condições, quais são as mais práticas de atacar na vida real, e por quê?",
+  chaves:[
+    ["espera circular"],
+    ["posse e espera","posse e espera","posse-e-espera"],
+    ["numerar recursos e pedir em ordem","numer","ordenação","ordem crescente","mesma ordem"],
+    ["exclusão mútua não compensa","exclusão mútua"],
+    ["não-preempção não compensa","não-preempção","nao preempcao","preempção"],
+    ["por quê: spooling limitado, salvar estado inviável","spooling","salvar","inviável","razão de ser","custo alto"]
+  ],
   gabarito:"Na prática só duas são atacáveis com custo aceitável:<br><br><b>1. Espera circular</b> — a preferida. Basta numerar os recursos e sempre pedi-los em ordem crescente. Não exige saber a demanda futura, não desperdiça recursos e o custo é só disciplina de programação.<br><br><b>2. Posse e espera</b> — viável quando dá para saber tudo de que se precisa antecipadamente. Custa utilização baixa dos recursos.<br><br><b>Por que as outras duas não:</b> a <b>exclusão mútua</b> é a razão de ser da maioria dos recursos (só dá para atacá-la com spooling, em casos específicos); e a <b>não-preempção</b> exigiria salvar e restaurar estado, o que é inviável para a maioria dos recursos.<br><br><b>Vale lembrar</b> que prevenir não é a única saída: existem ainda a <b>evitação</b> (Banqueiro), a <b>detecção e recuperação</b>, e o <b>algoritmo do avestruz</b> — ignorar o problema, que é o que UNIX e Windows fazem."
 },
 {

@@ -207,12 +207,28 @@ registrar([
   id:"pt17a", mod:"processos", dif:"medio", tipo:"disc",
   fonte:"Lab · Processos e Threads, Q4(a)",
   enunciado:"Num sistema com 2 threads, uma <b>rápida</b> e uma <b>lenta</b>, como o sistema se comporta com escalonamento <b>FIFO</b>?",
+  chaves:[
+    ["FIFO é não-preemptivo","não-preemptivo","nao preemptivo","sem preempção","não preempt"],
+    ["quem chega primeiro executa","chega primeiro","ordem de chegada","primeiro a chegar","fila"],
+    ["até terminar ou bloquear","até terminar","até o fim","até bloquear"],
+    ["efeito comboio se a lenta chega antes","comboio","convoy"],
+    ["tempo médio de resposta ruim","tempo médio","tempo de resposta","tempo de espera"],
+    ["em troca, sem custo de troca de contexto","troca de contexto","overhead","sem custo"]
+  ],
   gabarito:"FIFO é <b>não-preemptivo</b>: a thread que chega primeiro executa até terminar ou bloquear.<br><br>&bull; Se a <b>lenta</b> chega primeiro, a rápida fica parada o tempo todo esperando — é o <b>efeito comboio</b>. O tempo médio de resposta fica péssimo.<br>&bull; Se a <b>rápida</b> chega primeiro, ela sai logo e tudo parece ótimo.<br><br>Ou seja: o resultado depende inteiramente da <b>ordem de chegada</b>. Em compensação, não há custo de troca de contexto."
 },
 {
   id:"pt17b", mod:"processos", dif:"medio", tipo:"disc",
   fonte:"Lab · Processos e Threads, Q4(b)",
   enunciado:"E com escalonamento <b>Round Robin</b>? Compare com o FIFO.",
+  chaves:[
+    ["Round Robin é preemptivo","preemptivo","preempção","preempt"],
+    ["fatia de tempo (quantum)","fatia","quantum","quantu"],
+    ["as threads se alternam","altern","reveza","intercal"],
+    ["a rápida termina bem antes","termina antes","poucas fatias","sai antes","favorece a curta","protege a curta","protege a thread curta"],
+    ["tempo de resposta justo e previsível","justo","previsível","independente da ordem"],
+    ["q grande vira FIFO, q pequeno vira overhead","q grande","quantum grande","degenera","q pequeno","quantum pequeno","overhead"]
+  ],
   gabarito:"Round Robin é <b>preemptivo</b>, com fatia de tempo <i>q</i>: as duas threads alternam a cada fatia.<br><br>A thread <b>rápida</b> termina bem antes, porque precisa de poucas fatias; a lenta continua sozinha depois. O tempo de resposta fica <b>justo e previsível</b>, independente da ordem de chegada — ao custo de trocas de contexto adicionais.<br><br>O valor de <i>q</i> importa: <i>q</i> grande demais faz o RR degenerar em FIFO; <i>q</i> pequeno demais faz o <i>overhead</i> de troca de contexto dominar o tempo útil.<br><br><b>Conclusão:</b> com cargas desiguais, o Round Robin protege a thread curta e o FIFO a penaliza."
 },
 {

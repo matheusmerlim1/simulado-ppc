@@ -31,7 +31,10 @@ const BANCO = [];
    tabela     opcional: HTML de tabela ou dados
    opcoes     mc: exatamente 4 alternativas em HTML
    correta    mc: índice 0–3 · vf: 0 (verdadeiro) ou 1 (falso)
-   chaves     code: elementos essenciais procurados na resposta
+   chaves     disc/code: palavras-chave procuradas na resposta escrita.
+              Cada item e uma string ou um array de sinonimos aceitos, sendo
+              o primeiro o rotulo exibido na correcao. A nota da questao e o
+              percentual de itens encontrados (ver NOTA_MINIMA em base.js).
    modelo     code: solução de referência (texto puro)
    gabarito   HTML da explicação                                        */
 function registrar(questoes) {
