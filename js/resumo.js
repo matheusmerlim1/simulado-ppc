@@ -22,9 +22,10 @@ const RESUMO = [
   ["Fork/Join","Divide o trabalho em N fluxos e espera todos terminarem. Combina com redução."],
   ["Travar &amp; Destravar","Adquire trava antes e libera depois da região crítica."],
   ["Dormir e acordar","Bloqueia em vez de espera ocupada. Risco: <b>sinal perdido</b>."],
-  ["Despachante-operário","Pool de threads reutilizadas consumindo de uma fila de tarefas."],
+  ["Despachante-operário","Pool de threads reutilizadas. <b>Sem fila</b>: descarta quando todas estão ocupadas. <b>Com fila</b>: enfileira. Java: <code>Executors.newFixedThreadPool(n)</code>."],
   ["Pipeline","Estágios sequenciais, um por thread. Vazão ditada pelo <b>estágio mais lento</b>."],
-  ["Barreiras","Ninguém passa até que todos cheguem. Separa fases dependentes."]
+  ["Barreiras","Ninguém passa até que todos cheguem. Separa fases dependentes. C: <code>pthread_barrier_t</code> · Java: <code>CyclicBarrier</code> · semáforo iniciado em 0."],
+  ["Livelock","Todos ativos e ninguém progride: soltam e pegam de novo em sincronia. Deadlock = parados; livelock = ocupados; starvation = um fica para trás."]
 ]},
 {
   t:"Deadlock — 4 condições de Coffman", corpo:[

@@ -1,5 +1,5 @@
 /* ─── Padrões de Projeto Concorrente ────────────────────────
-   P1 · 24 questões
+   P1 · 37 questões
    ─────────────────────────────────────────────────────────── */
 registrar([
 
@@ -288,6 +288,173 @@ registrar([
   ],
   correta:0,
   gabarito:"É a condição de corrida sutil da barreira. Se a thread rápida volta e incrementa <code>chegaram</code> antes de as lentas terem saído, o contador fica errado e a barreira libera cedo (ou trava). A solução de duas fases: a primeira porta só abre quando todos chegam; a segunda porta só abre quando todos passaram pela primeira — só então o contador é zerado com segurança. Esse é o cuidado que separa uma implementação correta da API de barreiras pedida no Q4 do laboratório."
+},
+{
+  id:"pp19", mod:"padroes", dif:"medio", tipo:"mc",
+  fonte:"Slides · Jantar dos Filósofos",
+  enunciado:"Os slides do Jantar dos Filósofos pedem para prevenir deadlock e inanição, e citam um terceiro problema: o <b>livelock</b>. O que o caracteriza?",
+  opcoes:[
+    "As threads <b>não estão bloqueadas</b> — continuam executando e mudando de estado —, mas reagem umas às outras de modo que nenhuma progride: pegam um garfo, veem o outro ocupado, soltam e tentam de novo, todas no mesmo ritmo.",
+    "Todas as threads ficam bloqueadas esperando umas pelas outras, sem consumir CPU.",
+    "Uma única thread é sistematicamente preterida pelo escalonador enquanto as demais progridem.",
+    "O programa termina, mas com o resultado errado por causa de uma condição de corrida."
+  ],
+  correta:0,
+  gabarito:"Os três problemas se distinguem por <b>quem progride</b> e <b>se há CPU sendo gasta</b>:<br><br>&bull; <b>Deadlock</b> — todos bloqueados esperando uns pelos outros. Ninguém progride, a CPU fica ociosa.<br>&bull; <b>Livelock</b> — todos <b>ativos</b>, a CPU fica a 100%, e mesmo assim ninguém progride. É um deadlock &ldquo;em movimento&rdquo;.<br>&bull; <b>Starvation</b> — o sistema progride, mas uma thread específica fica sempre para trás.<br><br>O livelock nasce justamente da <b>tentativa educada</b> de evitar o deadlock: &ldquo;se não consegui o segundo garfo, solto o primeiro e tento de novo&rdquo;. Se todos os filósofos fizerem isso em sincronia, soltam e pegam juntos para sempre.<br><br><b>Por que é traiçoeiro:</b> o programa parece estar trabalhando — o monitor de sistema mostra a CPU ocupada —, ao contrário do deadlock, em que o processo fica visivelmente parado.<br><br>A saída é <b>quebrar a simetria</b>: uma espera aleatória antes de tentar de novo (que torna o livelock improvável, como o <i>backoff</i> exponencial da Ethernet) ou uma regra que decida quem tenta primeiro."
+},
+{
+  id:"pp20", mod:"padroes", dif:"dificil", tipo:"mc",
+  fonte:"Análise de log · Jantar dos Filósofos em Java",
+  enunciado:"Um jantar com 6 filósofos em Java deveria rodar 10 000 refeições por filósofo. O log de uma execução termina exatamente assim, e o processo não imprime mais nada. O que aconteceu?",
+  cod:"/* cada filosofo:  garfos[direita].acquire();   com direita  = id\n                  garfos[esquerda].acquire();  com esquerda = (id+1) % 6 */\n\n   ... 1914 linhas antes ...\nFilosofo[ 0 ] Peguei o garfo 0\nFilosofo[ 1 ] Peguei o garfo 1\nFilosofo[ 4 ] Peguei o garfo 5\nFilosofo[ 4] Comendo (pela 226-esima vez)\nFilosofo[ 4 ] Pensando ...\nFilosofo[ 5 ] Pensando ...\nFilosofo[ 5 ] Peguei o garfo 5\nFilosofo[ 3 ] Peguei o garfo 4\nFilosofo[ 3] Comendo (pela 99-esima vez)\nFilosofo[ 3 ] Pensando ...\nFilosofo[ 2 ] Peguei o garfo 3\nFilosofo[ 2] Comendo (pela 32-esima vez)\nFilosofo[ 2 ] Pensando ...\nFilosofo[ 2 ] Peguei o garfo 2\nFilosofo[ 3 ] Peguei o garfo 3\nFilosofo[ 4 ] Peguei o garfo 4\n                                         <- e nada mais",
+  opcoes:[
+    "<b>Deadlock</b>: a última ação de <b>cada um</b> dos 6 filósofos foi pegar o garfo da direita. Cada um segura o seu e espera o da esquerda, que está com o vizinho — espera circular fechada.",
+    "<b>Starvation</b>: o filósofo 0 comeu bem menos vezes que o 4 e ficou esperando para sempre.",
+    "O programa terminou normalmente; o log só parece cortado porque o buffer da saída padrão não foi descarregado.",
+    "<b>Livelock</b>: os filósofos continuam pegando e soltando garfos, mas o Java suprime as mensagens repetidas."
+  ],
+  correta:0,
+  gabarito:"<b>Como se lê um log de concorrência:</b> procure a <b>última ação de cada thread</b>. Aqui ela é, para os seis:<br><br><code>F0 pegou G0 &nbsp; F1 pegou G1 &nbsp; F2 pegou G2 &nbsp; F3 pegou G3 &nbsp; F4 pegou G4 &nbsp; F5 pegou G5</code><br><br>Cada filósofo <i>i</i> segura o garfo <i>i</i> (sua direita) e bloqueou em <code>acquire()</code> esperando o garfo <i>i</i>+1, que é justamente a direita do vizinho. <b>F0 &rarr; F1 &rarr; F2 &rarr; F3 &rarr; F4 &rarr; F5 &rarr; F0</b>: as quatro condições de Coffman valem ao mesmo tempo.<br><br><b>Por que não é as outras:</b><br>&bull; Não é <b>starvation</b> — ninguém progride, nem o F4 que comia mais.<br>&bull; Não é <b>livelock</b> — <code>Semaphore.acquire()</code> <b>bloqueia</b> a thread; não há ninguém soltando e tentando de novo.<br><br><b>O detalhe didático:</b> o deadlock só apareceu depois de centenas de refeições. Ele é <b>probabilístico</b> — depende de uma intercalação específica —, e por isso um programa desses passa em muitos testes antes de travar em produção.<br><br>A diferença de refeições (F4 com 227, F0 com 18) mostra ainda que o escalonador <b>não é justo</b>, mas isso não é a causa da parada."
+},
+{
+  id:"pp21", mod:"padroes", dif:"dificil", tipo:"mc",
+  fonte:"Análise de código · Jantar dos Filósofos com mutex",
+  enunciado:"Esta versão do jantar <b>não tem deadlock</b>. Qual é o custo dela?",
+  cod:"for (n = 0; n < 10000; n++) {\n    while (1) {\n        sem_wait(mutex);\n\n        sem_getvalue(&garfos[esquerda], &value);\n        if (value == 1)  sem_wait(&garfos[esquerda]);\n        else { sem_post(mutex); sched_yield(); continue; }\n\n        sem_getvalue(&garfos[direita], &value);\n        if (value == 1) { sem_wait(&garfos[direita]); break; }\n        else {\n            sem_post(&garfos[esquerda]);\n            sem_post(mutex); sched_yield(); continue;\n        }\n    }\n\n    usleep(1000);\n    printf(\"%d: O filosofo %d estah comendo!\\n\", n++, filosofo);\n\n    sem_post(&garfos[esquerda]);\n    sem_post(&garfos[direita]);\n    sem_post(mutex);                 /* <-- so aqui */\n}",
+  opcoes:[
+    "O <code>mutex</code> só é liberado <b>depois da refeição</b>: enquanto um filósofo come, nenhum outro sequer consegue olhar os garfos. Só <b>um</b> come por vez, mesmo havendo garfos para dois — e quem falha fica em espera ocupada com <code>sched_yield</code>.",
+    "Ela pode travar se dois filósofos chamarem <code>sem_getvalue</code> ao mesmo tempo.",
+    "O <code>sched_yield</code> bloqueia a thread até o garfo ser liberado, o que reintroduz o deadlock.",
+    "Nenhum: é a solução ótima, com até dois filósofos não vizinhos comendo simultaneamente."
+  ],
+  correta:0,
+  gabarito:"<b>Por que não trava:</b> o teste e a tomada dos dois garfos acontecem sob o mesmo mutex, então ou o filósofo leva os dois, ou solta tudo e não fica com nenhum. É o ataque à <b>posse-e-espera</b>.<br><br><b>O custo está na última linha.</b> O <code>sem_post(mutex)</code> vem depois de comer. Com 5 filósofos e 5 garfos, dois não vizinhos poderiam comer juntos — aqui, nunca. O programa virou <b>sequencial</b>.<br><br>Repare numa consequência curiosa: como o mutex fica retido do teste até a devolução, os semáforos dos garfos viraram <b>decoração</b>. É o mutex, e só ele, que garante tudo.<br><br><b>Segundo custo:</b> quem não consegue os garfos solta o mutex, chama <code>sched_yield()</code> e tenta de novo — <b>espera ocupada</b>. A thread não dorme; volta à fila de prontos e gasta CPU testando.<br><br><b>Terceiro detalhe:</b> <code>sem_getvalue</code> seguido de <code>sem_wait</code> é um teste-depois-uso que só é seguro porque todos seguram o mutex. Fora dele, seria uma condição de corrida.<br><br><b>E um bug de brinde:</b> <code>n</code> é incrementado duas vezes por volta (no <code>for</code> e no <code>printf</code>), então cada filósofo come cerca de 5 000 vezes, não 10 000.<br><br>A versão sem esses custos é a de <code>take_forks</code>/<code>test</code>, que <b>bloqueia</b> o filósofo num semáforo próprio em vez de fazê-lo tentar em laço."
+},
+{
+  id:"pp22", mod:"padroes", dif:"medio", tipo:"mc",
+  fonte:"Slides · Pool de Threads",
+  enunciado:"Num pool de threads, o que muda entre a versão <b>sem fila</b> e a versão <b>com fila</b> quando chega uma requisição e todas as operárias estão ocupadas?",
+  opcoes:[
+    "Sem fila, a requisição é <b>descartada</b>; com fila, o despachante a enfileira e uma operária a consome quando ficar livre.",
+    "Sem fila, o despachante cria uma thread nova só para ela; com fila, ele bloqueia até alguém terminar.",
+    "Sem fila, a própria thread despachante executa a requisição; com fila, ela é descartada.",
+    "Nada muda: a fila serve apenas para devolver as respostas na ordem de chegada."
+  ],
+  correta:0,
+  gabarito:"Pelos slides, um pool é um conjunto de threads <b>criadas antecipadamente</b> para o mesmo trabalho, porque criar e destruir threads a cada tarefa custa tempo. A estrutura tem <b>uma despachante</b>, <b>N operárias</b> e, <b>opcionalmente</b>, uma fila.<br><br>&bull; <b>Sem fila</b> — as operárias dormem (<i>sleep</i>) e a despachante acorda uma (<i>wakeup</i>). Se todas estão ocupadas, o dado que chega é <b>descartado</b>. Faz sentido quando dado velho perde o valor: quadros de vídeo, leituras de sensor.<br>&bull; <b>Com fila</b> — a despachante coloca a tarefa na fila e as operárias a &ldquo;percebem&rdquo; e consomem depois. A fila é um <b>produtor-consumidor</b>, com tudo o que isso exige.<br><br><b>O cuidado que vale ponto:</b> a fila precisa ser <b>limitada</b>. Sem limite, uma rajada maior que a capacidade de processamento faz a fila crescer até esgotar a memória — e aí é preciso decidir de novo entre bloquear a despachante ou descartar.<br><br>A alternativa B é justamente o que o pool existe para evitar: uma thread nova por tarefa."
+},
+{
+  id:"pp23", mod:"padroes", dif:"dificil", tipo:"mc",
+  fonte:"Análise de código · Pool de Threads em Java",
+  enunciado:"O que se pode afirmar sobre a saída deste programa?",
+  cod:"class ClasseComRunnable implements Runnable {\n    private int numberOfThreads = 0;\n\n    public void run() {\n        this.numberOfThreads++;\n        System.out.println(\"Passei: \" + this.numberOfThreads);\n    }\n}\n\nClasseComRunnable c = new ClasseComRunnable();\nExecutorService e = Executors.newFixedThreadPool(5);\n\nfor (int i = 0; i < 10; i++)\n    e.execute(c);                    /* o MESMO objeto, 10 vezes */\n\ne.shutdown();",
+  opcoes:[
+    "As 10 tarefas rodam em até 5 threads sobre o <b>mesmo objeto</b> <code>c</code>: <code>numberOfThreads++</code> é uma condição de corrida, então os valores podem se repetir, pular e sair fora de ordem — e o último pode nem ser 10.",
+    "Imprime sempre de 1 a 10 em ordem, porque o pool executa as tarefas numa fila.",
+    "Imprime só 5 linhas, porque o pool tem apenas 5 threads.",
+    "Não imprime nada: <code>shutdown()</code> cancela na hora as tarefas ainda não executadas."
+  ],
+  correta:0,
+  gabarito:"<b>A condição de corrida:</b> <code>execute(c)</code> não copia o objeto — as 10 tarefas apontam para a <b>mesma instância</b>, e o campo <code>numberOfThreads</code> é compartilhado pelas 5 threads do pool. <code>++</code> é lê-soma-escreve, então incrementos se perdem. E o <code>println</code> lê o campo <b>de novo</b>, depois de outras threads talvez já o terem mudado: duas tarefas podem imprimir o mesmo número.<br><br><b>Por que não as outras:</b><br>&bull; A fila do pool define <b>quem pega a próxima tarefa</b>, não a ordem de execução entre 5 threads simultâneas.<br>&bull; 5 é o número de <b>threads</b>, não de tarefas: as 10 são executadas, reaproveitando as threads.<br>&bull; <code>shutdown()</code> só para de <b>aceitar</b> tarefas novas; as já enviadas terminam. Quem tenta interromper é <code>shutdownNow()</code>.<br><br><b>Correções:</b> <code>AtomicInteger</code>, um método <code>synchronized</code>, ou um <code>Runnable</code> novo por tarefa. E um detalhe de nome: o contador conta <b>execuções</b>, não threads."
+},
+{
+  id:"pp24", mod:"padroes", dif:"medio", tipo:"mc",
+  fonte:"Slides · Barreiras · implementação",
+  enunciado:"Quais são as barreiras prontas das bibliotecas de C (pthreads) e de Java, e como são usadas?",
+  opcoes:[
+    "Em C, <code>pthread_barrier_t</code>: <code>pthread_barrier_init(&b, NULL, N)</code>, cada thread chama <code>pthread_barrier_wait(&b)</code> e no fim <code>pthread_barrier_destroy</code>. Em Java, <code>CyclicBarrier</code>: <code>new CyclicBarrier(N)</code> e <code>await()</code> em cada thread.",
+    "Em C, <code>pthread_join</code> em cada uma das N threads; em Java, <code>Thread.join()</code>.",
+    "Em C, <code>sem_init(&b, 0, N)</code>; em Java, <code>new Semaphore(N)</code> — barreira e semáforo são o mesmo mecanismo.",
+    "Em C, <code>pthread_mutex_lock</code> seguido de <code>pthread_cond_wait</code>; em Java, um bloco <code>synchronized</code>."
+  ],
+  correta:0,
+  gabarito:"O <b>N</b> passado na inicialização é quantas threads precisam chegar para a barreira abrir.<br><br><b>Detalhes que valem ponto:</b><br>&bull; <code>pthread_barrier_wait</code> devolve <code>PTHREAD_BARRIER_SERIAL_THREAD</code> para <b>uma</b> das threads e 0 para as demais — útil para eleger uma única thread que faça o trabalho de junção depois da fase.<br>&bull; <code>CyclicBarrier</code> é <b>cíclica</b>: depois de abrir, rearma sozinha para a próxima rodada. Se uma das threads for interrompida enquanto as outras esperam, a barreira &ldquo;quebra&rdquo; e todas recebem <code>BrokenBarrierException</code> — em vez de esperarem para sempre por quem não vem.<br><br><b>Por que <code>join</code> não é barreira:</b> <code>join</code> espera a thread <b>terminar</b>. A barreira é um ponto de encontro <b>no meio</b> da execução — depois dela, todas continuam trabalhando.<br><br><b>Por que semáforo iniciado em N não é barreira:</b> ele deixaria N threads passarem <b>uma a uma</b>, sem esperar por ninguém. Com semáforos, a barreira começa em <b>0</b> e precisa de um contador."
+},
+{
+  id:"pp25", mod:"padroes", dif:"dificil", tipo:"mc",
+  fonte:"Exemplo · Barreiras impondo ordem",
+  enunciado:"Sem as chamadas a <code>pthread_barrier_wait</code>, este programa costuma imprimir C, B, A. Com elas, qual é a saída?",
+  cod:"pthread_barrier_init(&barreiraB, NULL, 2);\npthread_barrier_init(&barreiraC, NULL, 2);\n\nvoid *ThreadA(void *arg) {\n    for (int i = 0; i < 100000000; i++);     /* A e a mais lenta */\n    printf(\"Eu sou a Thread A\\n\");\n    pthread_barrier_wait(&barreiraB);\n    return NULL;\n}\n\nvoid *ThreadB(void *arg) {\n    pthread_barrier_wait(&barreiraB);\n    for (int i = 0; i < 10000; i++);\n    printf(\"Eu sou a Thread B\\n\");\n    pthread_barrier_wait(&barreiraC);\n    return NULL;\n}\n\nvoid *ThreadC(void *arg) {\n    pthread_barrier_wait(&barreiraC);\n    printf(\"Eu sou a Thread C\\n\");\n    return NULL;\n}",
+  opcoes:[
+    "Sempre <b>A, B, C</b>. Uma barreira de tamanho 2 é um ponto de encontro entre duas threads: B só imprime depois de encontrar A em <code>barreiraB</code> — e A só chega lá depois de imprimir —; C só imprime depois de encontrar B em <code>barreiraC</code>.",
+    "Continua C, B, A: barreiras apenas reúnem threads, não definem ordem entre elas.",
+    "A primeiro; B e C depois, em qualquer ordem, porque as duas barreiras abrem juntas.",
+    "O programa trava: uma barreira de tamanho 2 num programa com 3 threads nunca se completa."
+  ],
+  correta:0,
+  gabarito:"O segredo está na <b>posição</b> de cada chamada:<br><br>&bull; na thread que deve vir <b>antes</b>, a barreira fica <b>depois</b> do <code>printf</code>;<br>&bull; na thread que deve vir <b>depois</b>, a barreira fica <b>antes</b> do <code>printf</code>.<br><br>Assim B não consegue imprimir enquanto A não tiver impresso e chegado a <code>barreiraB</code>, por mais lenta que A seja. E a mesma amarração entre B e C encadeia a terceira.<br><br><b>Por que não trava (alternativa D):</b> cada barreira tem exatamente <b>dois participantes</b> — A e B em <code>barreiraB</code>, B e C em <code>barreiraC</code>. As duas se completam. O tamanho da barreira é o número de threads que passam <b>por ela</b>, não o total do programa.<br><br><b>Nuance:</b> a barreira é <b>simétrica</b> — ela também faria A esperar se A chegasse antes de B. Para impor ordem basta um mecanismo assimétrico, e é o que a versão com semáforos iniciados em 0 faz: A dá <code>post</code> sem esperar ninguém, B dá <code>wait</code>."
+},
+{
+  id:"pp26", mod:"padroes", dif:"medio", tipo:"vf",
+  fonte:"Exemplo · Barreiras com semáforos",
+  enunciado:"Na versão com semáforos do exemplo A, B, C, <code>barreiraB</code> começa em 0; A faz <code>sem_post(&barreiraB)</code> depois de imprimir e B faz <code>sem_wait(&barreiraB)</code> antes de imprimir. Se A der o <code>post</code> antes de B chegar ao <code>wait</code>, o sinal se perde e B dorme para sempre.",
+  correta:1,
+  gabarito:"<b>Falso.</b> O semáforo <b>guarda o sinal no contador</b>. O <code>post</code> antecipado faz <code>barreiraB</code> ir de 0 para 1; quando B chega ao <code>wait</code>, encontra 1, decrementa e passa direto, sem bloquear.<br><br>É exatamente o que distingue o semáforo do par <code>sleep</code>/<code>wakeup</code>, em que o aviso <b>evapora</b> se ninguém estiver dormindo — o problema do sinal perdido.<br><br>Por isso a ordem de escalonamento das threads não importa: se B chegar primeiro, espera; se A chegar primeiro, deixa o crédito guardado. Nos dois casos B imprime depois de A."
+},
+{
+  id:"pp27", mod:"padroes", dif:"dificil", tipo:"mc",
+  fonte:"Análise de código · Leitores e Escritores",
+  enunciado:"Quantas threads escritoras este trecho cria, e qual é a consequência?",
+  cod:"#define N_LEITORES   3\n#define N_ESCRITORES 1\n\npthread_t threads[N_ESCRITORES + N_LEITORES];\nint id;\n\nfor (id = 0; id < N_LEITORES; id++)\n    pthread_create(&threads[id], NULL, Leitor, &thread_data[id]);\n\nfor ( ; id < N_ESCRITORES; id++)\n    pthread_create(&threads[id], NULL, Escritor, &thread_data[id]);\n\nfor (id = 0; id < N_ESCRITORES + N_LEITORES; id++)\n    pthread_join(threads[id], NULL);",
+  opcoes:[
+    "<b>Nenhuma.</b> O segundo laço começa com <code>id = 3</code> e testa <code>3 &lt; 1</code>, que já é falso. O escritor nunca existe — e o último <code>pthread_join</code> recebe um <code>pthread_t</code> que nunca foi criado, o que é comportamento indefinido.",
+    "Uma, como definido em <code>N_ESCRITORES</code>.",
+    "Três, uma para cada leitor, porque o laço reaproveita o contador <code>id</code>.",
+    "Uma, mas ela só roda depois que todos os leitores terminam, porque foi criada por último."
+  ],
+  correta:0,
+  gabarito:"O segundo laço <b>continua</b> a contagem de onde o primeiro parou — então o limite precisa ser <b>acumulado</b>:<br><br><code>for ( ; id &lt; N_LEITORES + N_ESCRITORES; id++)</code><br><br><b>Por que o bug é traiçoeiro:</b> o programa compila, roda, os leitores leem e ele termina — tudo parece funcionar. Mas o problema de leitores e escritores <b>nunca é exercitado</b>, porque não há escritor. Um teste que &ldquo;não mostrou starvation do escritor&rdquo; não provou nada.<br><br>Pior: <code>threads[3]</code> não foi inicializado e é passado a <code>pthread_join</code>. Pode travar, pode falhar em silêncio, pode parecer funcionar — é indefinido.<br><br>A alternativa D descreve um erro de raciocínio comum: a <b>ordem de criação</b> não determina a ordem de execução. Quem decide é o escalonador."
+},
+{
+  id:"pp28", mod:"padroes", dif:"medio", tipo:"mc",
+  fonte:"Slides · Pipeline",
+  enunciado:"Como os slides estruturam um pipeline implementado com threads?",
+  opcoes:[
+    "O primeiro passo é só <b>produtor</b> (lê arquivo ou base de dados); cada passo intermediário <b>consome</b> do buffer anterior, processa e <b>produz</b> no seguinte; o último é só <b>consumidor</b> (imprime ou grava). Entre dois passos há sempre um buffer.",
+    "Todas as threads leem do mesmo buffer de entrada e escrevem num mesmo buffer de saída.",
+    "Uma thread despachante distribui as etapas para operárias, que devolvem os resultados a ela.",
+    "Cada passo chama diretamente a função do passo seguinte, sem estrutura intermediária."
+  ],
+  correta:0,
+  gabarito:"Um pipeline é uma <b>corrente de produtores-consumidores</b>: cada junção entre dois passos é um buffer com seus três semáforos (<code>vazios</code>, <code>cheios</code>, <code>mutex</code>).<br><br>O buffer é o que <b>desacopla</b> as velocidades. Se um passo é mais lento, o buffer de entrada dele enche, o passo anterior bloqueia em <code>vazios</code> e a pressão se propaga para trás até o produtor. É por isso que a vazão do pipeline inteiro é ditada pelo <b>passo mais lento</b>.<br><br><b>Não confunda com o despachante-operário</b> (alternativa C): no pool, todas as operárias fazem o <b>mesmo</b> trabalho sobre tarefas diferentes. No pipeline, cada passo faz um trabalho <b>diferente</b> sobre o mesmo fluxo de dados."
+},
+{
+  id:"pp29", mod:"padroes", dif:"medio", tipo:"disc",
+  fonte:"Slides · Leitores e Escritores",
+  enunciado:"Na solução vista em aula para leitores e escritores, um contador <code>rc</code> conta os leitores e o semáforo <code>db</code> trava a base: o <b>primeiro</b> leitor trava <code>db</code> e o <b>último</b> o libera. O que acontece com um escritor quando <b>existem muitas leituras</b> chegando?",
+  chaves:[
+    ["o escritor espera indefinidamente","espera indefinidamente","nunca entra","nunca consegue","espera para sempre","fica esperando","fica bloqueado"],
+    ["starvation do escritor","starvation","inanição","adiado"],
+    ["rc nunca chega a zero","nunca zera","nunca chega a zero","não zera","rc"],
+    ["leitores novos entram sem esperar","novos leitores","leitor novo","entram direto","sem esperar","continuam entrando","continuam chegando"],
+    ["só o último leitor libera db","último leitor","libera o db","libera db"],
+    ["não é deadlock: os leitores progridem","não é deadlock","leitores progridem","continuam lendo","sistema progride"]
+  ],
+  gabarito:"<b>O escritor espera indefinidamente — <i>starvation</i> do escritor.</b><br><br>Numa linha do tempo:<br>&bull; L1 chega: <code>rc</code> vai a 1 e L1 trava <code>db</code>.<br>&bull; E chega e bloqueia em <code>db</code>.<br>&bull; L2 chega: <code>rc</code> vai a 2. Como não é o primeiro leitor, <b>entra direto</b>, sem olhar para <code>db</code>.<br>&bull; L1 sai: <code>rc</code> volta a 1 — mas <code>db</code> continua travado, porque L1 não é o último.<br>&bull; L3 chega antes de L2 sair...<br><br>Se as leituras se <b>sobrepõem</b>, <code>rc</code> nunca chega a zero, ninguém dá <code>sem_post(db)</code> e o escritor nunca entra. A solução dá <b>prioridade aos leitores</b>.<br><br><b>Não é deadlock:</b> os leitores continuam progredindo. É uma questão de <b>justiça</b>, não de segurança.<br><br><b>Consequência prática:</b> numa base de dados, os leitores passam a ler um dado cada vez mais velho, porque a escrita nunca é aplicada.<br><br><b>Correção:</b> o algoritmo de Courtois, Heymans e Parnas (1971), em que o primeiro escritor que chega <b>fecha a porta</b> para novos leitores — ou uma fila justa por ordem de chegada."
+},
+{
+  id:"pp30", mod:"padroes", dif:"facil", tipo:"vf",
+  fonte:"Slides · Implementação da sincronização",
+  enunciado:"Para usar semáforos na implementação de barreiras e de outras sincronizações, inicia-se o semáforo em <b>0</b>: assim o <code>wait()</code> bloqueia a thread até que outra faça <code>post()</code>.",
+  correta:0,
+  gabarito:"<b>Verdadeiro.</b> É a propriedade que os slides destacam: com o semáforo em 0, <code>wait()</code> <b>bloqueia</b>, e cada <code>post()</code> desbloqueia exatamente uma thread. No modelo de Dijkstra, um valor <b>negativo</b> indica quantas threads estão bloqueadas nele.<br><br>Com isso o semáforo deixa de ser uma trava e vira um mecanismo de <b>sinalização</b> — a base de barreiras, de ordem entre threads (CAFE) e do dormir-e-acordar.<br><br><b>Detalhe de POSIX:</b> na prática, <code>sem_getvalue</code> não costuma devolver valores negativos — no Linux ele devolve 0 quando há threads esperando. O contador negativo é o modelo conceitual."
+},
+{
+  id:"pp31", mod:"padroes", dif:"medio", tipo:"code",
+  fonte:"Exemplo · Jantar dos Filósofos com take_forks",
+  enunciado:"Na solução do jantar com vetor de estados, escreva <b>apenas a função</b> <code>test(i)</code>, que decide se o filósofo <code>i</code> pode comer e, se puder, o libera.",
+  cod:"#define N 5\nenum estado { EATING, HUNGRY, THINKING };\n\nint   state[N];         /* estado de cada filosofo        */\nsem_t filosofos[N];     /* sem_init(&filosofos[i], 0, 0)  */\nsem_t mutex;            /* sem_init(&mutex, 0, 1)         */\n\nvoid take_forks(int i) {\n    sem_wait(&mutex);\n    state[i] = HUNGRY;\n    test(i);\n    sem_post(&mutex);\n    sem_wait(&filosofos[i]);      /* bloqueia se test() nao liberou */\n}\n\nvoid put_forks(int i) {\n    sem_wait(&mutex);\n    state[i] = THINKING;\n    test((i + 1) % N);            /* os vizinhos podem comer agora? */\n    test((i + N - 1) % N);\n    sem_post(&mutex);\n}",
+  chaves:[
+    ["state","estado"],
+    ["HUNGRY","FAMINTO"],
+    ["EATING","COMENDO"],
+    ["% N","%N"],
+    ["sem_post"],
+    ["filosofos"]
+  ],
+  modelo:"void test(int i) {\n    int esquerda = (i + 1) % N;\n    int direita  = (i + N - 1) % N;\n\n    if (state[i] == HUNGRY &&\n        state[esquerda] != EATING &&\n        state[direita]  != EATING) {\n\n        state[i] = EATING;\n        sem_post(&filosofos[i]);    /* libera o sem_wait de take_forks */\n    }\n}",
+  gabarito:"<b>As três condições</b> precisam valer juntas: o filósofo quer comer, e <b>nenhum</b> dos dois vizinhos está comendo.<br><br><b>Por que funciona sem deadlock:</b> <code>test</code> é sempre chamada com o <code>mutex</code> na mão, então o estado dos três filósofos é lido e alterado de forma atômica. O filósofo passa de faminto para comendo <b>de uma vez</b>, com os dois garfos — nunca segura só um. É o ataque à <b>posse-e-espera</b>.<br><br><b>O papel do semáforo por filósofo</b> (iniciado em 0): o <code>sem_wait</code> em <code>take_forks</code> é o <i>sleep</i>, e o <code>sem_post</code> em <code>test</code> é o <i>wakeup</i>. Quando <code>test(i)</code> dá certo logo de cara, o <code>post</code> acontece <b>antes</b> do <code>wait</code> — e como o semáforo guarda o sinal, o <code>wait</code> seguinte passa direto. Sem sinal perdido.<br><br><b>Detalhe de C:</b> o vizinho é <code>(i + N - 1) % N</code>, e não <code>(i - 1) % N</code>. Em C, o resto de um número negativo é negativo: para <code>i = 0</code>, <code>-1 % 5</code> dá <b>-1</b>, um índice inválido.<br><br><b>O que ela ainda não resolve:</b> <i>starvation</i> — dois vizinhos podem se revezar para sempre e deixar o do meio com fome."
 }
+
 
 ]);
