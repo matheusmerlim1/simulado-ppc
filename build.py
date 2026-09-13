@@ -75,7 +75,7 @@ escrever("simulado-ppc.html", html)
 
 # ── fragmento: do <title> até antes de </body> ───────────────
 ini = html.index("<title>")
-fim = html.index("</body>")
+fim = html.rindex("</body>")   # o bloco do portfolio cita </body> num comentario
 escrever("fragmento.html", html[ini:fim].strip() + "\n")
 
 print("\n%d arquivos JS embutidos, na ordem declarada em index.html" % len(fontes_js))
