@@ -32,7 +32,8 @@ function ligarNavegacaoGlobal() {
   $("#btnInicio").addEventListener("click", voltarInicio);
   $("#btnInicioQ").addEventListener("click", voltarInicio);
   $("#btnEstudar").addEventListener("click", () => abrirEstudo());
-  $("#btnIrMateria").addEventListener("click", () => abrirEstudo());
+  $("#btnIrMateria").addEventListener("click", () => abrirEstudo(null, "panorama"));
+  $("#btnIrAnimacoes").addEventListener("click", () => abrirEstudo(null, "animacoes"));
   $("#btnVoltarEstudo").addEventListener("click", voltarInicio);
   $("#btnTema").addEventListener("click", alternarTema);
 }
@@ -47,6 +48,7 @@ function iniciarApp() {
   ligarQuestao();
   ligarResultado();
   ligarEstudo();
+  ligarAnimacoes();
   ligarTeclado();
 
   $("#metaTotal").textContent = BANCO.length;

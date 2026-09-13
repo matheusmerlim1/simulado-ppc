@@ -62,6 +62,7 @@
       </div>
       <div class="acoes" style="margin-top:24px">
         <button class="btn btn-sec" id="btnIrMateria">Ler a matéria resumida &rarr;</button>
+        <button class="btn btn-sec" id="btnIrAnimacoes">Ver as animações &rarr;</button>
       </div>
     </div>
 
@@ -214,17 +215,21 @@
     <div class="hero" style="padding-bottom:0">
       <p class="eyebrow">Resumo da disciplina</p>
       <h1 style="margin-top:12px;font-size:clamp(2rem,7vw,3rem)">Matéria<br><em>explicada</em></h1>
-      <p class="hero-sub">Cada assunto com a explicação, os exemplos e os casos resolvidos que caem na prova.</p>
+      <p class="hero-sub">A disciplina inteira num panorama, cada assunto explicado com código comentado linha a linha, as fórmulas para consulta e animações passo a passo.</p>
     </div>
 
     <div class="bloco">
       <div class="seg" id="abasEstudo" style="width:fit-content">
-        <button data-aba="materia" aria-pressed="true">matéria</button>
+        <button data-aba="panorama" aria-pressed="true">panorama</button>
+        <button data-aba="materia" aria-pressed="false">matéria</button>
         <button data-aba="formulas" aria-pressed="false">consulta rápida</button>
+        <button data-aba="animacoes" aria-pressed="false">animações</button>
       </div>
     </div>
 
-    <div id="abaMateria">
+    <div id="abaPanorama"></div>
+
+    <div id="abaMateria" class="hidden">
       <div class="bloco">
         <div class="bloco-cab"><h2>Assunto</h2></div>
         <div class="chips" id="navMateria"></div>
@@ -234,6 +239,14 @@
 
     <div id="abaFormulas" class="hidden">
       <div class="resumo-grid" id="resumoGrid"></div>
+    </div>
+
+    <div id="abaAnimacoes" class="hidden">
+      <div class="bloco">
+        <div class="bloco-cab"><h2>Animação</h2><span class="dica">passo a passo &middot; &larr; e &rarr; avançam</span></div>
+        <div class="chips" id="navAnimacoes"></div>
+      </div>
+      <div id="animacao"></div>
     </div>
 
     <div class="acoes">
@@ -256,6 +269,14 @@
 <script src="js/questoes/openmp.js"></script>
 <script src="js/resumo.js"></script>
 <script src="js/materia.js"></script>
+<script src="js/anotado/nucleo.js"></script>
+<script src="js/anotado/processos.js"></script>
+<script src="js/anotado/exclusao.js"></script>
+<script src="js/anotado/padroes.js"></script>
+<script src="js/anotado/deadlocks.js"></script>
+<script src="js/anotado/desempenho.js"></script>
+<script src="js/anotado/openmp.js"></script>
+<script src="js/panorama.js"></script>
 <script src="js/colecoes.js"></script>
 
 <!-- ── interface ───────────────────────────────────────────── -->
@@ -263,6 +284,13 @@
 <script src="js/configurar.js"></script>
 <script src="js/questao.js"></script>
 <script src="js/resultado.js"></script>
+<script src="js/anim/motor.js"></script>
+<script src="js/anim/processo.js"></script>
+<script src="js/anim/paralelo.js"></script>
+<script src="js/anim/corrida.js"></script>
+<script src="js/anim/produtor.js"></script>
+<script src="js/anim/filosofos.js"></script>
+<script src="js/anim/deteccao.js"></script>
 <script src="js/estudo.js"></script>
 <script src="js/main.js"></script>
 

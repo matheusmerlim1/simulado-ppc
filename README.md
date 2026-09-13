@@ -12,7 +12,7 @@ Site estático, sem build e sem dependências além das fontes do Google.
 
 ## O que tem
 
-**181 questões** com gabarito comentado, montadas a partir das provas teórica e prática
+**194 questões** com gabarito comentado, montadas a partir das provas teórica e prática
 anteriores, dos laboratórios e dos slides da disciplina.
 
 | Prova | Assuntos |
@@ -38,10 +38,20 @@ palavras-chave que você acertou: 3 de 4 valem **0,75**. O placar soma essas fra
 Abaixo de **60%** a questão fica vermelha e volta no “refazer só os erros”; entre 60%
 e 99% ela fica âmbar, com os pontos que ganhou.
 
-Além do simulado, a aba **Matéria** traz o resumo explicado da disciplina inteira:
-73 tópicos com exemplos de código e os casos numéricos resolvidos passo a passo
-(algoritmo do banqueiro, detecção de deadlock, árvore de alcançabilidade, pipeline,
-faltas de cache, Amdahl, Gustafson, balanceamento de carga).
+Além do simulado, a tela de estudo tem quatro abas:
+
+- **Panorama** — a disciplina inteira numa página, na ordem em que um assunto leva ao
+  outro: concorrência &times; paralelismo, as 8 estações (pergunta central, essencial, o que
+  cai na prova) e as ideias que atravessam P1 e P2.
+- **Matéria** — 73 tópicos explicados, com os casos numéricos resolvidos passo a passo e
+  **18 exemplos de código comentados linha a linha**: enunciado, cada linha e o porquê
+  de ela estar ali, com as linhas decisivas destacadas.
+- **Consulta rápida** — fichas de fórmulas e definições.
+- **Animações** — 6 cenas passo a passo, com play, velocidade e &larr;/&rarr;:
+  fork e estados do processo; concorrência &times; paralelismo (1, 2 e 3 núcleos);
+  condição de corrida sem proteção e com mutex; produtor-consumidor na ordem certa
+  e invertida; jantar dos filósofos (ingênua, garfos em ordem, dois de uma vez); e
+  detecção de deadlock e banqueiro. Cada passo tem legenda em texto.
 
 ## Coleções prontas
 
@@ -75,7 +85,7 @@ js/
 ├── questoes/           um arquivo por assunto
 │   ├── processos.js        25 questões
 │   ├── exclusao.js         45
-│   ├── padroes.js          24
+│   ├── padroes.js          37
 │   ├── deadlocks.js        24
 │   ├── petri.js            14
 │   ├── hardware.js         17
@@ -83,13 +93,16 @@ js/
 │   └── openmp.js           16
 ├── resumo.js           fichas da aba "consulta rápida"
 ├── materia.js          os 73 tópicos explicados
+├── anotado/            código comentado linha a linha, ligado às seções pelo título
+├── panorama.js         a aba panorama
 ├── colecoes.js         as coleções prontas
 │
 ├── base.js             utilitários, estado, tema e navegação
 ├── configurar.js       tela inicial: filtros e contagens
 ├── questao.js          execução: trilha, renderização e correção
 ├── resultado.js        nota, desempenho por assunto e revisão
-├── estudo.js           matéria e consulta rápida
+├── anim/               motor do player + uma cena por arquivo
+├── estudo.js           panorama, matéria, consulta rápida e animações
 └── main.js             liga tudo e monta a tela inicial
 build.py                gera uma versão de arquivo único em dist/
 ```
