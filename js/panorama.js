@@ -82,7 +82,7 @@ const PANORAMA = {
         "Deadlock: ninguém progride. Starvation: um processo fica sempre para trás."
       ],
       prova: "Executar o algoritmo de detecção e o Banqueiro passo a passo, e dizer qual condição de Coffman cada solução ataca.",
-      animacoes: ["filosofos", "deteccao"]
+      animacoes: ["grafo", "filosofos", "deteccao"]
     },
     {
       mod: "petri",

@@ -816,3 +816,22 @@ code,kbd,pre,.cod,.anim-palco{font-variant-ligatures:none;font-feature-settings:
   #abasEstudo button:nth-child(2n){border-right:0}
   #abasEstudo button:nth-last-child(-n+2){border-bottom:0}
 }
+
+/* ── cena: grafo de alocação ───────────────────────────── */
+.gr-mapa{width:100%;max-width:460px;height:auto;display:block;margin:0 auto}
+.gr-proc circle{fill:var(--surface);stroke:var(--line-2);stroke-width:2;transition:fill .25s,stroke .25s,opacity .25s}
+.gr-rec rect{fill:var(--surface-2);stroke:var(--line-2);stroke-width:2;transition:fill .25s,stroke .25s}
+.gr-proc text,.gr-rec text{fill:var(--ink);font-family:var(--f-mono);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:middle}
+.gr-rec.ocupado rect{fill:var(--petrol-soft);stroke:var(--petrol)}
+.gr-proc.espera circle{stroke:var(--sinal);stroke-dasharray:5 3}
+.gr-proc.ciclo circle{fill:var(--err-soft);stroke:var(--err);stroke-dasharray:none}
+.gr-proc.fim{opacity:.4}
+.gr-aresta{stroke-width:2.5}
+.gr-aresta.posse{stroke:var(--petrol)}
+.gr-aresta.pedido{stroke:var(--sinal);stroke-dasharray:6 4}
+.gr-aresta.ciclo{stroke:var(--err)}
+#gr-ponta path{fill:var(--ink-2)}
+.gr-legenda{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center;margin-top:10px;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.gr-legenda span{display:inline-flex;align-items:center;gap:7px}
+.gr-l{display:inline-block;width:26px;height:0;border-top:2.5px solid var(--petrol)}
+.gr-l.pedido{border-top:2.5px dashed var(--sinal)}
