@@ -1,5 +1,5 @@
 /* ─── Deadlocks ─────────────────────────────────────────────
-   P1 · 24 questões
+   P1 · 38 questões
    ─────────────────────────────────────────────────────────── */
 registrar([
 
@@ -299,6 +299,182 @@ registrar([
   ],
   correta:0,
   gabarito:"Rodar a cada requisição negada detecta o deadlock no instante em que ele se forma e identifica com precisão os processos envolvidos, mas o custo é alto. Rodar periodicamente (ou disparado por uma queda na utilização de CPU — sintoma típico de processos travados) é bem mais barato, com a desvantagem de que vários ciclos podem já ter se formado, dificultando escolher a vítima da recuperação."
+},
+{
+  id:"dl21", mod:"deadlocks", dif:"facil", tipo:"mc",
+  fonte:"Slides · Deadlocks · recursos",
+  enunciado:"Os slides separam os recursos em <b>preemptáveis</b> e <b>não-preemptáveis</b>. Qual par está classificado corretamente?",
+  opcoes:[
+    "Memória é preemptável — pode ser tirada do processo (levada ao disco) e devolvida sem dano; uma impressora no meio de um trabalho é não-preemptável — tirá-la estraga a impressão.",
+    "Impressora é preemptável, porque vários processos podem enviar trabalhos para ela; memória é não-preemptável.",
+    "Todo recurso de hardware é preemptável; só recursos de software, como travas, são não-preemptáveis.",
+    "Processador é não-preemptável, porque um processo nunca pode perder a CPU antes de terminar."
+  ],
+  correta:0,
+  gabarito:"A pergunta é: <b>dá para tirar o recurso do processo sem prejudicá-lo?</b><br><br>&bull; <b>Preemptável</b> — memória (o sistema salva a página em disco e devolve depois) e o próprio processador (a troca de contexto é exatamente isso).<br>&bull; <b>Não-preemptável</b> — impressora no meio de uma impressão, gravador de mídia no meio de uma gravação, um mutex no meio de uma região crítica.<br><br><b>Por que importa:</b> deadlocks com recursos preemptáveis se resolvem tomando o recurso de volta. Os deadlocks que exigem as estratégias da matéria são os que envolvem recursos <b>não-preemptáveis</b> — e é por isso que a condição de não-preempção quase nunca é atacada."
+},
+{
+  id:"dl22", mod:"deadlocks", dif:"facil", tipo:"mc",
+  fonte:"Slides · Deadlocks · definição formal",
+  enunciado:"Qual é a definição formal de deadlock?",
+  opcoes:[
+    "Um conjunto de processos está em deadlock se <b>cada</b> processo do conjunto está esperando por um evento que <b>apenas outro processo do mesmo conjunto</b> pode causar.",
+    "Um processo está em deadlock quando espera por um recurso por mais tempo que um limite pré-definido.",
+    "Deadlock é quando dois processos disputam a mesma variável e o resultado depende da ordem de execução.",
+    "Um conjunto de processos está em deadlock quando todos estão prontos para executar, mas o escalonador não escolhe nenhum."
+  ],
+  correta:0,
+  gabarito:"O ponto central é o <b>fechamento</b>: a espera de cada um só pode ser resolvida por alguém de dentro do grupo — que também está esperando. Normalmente o evento é a <b>liberação de um recurso</b>.<br><br>Consequência, nas palavras dos slides: nenhum processo do conjunto pode <b>executar</b>, <b>liberar recursos</b> ou <b>ser acordado</b>. Por isso o deadlock não se resolve sozinho, por mais que se espere.<br><br><b>Por que não as outras:</b> um tempo limite (B) só detecta uma espera longa, não um ciclo; a alternativa C descreve condição de corrida; e em D os processos estão prontos, não bloqueados — seria um problema de escalonamento."
+},
+{
+  id:"dl23", mod:"deadlocks", dif:"medio", tipo:"vf",
+  fonte:"Slides · Deadlocks · uso de recursos",
+  enunciado:"Usar um recurso segue sempre a sequência requisitar, usar e liberar. Quando uma requisição não pode ser atendida, a única possibilidade é o sistema <b>bloquear</b> o processo até o recurso ficar livre.",
+  correta:1,
+  gabarito:"<b>Falso.</b> Os slides dão duas possibilidades: <b>bloquear</b> o processo, ou devolver um <b>código de erro</b> e deixá-lo seguir.<br><br>A segunda muda o problema de lugar: se o processo, ao receber o erro, dorme um pouco e tenta de novo em laço, ele não fica bloqueado — mas pode ficar girando para sempre sem conseguir o recurso. É <b>espera ocupada</b>, e com vários processos fazendo o mesmo em sincronia, <b>livelock</b>.<br><br>É o caso do <code>trylock</code> e de <code>sem_trywait</code>: não bloqueiam, mas deixam a decisão do que fazer com quem chamou."
+},
+{
+  id:"dl24", mod:"deadlocks", dif:"dificil", tipo:"mc",
+  fonte:"Slides · Deadlocks · como ocorrem",
+  enunciado:"Três processos A, B e C e três recursos R, S e T, cada um com uma única unidade. O escalonador intercala os pedidos na ordem abaixo. Em qual pedido o <b>deadlock se fecha</b>?",
+  cod:"1) A requisita R\n2) B requisita S\n3) C requisita T\n4) A requisita S\n5) B requisita T\n6) C requisita R",
+  opcoes:[
+    "No <b>6</b>. Até o 5, A espera S (com B) e B espera T (com C), mas C ainda roda e poderia terminar liberando T. Quando C pede R, que está com A, o ciclo <b>A &rarr; S &rarr; B &rarr; T &rarr; C &rarr; R &rarr; A</b> se completa.",
+    "No <b>4</b>, porque é o primeiro pedido que não pode ser atendido.",
+    "No <b>5</b>, porque a partir dele dois processos estão bloqueados.",
+    "Em nenhum: com três recursos para três processos, cada um consegue o seu e não há deadlock."
+  ],
+  correta:0,
+  gabarito:"No grafo de alocação, cada pedido atendido vira uma aresta <b>recurso &rarr; processo</b> e cada pedido pendente, uma aresta <b>processo &rarr; recurso</b>:<br><br>&bull; 1–3: R&rarr;A, S&rarr;B, T&rarr;C. Todos atendidos.<br>&bull; 4: A&rarr;S. A bloqueia, mas B ainda pode terminar.<br>&bull; 5: B&rarr;T. B bloqueia, mas C ainda pode terminar e soltar T.<br>&bull; 6: C&rarr;R. Agora <b>todos</b> esperam alguém do grupo: ciclo fechado.<br><br><b>Bloquear não é o mesmo que travar</b> (alternativas B e C): enquanto houver no grupo alguém que progride, a cadeia se desfaz sozinha.<br><br><b>E o sistema podia ter evitado:</b> se o escalonador tivesse adiado B, A e C terminariam — o mesmo conjunto de pedidos, em outra ordem, sem deadlock. É a ideia por trás da alocação segura."
+},
+{
+  id:"dl25", mod:"deadlocks", dif:"medio", tipo:"mc",
+  fonte:"Slides · Detecção com 1 recurso de cada tipo",
+  enunciado:"No algoritmo de detecção com <b>um recurso de cada tipo</b>, parte-se de cada nó do grafo, percorrendo arcos ainda não marcados e guardando os nós visitados numa lista L. O que indica que existe deadlock?",
+  opcoes:[
+    "O nó atual <b>já aparece na lista L</b>: o caminho voltou a um nó por onde já passou — o grafo tem um ciclo.",
+    "Um nó sem nenhum arco de saída desmarcado.",
+    "A lista L ficar vazia depois de voltar ao nó inicial.",
+    "Um recurso com mais de um arco de entrada."
+  ],
+  correta:0,
+  gabarito:"É uma busca em profundidade à procura de <b>ciclo</b>:<br><br>1. Começa com L vazia e todos os arcos desmarcados.<br>2. Insere o nó atual no fim de L.<br>3. Se o nó <b>já estava em L</b>, há ciclo: termina.<br>4. Se há arco de saída desmarcado, marca-o e segue por ele.<br>5. Se não há, é beco sem saída: remove o nó de L e volta ao anterior. Se o beco for o nó inicial, não há ciclo a partir dele.<br><br>O algoritmo é repetido partindo de cada nó do grafo.<br><br><b>Por que só com um recurso de cada tipo:</b> com uma instância por tipo, ciclo equivale a deadlock. Com várias instâncias, o ciclo é necessário mas não suficiente, e é preciso o algoritmo com as matrizes E, A, C e R.<br><br>A alternativa B é só o beco sem saída do passo 5, e A vazia (C) significa justamente que <b>não</b> se achou ciclo."
+},
+{
+  id:"dl26", mod:"deadlocks", dif:"dificil", tipo:"mc",
+  fonte:"Slides · Detecção com múltiplos recursos",
+  enunciado:"Aplique o algoritmo de detecção ao estado abaixo, com três processos e quatro tipos de recurso. Existe deadlock?",
+  tabela:"<div class='tabela-wrap'><table class='dados'><tr><th></th><th colspan='4'>C &mdash; alocação corrente</th><th style='border:0;width:18px'></th><th colspan='4'>R &mdash; requisições</th></tr><tr><th></th><th>RS1</th><th>RS2</th><th>RS3</th><th>RS4</th><th style='border:0'></th><th>RS1</th><th>RS2</th><th>RS3</th><th>RS4</th></tr><tr><th>P1</th><td>0</td><td>0</td><td>1</td><td>0</td><td style='border:0'></td><td>2</td><td>0</td><td>0</td><td>1</td></tr><tr><th>P2</th><td>2</td><td>0</td><td>0</td><td>1</td><td style='border:0'></td><td>1</td><td>0</td><td>1</td><td>0</td></tr><tr><th>P3</th><td>0</td><td>0</td><td>0</td><td>0</td><td style='border:0'></td><td>0</td><td>0</td><td>0</td><td>0</td></tr></table></div><p style='margin-top:12px;font-family:var(--f-mono);font-size:13px'>E = (4&nbsp; 2&nbsp; 3&nbsp; 1)&nbsp;&nbsp;&nbsp;&nbsp;A = (2&nbsp; 2&nbsp; 2&nbsp; 0)</p>",
+  opcoes:[
+    "<b>Não.</b> P1 não pode começar (pede 1 de RS4, e há 0), mas P2 cabe, termina e devolve (2 0 0 1): A vira (4 2 2 1). Aí P1 cabe e P3 também. Sequência <b>P2, P1, P3</b>.",
+    "<b>Sim</b>, P1 está em deadlock, porque pede um RS4 e não há nenhum disponível.",
+    "<b>Sim</b>, P1 e P2 estão em deadlock, porque os dois pedem RS1.",
+    "Não dá para saber sem conhecer a ordem em que os processos chegaram."
+  ],
+  correta:0,
+  gabarito:"<b>Rodada 1</b>, com A = (2 2 2 0):<br>&bull; P1 pede (2 0 0 1): precisa de 1 de RS4, há 0. <b>Não cabe.</b><br>&bull; P2 pede (1 0 1 0): 1&le;2, 0&le;2, 1&le;2, 0&le;0. <b>Cabe.</b> P2 termina e devolve (2 0 0 1).<br><br>A = (4 2 2 1).<br><br><b>Rodada 2:</b> P1 pede (2 0 0 1) &le; (4 2 2 1). <b>Cabe</b>, e devolve (0 0 1 0): A = (4 2 3 1) = E.<br>P3 não pede nada e termina de qualquer forma.<br><br><b>Não há deadlock.</b><br><br>O erro das alternativas B e C é parar na primeira rodada. &ldquo;Não dá para atender agora&rdquo; <b>não é</b> deadlock: o RS4 que P1 espera está com P2, que consegue terminar e devolvê-lo.<br><br><i>Confira sempre: A + soma de cada coluna de C = E. RS4: 0 + 0 + 1 + 0 = 1.</i>"
+},
+{
+  id:"dl27", mod:"deadlocks", dif:"dificil", tipo:"mc",
+  fonte:"Slides · Estados seguros e inseguros",
+  enunciado:"Há 10 recursos de um único tipo. Partindo de um estado seguro, o sistema entregou mais um recurso ao processo A, chegando ao estado abaixo. Esse estado é seguro?",
+  tabela:"<div class='tabela-wrap'><table class='dados'><tr><th>Processo</th><th>Tem</th><th>Máximo</th><th>Ainda precisa</th></tr><tr><th>A</th><td>4</td><td>9</td><td>5</td></tr><tr><th>B</th><td>2</td><td>4</td><td>2</td></tr><tr><th>C</th><td>2</td><td>7</td><td>5</td></tr></table></div><p style='margin-top:12px;font-family:var(--f-mono);font-size:13px'>Livres: 2 &nbsp;·&nbsp; total de recursos: 10</p>",
+  opcoes:[
+    "<b>Não.</b> B precisa de 2 e há 2: B termina e devolve 4. Mas então A e C precisam de 5 cada, e só há 4 livres. Ninguém mais consegue chegar ao máximo.",
+    "<b>Sim.</b> B termina e devolve 4; depois A termina, e por fim C.",
+    "<b>Sim</b>, porque ainda há 2 recursos livres, e nenhum processo está bloqueado agora.",
+    "<b>Não</b>, porque o estado já está em deadlock: A pediu além do que havia."
+  ],
+  correta:0,
+  gabarito:"Um estado é <b>seguro</b> se existe <b>alguma</b> ordem em que todos conseguem pedir o máximo e terminar.<br><br>&bull; Precisam: A = 5, B = 2, C = 5. Livres = 2.<br>&bull; Só B cabe. B termina e devolve os 4 que terá: livres = 4.<br>&bull; A precisa de 5, C precisa de 5. Nenhum cabe em 4.<br><br><b>Inseguro.</b> Antes do pedido, com A em 3, havia 3 livres, e a sequência B, C, A funcionava — foi aquele recurso a mais que tirou a garantia.<br><br><b>Inseguro não é deadlock</b> (alternativa D): nada está travado agora, e A pode até devolver recursos sem pedir o máximo. Mas o sistema perdeu a <b>garantia</b> de que todos terminam — e é exatamente isso que o banqueiro se recusa a fazer."
+},
+{
+  id:"dl28", mod:"deadlocks", dif:"medio", tipo:"mc",
+  fonte:"Slides · Alocação segura · trajetória de recursos",
+  enunciado:"No gráfico de trajetória de recursos, dois processos A e B usam uma impressora e um plotter. Por que o escalonador não pode deixar a execução entrar na <b>região insegura</b>?",
+  opcoes:[
+    "Porque dentro dela cada processo já segura um dos recursos e ainda vai pedir o outro: <b>qualquer</b> caminho a partir dali termina no deadlock, mesmo que ele ainda não tenha acontecido.",
+    "Porque dentro dela os dois processos usam a impressora ao mesmo tempo, violando a exclusão mútua.",
+    "Porque a região insegura é onde o processador fica ocioso, desperdiçando tempo.",
+    "Porque ali o sistema precisaria de mais recursos do que existem fisicamente."
+  ],
+  correta:0,
+  gabarito:"O gráfico põe o progresso de A num eixo e o de B no outro. As áreas em que os dois usariam a mesma impressora (ou o mesmo plotter) ao mesmo tempo são <b>proibidas</b> — a exclusão mútua impede entrar nelas.<br><br>A <b>região insegura</b> é o canto delimitado por essas áreas: A já tem a impressora e B já tem o plotter, e cada um ainda vai precisar do recurso do outro. Dali, qualquer avanço bate numa área proibida. O deadlock é <b>inevitável</b>.<br><br><b>A decisão certa</b> é tomada antes de entrar: quando B pede a impressora no ponto crítico, o sistema a nega e suspende B até A liberar os dois recursos. É a lógica da <b>alocação segura</b> — e o banqueiro é a versão algorítmica dela.<br><br>A alternativa B descreve as áreas proibidas, não a região insegura."
+},
+{
+  id:"dl29", mod:"deadlocks", dif:"medio", tipo:"mc",
+  fonte:"Slides · Banqueiro para 1 recurso",
+  enunciado:"Pelo banqueiro com um tipo de recurso, qual destes estados é <b>inseguro</b>? (em cada processo: tem / máximo)",
+  cod:"(a) A 0/6   B 0/5   C 0/4   D 0/7    livres: 10\n(b) A 1/6   B 1/5   C 2/4   D 4/7    livres: 2\n(c) A 1/6   B 2/5   C 2/4   D 4/7    livres: 1",
+  opcoes:[
+    "Só o <b>(c)</b>: com 1 livre, ninguém consegue completar o máximo — C precisaria de 2, B de 3, D de 3 e A de 5.",
+    "O <b>(b)</b>, porque com só 2 livres nenhum processo consegue terminar.",
+    "O <b>(a)</b>, porque a soma dos máximos (22) é maior que o total de recursos (10).",
+    "Os três são seguros, porque nenhum processo pediu mais do que o seu máximo."
+  ],
+  correta:0,
+  gabarito:"&bull; <b>(a) Seguro.</b> Ninguém tem nada e há 10 livres: qualquer processo, sozinho, consegue seu máximo. A soma dos máximos passar do total <b>não</b> é problema — os processos não precisam do máximo ao mesmo tempo (alternativa C).<br>&bull; <b>(b) Seguro.</b> C precisa de 2 e há 2: C termina e devolve 4, livres = 4. Aí D (precisa de 3) ou B (precisa de 4) terminam, e assim por diante.<br>&bull; <b>(c) Inseguro.</b> B pegou mais um, e sobra 1 livre. O menor &ldquo;ainda precisa&rdquo; é o de C, 2. Ninguém cabe.<br><br>A passagem de (b) para (c) é exatamente o pedido que o banqueiro teria <b>negado</b>: B pedir 1 recurso parecia inofensivo, mas levava a um estado sem sequência segura."
+},
+{
+  id:"dl30", mod:"deadlocks", dif:"facil", tipo:"mc",
+  fonte:"Slides · Sumário das técnicas de prevenção",
+  enunciado:"Qual linha do quadro-resumo da prevenção está <b>correta</b>?",
+  opcoes:[
+    "<b>Não-preempção:</b> não se ataca na prática — tirar uma impressora no meio da impressão estraga o trabalho.",
+    "<b>Espera circular:</b> obter todos os recursos antes de começar a execução.",
+    "<b>Posse e espera:</b> ordenar a obtenção dos recursos.",
+    "<b>Exclusão mútua:</b> permitir que vários processos usem a impressora ao mesmo tempo."
+  ],
+  correta:0,
+  gabarito:"O quadro dos slides:<br><br>&bull; <b>Exclusão mútua</b> &rarr; um único processo usa o recurso (o <i>spooler</i>: só o daemon de impressão toca na impressora).<br>&bull; <b>Posse e espera</b> &rarr; obter todos os recursos antes da execução.<br>&bull; <b>Não-preempção</b> &rarr; não se ataca.<br>&bull; <b>Espera circular</b> &rarr; ordenar a obtenção dos recursos.<br><br>As alternativas B e C estão com os métodos <b>trocados</b> — é a pegadinha mais comum. E D não é prevenção: impressão simultânea embaralharia as páginas; o que se faz é tirar dos processos o acesso direto ao dispositivo."
+},
+{
+  id:"dl31", mod:"deadlocks", dif:"medio", tipo:"vf",
+  fonte:"Slides · Deadlocks sem recursos",
+  enunciado:"Deadlocks só acontecem com recursos físicos, como impressoras e unidades de disco.",
+  correta:1,
+  gabarito:"<b>Falso.</b> Os slides chamam de <b>deadlocks &ldquo;sem recursos&rdquo;</b> os que acontecem quando dois processos esperam um pelo outro terminar alguma tarefa — por exemplo, com <b>semáforos</b>.<br><br>O caso típico: cada processo precisa dar <code>down</code> em dois semáforos — o <code>mutex</code> e outro. Se um faz na ordem mutex, outro e o segundo faz na ordem outro, mutex, os dois podem bloquear segurando um e esperando o outro. É o produtor-consumidor com as linhas trocadas.<br><br>Semáforos, mutexes, travas de banco de dados e mensagens esperadas são &ldquo;recursos&rdquo; para efeito de deadlock: as mesmas quatro condições valem, e as mesmas correções também — como pedir sempre na mesma ordem."
+},
+{
+  id:"dl32", mod:"deadlocks", dif:"medio", tipo:"mc",
+  fonte:"Slides · Jantar dos Filósofos com deadlocks",
+  enunciado:"Os slides aplicam ao Jantar dos Filósofos as três estratégias ativas de tratamento. Qual associação está correta?",
+  opcoes:[
+    "<b>Detecção:</b> uma thread separada inspeciona o valor dos semáforos. <b>Alocação segura:</b> uma thread distribuidora centraliza a entrega dos garfos. <b>Prevenção:</b> ordem na tomada dos garfos.",
+    "<b>Detecção:</b> ordem na tomada dos garfos. <b>Alocação segura:</b> cada filósofo inspeciona os vizinhos. <b>Prevenção:</b> matar um filósofo do ciclo.",
+    "<b>Detecção:</b> uma thread distribuidora entrega os garfos. <b>Alocação segura:</b> ordem dos garfos. <b>Prevenção:</b> uma thread inspeciona os semáforos.",
+    "As três estratégias levam à mesma implementação: um mutex em volta da mesa inteira."
+  ],
+  correta:0,
+  gabarito:"Cada estratégia age num momento diferente:<br><br>&bull; <b>Detecção</b> — deixa travar e descobre depois: uma thread à parte olha os semáforos e percebe que todos os garfos estão presos e todos os filósofos esperando. Depois é preciso recuperar.<br>&bull; <b>Alocação segura</b> — decide a cada pedido: uma thread distribuidora recebe os pedidos e só entrega garfos se o estado continuar seguro. É centralizada, como o banqueiro.<br>&bull; <b>Prevenção</b> — muda as regras para que o ciclo seja impossível: numerar os garfos e pegá-los em ordem.<br><br>A alternativa D descreve uma solução que funciona, mas serializa a mesa inteira — só um filósofo come por vez."
+},
+{
+  id:"dl33", mod:"deadlocks", dif:"medio", tipo:"mc",
+  fonte:"Slides · Starvation",
+  enunciado:"Um sistema entrega um recurso disputado sempre ao processo de <b>menor duração</b>. O que pode acontecer, e qual solução os slides indicam?",
+  opcoes:[
+    "Processos longos podem ser adiados indefinidamente — <b>starvation</b> —, mesmo sem estarem bloqueados em deadlock. A solução indicada é atender por ordem de chegada (<b>FCFS</b>).",
+    "Deadlock entre os processos curtos. A solução é o algoritmo do banqueiro.",
+    "Nada de errado: dar prioridade aos curtos minimiza o tempo médio e não prejudica ninguém.",
+    "Livelock entre os processos longos. A solução é matar um deles."
+  ],
+  correta:0,
+  gabarito:"Priorizar os curtos é ótimo para o tempo médio quando chegam muitas tarefas rápidas — é por isso que a política é tentadora. Mas se sempre houver algum curto na fila, o longo <b>nunca</b> é atendido.<br><br>Não é deadlock: o sistema progride o tempo todo, só que sempre com os outros. É <b>starvation</b>, um problema de <b>justiça</b>, e não de segurança.<br><br>A correção dos slides é <b>FCFS</b> (<i>first come, first served</i>): atender por ordem de chegada garante que todo processo, cedo ou tarde, chega à frente da fila. Outra saída é o envelhecimento (<i>aging</i>): a prioridade de quem espera cresce com o tempo."
+},
+{
+  id:"dl34", mod:"deadlocks", dif:"medio", tipo:"disc",
+  fonte:"Slides · Estratégias para lidar com deadlocks",
+  enunciado:"Quais são as quatro estratégias para lidar com deadlocks? Explique cada uma e diga quando cada uma compensa.",
+  chaves:[
+    ["ignorar o problema (avestruz)","avestruz","ignorar","fingir que não"],
+    ["detecção e recuperação","detecção","detectar","recuperação","recuperar"],
+    ["alocação segura / evitação","alocação segura","evitação","evitar","banqueiro","estado seguro"],
+    ["prevenção","prevenção","prevenir","atacar uma das condições","quebrar uma das condições"],
+    ["recuperar: preempção, rollback ou matar processo","rollback","checkpoint","matar","preempção","eliminar"],
+    ["quando compensa: raro, custo alto, UNIX/Windows","raro","raramente","custo","unix","windows"]
+  ],
+  gabarito:"<b>1. Ignorar (algoritmo do avestruz).</b> Fingir que deadlocks não existem. Razoável quando acontecem raramente, a prevenção é cara e a recuperação é barata. UNIX e Windows fazem isso: troca-se corretude por conveniência.<br><br><b>2. Detecção e recuperação.</b> Deixar acontecer, detectar — ciclo no grafo, com um recurso de cada tipo, ou as matrizes E, A, C e R, com vários — e recuperar: por <b>preempção</b> do recurso, <b>rollback</b> a um ponto salvo, ou <b>matando</b> um processo do ciclo.<br><br><b>3. Alocação segura (evitação).</b> A cada pedido, simular a concessão e negá-la se o estado resultante for inseguro — o <b>banqueiro</b>. Exige conhecer os máximos antecipadamente.<br><br><b>4. Prevenção.</b> Mudar as regras para que uma das quatro condições de Coffman nunca valha. Na prática: ordenar os recursos (espera circular) ou pedir tudo de uma vez (posse e espera).<br><br><b>Resumo:</b> ignorar custa nada e arrisca travar; prevenir custa flexibilidade; evitar custa conhecer o futuro; detectar custa processamento e uma recuperação que pode perder trabalho."
 }
+
 
 ]);

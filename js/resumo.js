@@ -31,17 +31,19 @@ const RESUMO = [
   t:"Deadlock — 4 condições de Coffman", corpo:[
   ["1. Exclusão mútua","Recurso é exclusivo. <b>Ataque:</b> spooling (raramente viável)."],
   ["2. Posse e espera","Segura um e pede outro. <b>Ataque:</b> requisitar tudo de uma vez."],
-  ["3. Não-preempção","Não se toma o recurso à força. <b>Ataque:</b> preempção com checkpoint/rollback."],
+  ["3. Não-preempção","Não se toma o recurso à força. <b>Na prática não se ataca</b> (só CPU e memória toleram preempção)."],
   ["4. Espera circular","Cadeia P1&rarr;P2&rarr;P1. <b>Ataque:</b> ordenação global de recursos &mdash; o mais prático."],
   ["Estratégias","<b>Prevenção</b> (quebra uma condição) · <b>Evitação</b> (Banqueiro) · <b>Detecção + recuperação</b> · <b>Avestruz</b> (ignora)."],
   ["Livre de deadlock","Com p processos pedindo até m recursos de um total t: <b>p(m&minus;1) + 1 &le; t</b>."]
 ]},
 {
   t:"Algoritmos de deadlock", corpo:[
+  ["Detecção (1 por tipo)","Grafo de alocação + busca de ciclo: percorre arcos guardando o caminho na lista L; <b>nó repetido em L = ciclo = deadlock</b>."],
   ["Detecção (matricial)","Ache um processo com linha de <b>R &le; A</b>; execute-o e devolva sua linha de <b>C</b> a <b>A</b>. Repita. Se sobrar processo, os que sobraram estão em deadlock."],
   ["Banqueiro (evitação)","(1) valide o pedido; (2) simule a concessão; (3) procure sequência segura — quem tem <code>máximo &minus; posse &le; livres</code> executa e devolve tudo. Sem sequência = inseguro = <b>nega</b>."],
   ["Consistência","Para cada recurso: soma da coluna de C + disponível = existente (E)."],
-  ["Inseguro &ne; deadlock","Inseguro é a perda da <i>garantia</i>, não a certeza do travamento."]
+  ["Inseguro &ne; deadlock","Inseguro é a perda da <i>garantia</i>, não a certeza do travamento."],
+  ["Recuperação","Preempção do recurso · <i>rollback</i> a um checkpoint · matar um processo do ciclo (de preferência um que possa recomeçar do zero)."]
 ]},
 {
   t:"Redes de Petri", corpo:[

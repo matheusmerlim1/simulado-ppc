@@ -172,6 +172,11 @@ const MATERIA = [
 /* ══════════════ 4. DEADLOCKS ══════════════ */
 { mod:"deadlocks", secoes:[
   {
+    h:"Recursos e a definição formal",
+    p:"Deadlocks acontecem quando processos obtêm acesso <b>exclusivo</b> a recursos — memória, dispositivos, travas. Usar um recurso é sempre a mesma sequência: <b>requisitar</b>, <b>usar</b> e <b>liberar</b>. Se o pedido não pode ser atendido, o processo <b>bloqueia</b> ou recebe um <b>código de erro</b> (e aí, se ficar tentando em laço, cai em espera ocupada).<br><br>&bull; <b>Recurso preemptável</b> — pode ser tirado do processo sem dano: memória, processador.<br>&bull; <b>Recurso não-preemptável</b> — tirá-lo causa dano: impressora no meio de um trabalho, gravador no meio de uma gravação. <b>São esses que causam os deadlocks difíceis.</b><br><br><b>Definição formal:</b> um conjunto de processos está em deadlock se <b>cada</b> processo do conjunto espera por um evento que <b>apenas outro processo do conjunto</b> pode causar — normalmente a liberação de um recurso. Nenhum deles pode executar, liberar recursos ou ser acordado.",
+    box:"<b>Exemplo dos slides:</b> A segura R e pede S; ao mesmo tempo, B segura S e pede R. Os dois ficam bloqueados para sempre — nenhum solta o que tem enquanto não recebe o que pede."
+  },
+  {
     h:"As quatro condições de Coffman",
     p:"Um deadlock exige que <b>todas as quatro</b> valham ao mesmo tempo. Basta quebrar uma para torná-lo impossível — e é isso que as estratégias de prevenção fazem.<br><br><b>1. Exclusão mútua</b> — cada recurso está atribuído a um processo ou disponível.<br><b>2. Posse e espera</b> — um processo que já tem recursos pode pedir novos sem soltar os atuais.<br><b>3. Não-preempção</b> — recursos concedidos não podem ser tomados à força.<br><b>4. Espera circular</b> — existe uma cadeia P1 &rarr; P2 &rarr; ... &rarr; P1 de processos esperando uns pelos outros.",
     cod:"/* deadlock de manual: dois mutexes em ordens opostas */\n\n/* thread A */                /* thread B */\nlock(&m1);                    lock(&m2);\nlock(&m2);   <-- espera       lock(&m1);   <-- espera\n\n/* A tem m1 e quer m2 · B tem m2 e quer m1 */"
@@ -190,9 +195,21 @@ const MATERIA = [
     p:"Processos e recursos como nós; setas indicam posse e requisição.<br><br>Com <b>uma instância por tipo</b> de recurso, ciclo &equiv; deadlock.<br><br>Com <b>múltiplas instâncias</b>, o ciclo é condição <b>necessária mas não suficiente</b>: um processo do ciclo pode receber uma instância livre de outro lugar, terminar e quebrar a cadeia. Nesse caso é preciso usar o algoritmo matricial de detecção."
   },
   {
+    h:"Detecção com um recurso de cada tipo",
+    p:"Com <b>uma única instância</b> de cada recurso, basta montar o grafo de alocação e procurar um <b>ciclo</b>: ciclo &equiv; deadlock.<br><br><b>O algoritmo</b> (repetido partindo de cada nó do grafo):<br>1. Começa com a lista L vazia e todos os arcos desmarcados.<br>2. Insere o nó atual no fim de L.<br>3. Se o nó <b>já estava em L</b>, o grafo tem ciclo: termina.<br>4. Se há arco de saída desmarcado, marca-o e vai para o nó de destino (volta ao passo 2).<br>5. Se não há, é um beco sem saída: remove o nó de L e volta ao anterior. Se for o nó inicial, não há ciclo a partir dele.<br><br>É uma busca em profundidade que guarda o caminho percorrido.",
+    cod:"Arestas: R->A significa \"R esta com A\"      A->S significa \"A pede S\"\n\n1) A requisita R    R->A\n2) B requisita S    S->B\n3) C requisita T    T->C\n4) A requisita S    A->S      A bloqueia (S esta com B)\n5) B requisita T    B->T      B bloqueia (T esta com C)\n6) C requisita R    C->R      C bloqueia (R esta com A)\n\nCiclo:  A -> S -> B -> T -> C -> R -> A     = DEADLOCK\n\nSe o sistema tivesse adiado B, A e C terminariam:\nos mesmos pedidos, em outra ordem, sem deadlock.",
+    box:"<b>Com várias instâncias por tipo</b>, ciclo é necessário mas não suficiente — um processo do ciclo pode receber uma unidade livre de outro lugar. Aí é preciso o algoritmo com as matrizes E, A, C e R, logo abaixo."
+  },
+  {
     h:"Algoritmo de detecção (exemplo resolvido)",
     p:"Quatro estruturas: <b>E</b> = recursos existentes, <b>A</b> = disponíveis, <b>C</b> = alocação corrente (linha por processo), <b>R</b> = requisições pendentes.<br><br><b>O algoritmo:</b> ache um processo cuja linha de <b>R</b> seja &le; <b>A</b>; execute-o e devolva a linha dele de <b>C</b> para <b>A</b>. Repita. Se sobrar processo que não avança, ele está em deadlock.<br><br><i>Confira sempre a consistência: soma de cada coluna de C + A = E.</i>",
     cod:"C (alocado)        R (pede)        E = (2 4 4 1)\nP1  1 0 1 0        1 0 0 0        A = (0 3 2 0)\nP2  1 0 1 0        1 1 0 1\nP3  0 1 0 1        0 1 2 0\n\nRodada 1, A = (0 3 2 0):\n  P1 pede (1 0 0 0) -> precisa 1 de RS1, ha 0.  NAO\n  P2 pede (1 1 0 1) -> precisa 1 de RS1, ha 0.  NAO\n  P3 pede (0 1 2 0) -> 0<=0, 1<=3, 2<=2, 0<=0.  SIM\n\n  P3 executa e devolve C3 = (0 1 0 1)\n  A = (0 4 2 1)\n\nRodada 2:\n  P1 pede (1 0 0 0) -> RS1 continua 0.  NAO\n  P2 pede (1 1 0 1) -> RS1 continua 0.  NAO\n\n=> P1 e P2 estao em DEADLOCK"
+  },
+  {
+    h:"Estados seguros e a trajetória de recursos",
+    p:"Um estado é <b>seguro</b> se existe <b>alguma</b> ordem de escalonamento em que todos os processos conseguem pedir o seu máximo e terminar. <b>Inseguro</b> é quando essa ordem não existe — o que ainda não é deadlock, mas é a perda da garantia.<br><br><b>Gráfico de trajetória de recursos:</b> o progresso de A num eixo, o de B no outro. As áreas em que os dois usariam a impressora (ou o plotter) ao mesmo tempo são proibidas. O canto delimitado por elas é a <b>região insegura</b>: dentro dela cada processo já segura um recurso e vai pedir o do outro, e qualquer caminho termina em deadlock. O sistema precisa decidir <b>antes</b> de entrar — negando o pedido e suspendendo o processo.",
+    cod:"10 recursos de um tipo      tem / maximo\n\nSEGURO   A 3/9   B 2/4   C 2/7    livres 3\n  B precisa 2 -> termina, devolve 4 -> livres 5\n  C precisa 5 -> termina, devolve 7 -> livres 7\n  A precisa 6 -> termina             => sequencia B, C, A\n\nINSEGURO A 4/9   B 2/4   C 2/7    livres 2   (A ganhou mais 1)\n  B precisa 2 -> termina, devolve 4 -> livres 4\n  A precisa 5, C precisa 5  -> ninguem cabe",
+    box:"Um único recurso entregue a A transformou um estado seguro num inseguro. É exatamente o pedido que o banqueiro teria <b>negado</b>."
   },
   {
     h:"Algoritmo do Banqueiro (exemplo resolvido)",
@@ -205,8 +222,13 @@ const MATERIA = [
     p:"Com <b>p</b> processos, cada um pedindo no máximo <b>m</b> recursos de um total <b>t</b>:<br><br><b>p &times; (m &minus; 1) + 1 &le; t</b><br><br><b>Raciocínio:</b> no pior caso, cada processo já tem <i>m</i>&minus;1 recursos e falta 1 para terminar — isso consome p(m&minus;1). Se sobrar <b>pelo menos 1</b>, alguém completa, termina, devolve tudo e destrava a fila em cascata.<br><br><i>Exemplo:</i> 3 filósofos precisando de 2 garfos cada exigiriam t &ge; 3&times;1+1 = <b>4</b> garfos para nunca travar. Como só há 3, o deadlock é possível — exatamente o que acontece quando todos pegam o garfo da esquerda."
   },
   {
+    h:"Deadlocks sem recursos e o jantar pelas três estratégias",
+    p:"<b>Deadlocks &ldquo;sem recursos&rdquo;:</b> dois processos também travam esperando que o outro termine alguma tarefa. Com <b>semáforos</b>: cada processo precisa dar <code>down</code> em dois (o <code>mutex</code> e outro); feito em ordens diferentes, cada um bloqueia segurando um e esperando o outro. Travas, semáforos e mensagens esperadas contam como recursos — valem as mesmas quatro condições e as mesmas correções.<br><br><b>O jantar dos filósofos</b>, tratado por cada estratégia:<br>&bull; <b>Detecção</b> — uma thread separada inspeciona o valor dos semáforos e percebe o travamento.<br>&bull; <b>Alocação segura</b> — uma thread distribuidora, centralizada, só entrega garfos se o estado continuar seguro.<br>&bull; <b>Prevenção</b> — ordem na tomada dos garfos.",
+    box:"<b>Quadro-resumo da prevenção:</b> exclusão mútua &rarr; um único processo usa o recurso (<i>spooler</i>) · posse e espera &rarr; obter tudo antes de executar · não-preempção &rarr; não se ataca · espera circular &rarr; ordenar a obtenção dos recursos."
+  },
+  {
     h:"Deadlock x starvation",
-    p:"<b>Deadlock</b> é uma questão de <b>segurança</b>: um conjunto de processos está bloqueado esperando uns pelos outros e <b>ninguém</b> progride.<br><br><b>Starvation</b> é uma questão de <b>justiça</b>: o sistema progride — alguns processos são atendidos repetidamente — mas um processo específico é sistematicamente preterido e espera indefinidamente.<br><br>Resolver deadlock é impedir a espera circular. Resolver starvation é garantir justiça: filas FIFO, envelhecimento (<i>aging</i>) de prioridade."
+    p:"<b>Deadlock</b> é uma questão de <b>segurança</b>: um conjunto de processos está bloqueado esperando uns pelos outros e <b>ninguém</b> progride.<br><br><b>Starvation</b> é uma questão de <b>justiça</b>: o sistema progride — alguns processos são atendidos repetidamente — mas um processo específico é sistematicamente preterido e espera indefinidamente.<br><br>Resolver deadlock é impedir a espera circular. Resolver starvation é garantir justiça: filas FIFO, envelhecimento (<i>aging</i>) de prioridade.<br><br><b>Exemplo dos slides:</b> entregar o recurso sempre ao processo mais curto funciona bem com muitas tarefas rápidas, mas pode adiar indefinidamente as longas — mesmo sem bloqueá-las. A solução indicada é <b>FCFS</b>: atender por ordem de chegada."
   }
 ]},
 
