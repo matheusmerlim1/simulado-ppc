@@ -1,5 +1,5 @@
 /* ─── Redes de Petri ────────────────────────────────────────
-   P1 · 14 questões
+   P1 · 29 questões
    ─────────────────────────────────────────────────────────── */
 registrar([
 
@@ -181,6 +181,192 @@ registrar([
   ],
   correta:0,
   gabarito:"A marcação é um vetor com o número de fichas de cada lugar, por exemplo M = (1, 0, 1, 1). A <b>marcação inicial</b> M<sub>0</sub> descreve o estado de partida, e cada disparo leva a uma nova marcação. O conjunto de todas as marcações atingíveis a partir de M<sub>0</sub> é o <b>conjunto de alcançabilidade</b>, que a árvore enumera — e é sobre ele que se provam deadlock, vivacidade e limitação."
+},
+{
+  id:"rp13", mod:"petri", dif:"medio", tipo:"mc",
+  fonte:"Slides · Redes de Petri · conflito",
+  enunciado:"Um lugar <code>p1</code> com <b>uma</b> marca é entrada das transições <code>t1</code> e <code>t2</code>. O que caracteriza essa situação?",
+  cod:"        t1 --> p2\n       /\n p1 (*)\n       \\\n        t2 --> p3",
+  opcoes:[
+    "As duas estão habilitadas, mas em <b>conflito</b>: a marca é uma só, então disparar uma <b>desabilita</b> a outra — e o resultado final depende de qual disparou.",
+    "As duas disparam ao mesmo tempo, e <code>p2</code> e <code>p3</code> recebem uma marca cada.",
+    "Nenhuma está habilitada, porque uma marca não basta para duas transições.",
+    "Sempre dispara <code>t1</code>, porque está desenhada acima de <code>t2</code>."
+  ],
+  correta:0,
+  gabarito:"Duas transições habilitadas que compartilham a marca de um lugar de entrada estão em <b>conflito</b>. Só uma dispara, e o disparo consome a marca, desabilitando a outra.<br><br><b>Por que isso é uma qualidade do modelo:</b> o resultado passa a depender da ordem de disparo, que é <b>não determinística</b> — exatamente o que acontece com threads disputando um recurso quando quem decide é o escalonador.<br><br>&bull; A alternativa B descreveria uma rede com <b>duas</b> marcas em <code>p1</code>.<br>&bull; A alternativa D é o erro mais comum: a <b>posição no desenho não influencia nada</b>. A rede não tem prioridade nem tempo.<br><br><b>Cuidado na modelagem:</b> antes de desenhar um conflito, confirme que o sistema real também tem essa disputa."
+},
+{
+  id:"rp14", mod:"petri", dif:"medio", tipo:"mc",
+  fonte:"Slides · Redes de Petri · independência dos disparos",
+  enunciado:"Duas transições estão habilitadas e <b>não compartilham</b> nenhum lugar de entrada. Qual disparar primeiro?",
+  opcoes:[
+    "Tanto faz: os disparos são <b>independentes</b> e chega-se à mesma marcação final em qualquer ordem — é assim que a rede modela <b>paralelismo</b>.",
+    "A que tiver mais marcas no lugar de entrada, para não acumular.",
+    "As duas precisam disparar exatamente ao mesmo tempo, senão o modelo fica inconsistente.",
+    "A ordem importa sempre: qualquer par de transições habilitadas está em conflito."
+  ],
+  correta:0,
+  gabarito:"A regra de disparo é <b>local</b>: uma transição só olha para os próprios lugares de entrada e saída. Sem lugar em comum, uma não interfere na outra, e a marcação final é a mesma nas duas ordens.<br><br><b>É a distinção que vale ponto:</b><br>&bull; <b>Conflito</b> — compartilham entrada, disparar uma desabilita a outra: modela <b>disputa</b>.<br>&bull; <b>Independência</b> — não compartilham nada: modela <b>concorrência e paralelismo</b>.<br><br>Como o disparo é considerado <b>instantâneo</b>, a rede nunca precisa representar dois disparos simultâneos: basta escolher uma ordem qualquer entre eventos independentes. É a <b>ordenação parcial</b> dos eventos."
+},
+{
+  id:"rp15", mod:"petri", dif:"facil", tipo:"mc",
+  fonte:"Slides · Redes de Petri · modelagem",
+  enunciado:"Ao modelar um sistema com Redes de Petri, o que cada elemento representa?",
+  opcoes:[
+    "<b>Lugares</b> = condições (ou recursos), <b>transições</b> = eventos, <b>arcos</b> = a interação entre condições e eventos. O <b>estado</b> do sistema é a marcação.",
+    "<b>Lugares</b> = eventos, <b>transições</b> = condições, e os arcos indicam a ordem cronológica.",
+    "<b>Lugares</b> = processos, <b>transições</b> = processadores, e as marcas são o tempo gasto.",
+    "<b>Lugares</b> = variáveis do programa, <b>transições</b> = linhas de código, e os arcos são desvios."
+  ],
+  correta:0,
+  gabarito:"É o vocabulário da modelagem: as <b>condições</b> do sistema viram lugares (&ldquo;CPU parada&rdquo;, &ldquo;processo na fila&rdquo;, &ldquo;garfo livre&rdquo;), os <b>eventos</b> viram transições (&ldquo;iniciar processamento&rdquo;, &ldquo;pegar garfo&rdquo;) e os arcos dizem quais condições um evento consome e quais produz.<br><br><b>Estado = marcação.</b> Cada disparo altera a marcação, e essa alteração <b>é</b> a mudança de estado do sistema modelado. Por isso a análise de estados alcançáveis responde perguntas sobre o sistema real.<br><br>A técnica serve a sistemas <b>orientados a eventos discretos</b>, com eventos concorrentes ou paralelos."
+},
+{
+  id:"rp16", mod:"petri", dif:"medio", tipo:"mc",
+  fonte:"Slides · Redes de Petri · escalonador",
+  enunciado:"No modelo do escalonador — lugares <code>PFE</code> (fila de entrada), <code>PAR</code> (CPU parada), <code>PROC</code> (em processamento) e <code>PFS</code> (fila de saída) —, como se representa um sistema com <b>3 CPUs</b>, e quantas marcas podem aparecer em <code>PROC</code>?",
+  opcoes:[
+    "Colocando <b>3 marcas</b> em <code>PAR</code>. Em <code>PROC</code> podem aparecer até <b>3</b> marcas — um processamento por CPU disponível.",
+    "Triplicando a rede inteira: três cópias de todos os lugares e transições.",
+    "Colocando 3 marcas em <code>PFE</code>, já que são os processos que ocupam as CPUs.",
+    "Acrescentando peso 3 ao arco que sai de <code>PAR</code>, para consumir as três de uma vez."
+  ],
+  correta:0,
+  gabarito:"<b>A marca em <code>PAR</code> representa uma CPU livre.</b> Três CPUs, três marcas — e a estrutura da rede não muda em nada. É a elegância do modelo: a mesma rede serve para 1, 3 ou 100 CPUs.<br><br><code>INICIAR</code> consome uma marca de <code>PFE</code> e uma de <code>PAR</code>, e produz uma em <code>PROC</code>. Como há 3 marcas em <code>PAR</code>, <code>INICIAR</code> pode disparar até três vezes antes de <code>PAR</code> zerar: <code>PROC</code> chega a <b>3</b> marcas, e o lugar vira <b>3-limitado</b>.<br><br>A alternativa D descreveria uma CPU que só começa a trabalhar quando as três estão livres — e consumiria as três de uma vez, o oposto do que se quer.<br><br><i>O tempo de processamento não é representado: interessa a interação entre os processos, não a duração.</i>"
+},
+{
+  id:"rp17", mod:"petri", dif:"medio", tipo:"mc",
+  fonte:"Slides · Redes de Petri · semáforo de tráfego",
+  enunciado:"Um semáforo de trânsito é modelado com três lugares (<code>VERDE</code>, <code>AMARELO</code>, <code>VERMELHO</code>) em ciclo e <b>uma única marca</b>. O que essa marca única garante, e como se impede que <b>dois</b> semáforos de um cruzamento fiquem verdes ao mesmo tempo?",
+  opcoes:[
+    "A marca única garante que <b>só uma lâmpada</b> fica acesa por vez. Para os dois semáforos, acrescenta-se um lugar de controle <code>S</code> com <b>uma</b> marca, exigido pelas transições que abrem o verde: só um dos dois consegue pegá-la.",
+    "A marca única representa o tempo de cada fase; para dois semáforos basta dobrar o número de marcas.",
+    "Nada garante: é preciso um temporizador em cada transição para que as lâmpadas se alternem.",
+    "Os dois semáforos ficam corretos automaticamente, porque uma rede nunca permite dois eventos simultâneos."
+  ],
+  correta:0,
+  gabarito:"<b>Um semáforo:</b> os três lugares em ciclo com uma marca circulando entre eles. Como a marca é uma só, exatamente uma condição é verdadeira a cada instante — uma lâmpada acesa.<br><br><b>Dois semáforos:</b> um lugar <code>S</code> com uma marca funciona como <b>permissão de abrir</b>. As transições que levam ao verde têm <code>S</code> como entrada, e as que saem do verde devolvem a marca. Com <code>S</code> = 1, só um verde por vez — <b>é exatamente o padrão do mutex</b>, aplicado ao cruzamento.<br><br>A alternativa D confunde os conceitos: a rede não permite dois <i>disparos</i> simultâneos, mas nada impediria dois lugares de verde terem marca ao mesmo tempo se não houvesse o controle."
+},
+{
+  id:"rp18", mod:"petri", dif:"medio", tipo:"mc",
+  fonte:"Slides · Redes de Petri · mutex",
+  enunciado:"No modelo do mutex (<code>FILA_ENTRADA</code> &rarr; <code>ENTRAR</code> &rarr; <code>RC</code> &rarr; <code>SAIR</code> &rarr; <code>FILA_SAIDA</code>, com o lugar <code>MUTEX</code> ligado a <code>ENTRAR</code> e recebendo de <code>SAIR</code>), o que acontece se <code>MUTEX</code> começar com <b>2</b> marcas?",
+  opcoes:[
+    "Dois processos passam a ficar em <code>RC</code> ao mesmo tempo: deixa de ser exclusão mútua e vira um <b>semáforo de contagem</b> que permite 2.",
+    "Nada muda: a transição <code>ENTRAR</code> continua consumindo uma marca por disparo.",
+    "A rede trava, porque sobra uma marca que nunca é consumida.",
+    "Os processos passam a entrar duas vezes cada um na região crítica."
+  ],
+  correta:0,
+  gabarito:"A ficha de <code>MUTEX</code> <b>é</b> a trava, e o número de fichas é o número de processos que podem estar lá dentro ao mesmo tempo.<br><br>Com <b>1</b>: depois do primeiro <code>ENTRAR</code>, <code>MUTEX</code> fica vazio e a transição deixa de estar habilitada, mesmo havendo processos esperando na fila. Vale o invariante <b>RC + MUTEX = 1</b>.<br><br>Com <b>2</b>: dois disparos de <code>ENTRAR</code> acontecem antes de a trava esgotar, e <code>RC</code> chega a duas marcas. É a diferença entre <b>mutex</b> e <b>semáforo de contagem</b> — a mesma estrutura, só muda a marcação inicial.<br><br>A alternativa B erra ao ignorar que a condição de habilitação olha para a <b>quantidade de marcas</b> disponíveis, e não para cada disparo isolado."
+},
+{
+  id:"rp19", mod:"petri", dif:"dificil", tipo:"mc",
+  fonte:"Slides · Redes de Petri · produtor-consumidor",
+  enunciado:"No modelo do produtor-consumidor com fila de 3 espaços, <code>TAMANHO</code> começa com 3 marcas e <code>DADOS</code> com 0. <code>PRODUZIR</code> consome de <code>TAMANHO</code> e produz em <code>DADOS</code>; <code>CONSUMIR</code> faz o inverso. O que <b>prova</b> que o buffer nunca estoura nem é lido vazio?",
+  opcoes:[
+    "O <b>invariante de lugar</b> <code>TAMANHO</code> + <code>DADOS</code> = 3 em toda marcação alcançável: com a fila cheia, <code>TAMANHO</code> zera e <code>PRODUZIR</code> deixa de estar habilitada; com a fila vazia, <code>DADOS</code> zera e <code>CONSUMIR</code> deixa de estar habilitada.",
+    "O fato de <code>PRODUZIR</code> e <code>CONSUMIR</code> nunca estarem habilitadas ao mesmo tempo.",
+    "A marca que circula pelo lugar <code>PRODUTOR</code>, que impede duas produções seguidas.",
+    "Nada prova: é preciso acrescentar um temporizador para que o consumo acompanhe a produção."
+  ],
+  correta:0,
+  gabarito:"Some as marcas de <code>TAMANHO</code> e <code>DADOS</code> em qualquer marcação alcançável: dá sempre <b>3</b>. Cada disparo tira uma de um e põe uma no outro. Isso é um <b>invariante de lugar</b>, e é uma <b>prova</b> — não um teste.<br><br>Dele saem as duas garantias:<br>&bull; <code>DADOS</code> nunca passa de 3 &rarr; o buffer não estoura;<br>&bull; <code>CONSUMIR</code> exige uma marca em <code>DADOS</code> &rarr; não se lê de um buffer vazio.<br><br>É a tradução exata dos semáforos <code>vazios</code> = N e <code>cheios</code> = 0 do código.<br><br>A alternativa B é falsa: com a fila parcialmente cheia, as duas <b>estão</b> habilitadas ao mesmo tempo — produtor e consumidor trabalham em paralelo, e é isso que se quer."
+},
+{
+  id:"rp20", mod:"petri", dif:"medio", tipo:"mc",
+  fonte:"Slides · Redes de Petri · eventos não primitivos",
+  enunciado:"Numa Rede de Petri comum, o disparo é <b>instantâneo</b>. Como então modelar um evento que <b>leva tempo</b>, como o processamento de uma tarefa?",
+  opcoes:[
+    "Quebrando-o em <b>dois</b> eventos — início e término — com um <b>lugar</b> entre eles representando &ldquo;em processamento&rdquo;. A duração fica implícita no tempo em que a marca permanece nesse lugar.",
+    "Associando um peso maior ao arco de saída, proporcional à duração.",
+    "Colocando várias marcas no lugar de entrada, uma para cada unidade de tempo.",
+    "Não é possível: redes de Petri não conseguem representar eventos demorados."
+  ],
+  correta:0,
+  gabarito:"Eventos instantâneos são chamados <b>primitivos</b>. Um evento <b>não primitivo</b> gasta tempo, e o jeito de representá-lo sem estender o formalismo é separar <b>início</b> e <b>término</b>, com um lugar no meio para o estado intermediário.<br><br>É exatamente o que o modelo do escalonador faz: <code>INICIAR</code> &rarr; <code>PROC</code> &rarr; <code>FINAL</code>. Enquanto a marca está em <code>PROC</code>, a tarefa &ldquo;está sendo executada&rdquo;.<br><br>Repare no ganho: esse lugar intermediário permite perguntar quantas tarefas estão em execução ao mesmo tempo — algo que um único evento instantâneo não conseguiria expressar.<br><br>Quando o <b>valor</b> da duração importa, aí sim é preciso uma <b>extensão</b>: redes temporizadas."
+},
+{
+  id:"rp21", mod:"petri", dif:"medio", tipo:"mc",
+  fonte:"Slides · Redes de Petri · abreviações e extensões",
+  enunciado:"Qual é a diferença entre <b>abreviações</b> e <b>extensões</b> das Redes de Petri?",
+  opcoes:[
+    "<b>Abreviações</b> só simplificam a representação, sem dar poder novo — redes generalizadas (pesos), de capacidade finita e coloridas. <b>Extensões</b> mudam as regras de funcionamento e aumentam o poder de representação — arcos inibidores, prioridades, redes temporizadas.",
+    "Abreviações valem só para redes pequenas; extensões, para redes com muitos lugares.",
+    "Abreviações são as redes com marcas coloridas; extensões são as que têm mais de um arco entre dois elementos.",
+    "Não há diferença prática: os dois termos descrevem a mesma coisa."
+  ],
+  correta:0,
+  gabarito:"A pergunta é sempre a mesma: <b>a rede passa a modelar algo que antes não modelava?</b><br><br>&bull; <b>Abreviações</b> — não. Um arco de peso 3 poderia ser desenhado como três arcos; uma rede colorida poderia ser expandida numa rede comum maior. Ganha-se legibilidade, não poder.<br>&bull; <b>Extensões</b> — sim. O <b>arco inibidor</b> permite testar a <b>ausência</b> de marcas, algo impossível na rede comum, e com ele a rede alcança o poder de uma <b>Máquina de Turing</b>. Tempo, prioridades e eventos externos também mudam as regras de disparo.<br><br>O preço das extensões é a análise: propriedades que eram decidíveis na rede comum podem deixar de ser."
+},
+{
+  id:"rp22", mod:"petri", dif:"dificil", tipo:"mc",
+  fonte:"Slides · Redes de Petri · arcos inibidores",
+  enunciado:"O que faz um <b>arco inibidor</b> numa Rede de Petri?",
+  opcoes:[
+    "Liga um lugar a uma transição e permite o disparo <b>somente quando o lugar não tem marcas</b> — é um teste de <b>ausência</b>.",
+    "Impede permanentemente o disparo da transição a que está ligado.",
+    "Remove todas as marcas do lugar de origem quando a transição dispara.",
+    "Liga duas transições, impedindo que disparem na mesma ordem duas vezes seguidas."
+  ],
+  correta:0,
+  gabarito:"O arco comum pergunta &ldquo;<b>há</b> marca suficiente?&rdquo;. O inibidor pergunta o contrário: &ldquo;<b>está vazio?</b>&rdquo;. Ele não consome nada quando a transição dispara — só condiciona.<br><br><b>Para que serve:</b> modelar prioridade e exceções. &ldquo;Só atenda a fila secundária <b>se</b> a principal estiver vazia&rdquo; é imediato com um inibidor, e trabalhoso sem ele.<br><br><b>Por que é uma extensão e não uma abreviação:</b> testar ausência não é expressável numa rede comum. Com arcos inibidores, a rede ganha poder de <b>Máquina de Turing</b> — e, em troca, perde as garantias de análise que tornavam o formalismo atraente.<br><br>A alternativa C descreve um <i>arco de esvaziamento</i> (<i>reset</i>), que é outra extensão."
+},
+{
+  id:"rp23", mod:"petri", dif:"medio", tipo:"mc",
+  fonte:"Slides · Redes de Petri · capacidade e conservação",
+  enunciado:"Uma rede em que <b>toda</b> transição tem o mesmo número de arcos de entrada e de saída é chamada de:",
+  opcoes:[
+    "<b>Conservativa</b> — as marcas não são criadas nem destruídas, e o número total de marcas na rede permanece constante.",
+    "<b>Segura</b> — nenhum lugar passa de uma marca.",
+    "<b>Viva</b> — qualquer transição sempre poderá disparar de novo.",
+    "<b>Limitada</b> — existe um número máximo de marcas por lugar."
+  ],
+  correta:0,
+  gabarito:"São quatro propriedades que costumam ser confundidas:<br><br>&bull; <b>Conservativa</b> — cada disparo remove tantas marcas quantas produz, então o total na rede nunca muda. Serve para modelar recursos que apenas <b>circulam</b>, como o elevador ou a marca do semáforo.<br>&bull; <b>Segura</b> — nenhum lugar passa de 1 marca (caso particular de 1-limitada). Típico de recursos únicos, como cada garfo.<br>&bull; <b>K-limitada</b> — nenhum lugar passa de K marcas. Importa porque uma rede ilimitada tem árvore de alcançabilidade infinita.<br>&bull; <b>Viva</b> — a partir de qualquer marcação alcançável, ainda é possível disparar qualquer transição. Garante ausência de deadlock e de transições mortas.<br><br><i>Conservação é sobre o total de marcas; limitação, sobre o máximo por lugar.</i>"
+},
+{
+  id:"rp24", mod:"petri", dif:"dificil", tipo:"mc",
+  fonte:"Slides · Redes de Petri · árvore de alcançabilidade",
+  enunciado:"Na construção da árvore de alcançabilidade, quando se substitui o número de marcas de um lugar pelo símbolo <b>&omega;</b>, e o que ele significa?",
+  cod:"p1 (*) --> t --> p2      t devolve a marca a p1 e acrescenta uma em p2\n\nM0 = (1, 0)\nM1 = (1, 1)      disparo de t\nM2 = (1, 2)      disparo de t   ...\n\n            =>   (1, w)",
+  opcoes:[
+    "Quando a nova marcação é <b>maior ou igual</b> à de um ancestral no mesmo ramo em todos os lugares (e maior em algum): significa que aquele lugar é <b>ilimitado</b> — pode acumular marcas indefinidamente.",
+    "Quando a marcação se repete exatamente: significa que a rede voltou ao estado inicial.",
+    "Quando a transição está em conflito com outra: significa que o valor depende da ordem de disparo.",
+    "Quando o lugar não tem arcos de saída: significa que as marcas ficam presas ali."
+  ],
+  correta:0,
+  gabarito:"O raciocínio é o seguinte: se disparar <i>t</i> levou de M<sub>i</sub> a M<sub>i+1</sub> com M<sub>i+1</sub> &ge; M<sub>i</sub> em todos os lugares, então <i>t</i> continua habilitada e pode disparar <b>de novo</b>, gerando M<sub>i+2</sub> &ge; M<sub>i+1</sub>... Existe uma <b>sequência infinita</b> de disparos, e aquele lugar cresce sem limite. O <b>&omega;</b> representa &ldquo;qualquer quantidade&rdquo;.<br><br>Sem esse símbolo a árvore não terminaria. Com ele — mais a regra de que uma marcação <b>repetida</b> no ramo fecha o nó — a árvore fica <b>finita</b> para qualquer rede.<br><br><b>Para que serve na prática:</b> descobrir se algum recurso está sendo usado além da capacidade, ou se uma fila cresce indefinidamente. Um &omega; no lugar &ldquo;fila&rdquo; é um alerta de modelo — ou de sistema — sem controle de fluxo."
+},
+{
+  id:"rp25", mod:"petri", dif:"facil", tipo:"vf",
+  fonte:"Slides · Redes de Petri · modelagem abstrata",
+  enunciado:"Os nomes dados aos lugares e às transições (<code>CPU_PARADA</code>, <code>INICIAR</code>, ...) fazem parte das regras de funcionamento da rede: trocá-los pode mudar quais transições disparam.",
+  correta:1,
+  gabarito:"<b>Falso.</b> As Redes de Petri são um formalismo <b>abstrato</b>: os rótulos não carregam significado nenhum para a rede. Quem determina o comportamento é só a estrutura — lugares, transições, arcos, pesos — e a marcação.<br><br>Os nomes existem para <b>nós</b>, que precisamos ligar o modelo ao sistema real.<br><br><b>A consequência interessante:</b> dois sistemas completamente diferentes — um semáforo de trânsito e um mutex de sistema operacional — podem ter <b>exatamente a mesma rede</b>. Provar uma propriedade num deles prova no outro. É o que permite reconhecer que o mesmo problema reaparece em contextos distintos."
+},
+{
+  id:"rp26", mod:"petri", dif:"medio", tipo:"mc",
+  fonte:"Slides · Redes de Petri · redes temporizadas",
+  enunciado:"Entre as extensões que acrescentam <b>tempo</b> às Redes de Petri, qual descrição está correta?",
+  opcoes:[
+    "Na <b>T-temporizada</b> o tempo é associado às <b>transições</b> (as marcas ficam retidas na transição durante o disparo); na <b>P-temporizada</b>, aos <b>lugares</b> (a marca recebida fica indisponível por um tempo); a <b>estocástica</b> é uma T-temporizada com tempo dado por uma variável aleatória.",
+    "Na T-temporizada o tempo é associado aos lugares, e na P-temporizada, às transições.",
+    "As redes temporizadas apenas ordenam os disparos, sem associar valores de tempo a nada.",
+    "Só existe uma forma de acrescentar tempo: associar um relógio global à rede inteira."
+  ],
+  correta:0,
+  gabarito:"As letras dizem onde o tempo mora: <b>T</b> de transição, <b>P</b> de <i>place</i> (lugar).<br><br>&bull; <b>T-temporizada</b> — ao disparar, as marcas saem dos lugares de entrada e ficam &ldquo;dentro&rdquo; da transição pelo tempo de disparo; só depois aparecem nas saídas. Com tempo zero, volta a ser a rede comum.<br>&bull; <b>P-temporizada</b> — a marca que chega a um lugar fica <b>indisponível</b> durante um tempo, e só marcas disponíveis habilitam transições.<br>&bull; <b>Estocástica</b> — T-temporizada com o tempo sorteado, em geral por uma exponencial. É a base para análise de desempenho.<br>&bull; <b>Temporal</b> (Merlin) — em vez de um valor, um <b>intervalo</b> [t<sub>mín</sub>, t<sub>máx</sub>] entre habilitar e disparar.<br><br>Nas redes comuns não existe medida de tempo: só a <b>ordenação parcial</b> dos eventos."
+},
+{
+  id:"rp27", mod:"petri", dif:"medio", tipo:"vf",
+  fonte:"Slides · Redes de Petri · disparo",
+  enunciado:"Numa Rede de Petri comum, o disparo remove uma marca de cada lugar de entrada e acrescenta uma a cada lugar de saída — logo, o número total de marcas da rede se mantém constante.",
+  correta:1,
+  gabarito:"<b>Falso.</b> A primeira parte está certa, a conclusão não. O total só se conserva quando a transição tem o <b>mesmo número</b> de arcos de entrada e de saída.<br><br>&bull; Transição com <b>2 entradas e 1 saída</b> &rarr; a rede <b>perde</b> uma marca a cada disparo. É o caso do &ldquo;pegar os dois garfos&rdquo;: duas condições são consumidas para produzir uma.<br>&bull; Transição com <b>1 entrada e 2 saídas</b> &rarr; a rede <b>ganha</b> uma marca. Serve para modelar a criação de tarefas paralelas — o <i>fork</i>.<br><br>Redes em que <b>toda</b> transição equilibra entradas e saídas são chamadas <b>conservativas</b>, e aí sim o total é constante.<br><br>É justamente essa liberdade que permite modelar sincronização (juntar condições) e paralelismo (dividir em vários fluxos)."
 }
+
 
 ]);
