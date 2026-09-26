@@ -48,6 +48,11 @@ Além do simulado, a tela de estudo tem quatro abas:
 - **Panorama** — a disciplina inteira numa página, na ordem em que um assunto leva ao
   outro: concorrência &times; paralelismo, as 8 estações (pergunta central, essencial, o que
   cai na prova) e as ideias que atravessam P1 e P2.
+- **Provas resolvidas** — o primeiro assunto da aba matéria: as **7 questões da prova
+  teórica** e as **4 da prova prática**, cada uma com o enunciado como caiu, a resposta
+  desenvolvida, os erros que custam ponto e — nas de código — o programa comentado
+  linha a linha. Inclui as duas contas resolvidas com os números da prova (detecção e
+  banqueiro) e a análise do código dos Banheiros UNISSEX, item a item da especificação.
 - **Matéria** — 80 tópicos explicados, com os casos numéricos resolvidos passo a passo e
   **18 exemplos de código comentados linha a linha**: enunciado, cada linha e o porquê
   de ela estar ali, com as linhas decisivas destacadas.
@@ -101,6 +106,7 @@ js/
 ├── resumo.js           fichas da aba "consulta rápida"
 ├── materia.js          os 80 tópicos explicados
 ├── anotado/            código comentado linha a linha, ligado às seções pelo título
+├── provas/             as duas provas resolvidas, questão a questão
 ├── panorama.js         a aba panorama
 ├── colecoes.js         as coleções prontas
 │

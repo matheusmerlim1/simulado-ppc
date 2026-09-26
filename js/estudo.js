@@ -165,12 +165,12 @@ function montarNavMateria() {
   }
 
   MATERIA.forEach(bloco => {
+    const meta = MODULOS[bloco.mod] || bloco;        /* "provas" não é um assunto do banco */
     const chip = document.createElement("button");
     chip.className = "chip";
     chip.dataset.mod = bloco.mod;
     chip.setAttribute("aria-pressed", String(bloco.mod === modMateria));
-    chip.innerHTML = MODULOS[bloco.mod].nome +
-                     ' <span class="cnt">' + MODULOS[bloco.mod].prova + "</span>";
+    chip.innerHTML = meta.nome + ' <span class="cnt">' + meta.prova + "</span>";
 
     chip.addEventListener("click", () => {
       modMateria = bloco.mod;
@@ -191,21 +191,23 @@ function renderMateria() {
   alvo.innerHTML = "";
   if (!bloco) return;
 
+  const meta = MODULOS[modMateria] || bloco;
   const quantasQuestoes = BANCO.filter(q => q.mod === modMateria).length;
   const comentados = bloco.secoes.filter(s => s.anotado).length;
 
   const cabecalho = document.createElement("div");
   cabecalho.className = "materia-titulo";
   cabecalho.innerHTML =
-    "<h2>" + MODULOS[modMateria].nome + "</h2>" +
+    "<h2>" + meta.nome + "</h2>" +
     '<span class="conta">' + bloco.secoes.length + " tópicos · " +
     (comentados ? comentados + " códigos comentados · " : "") +
-    quantasQuestoes + " questões no banco · " + MODULOS[modMateria].prova + "</span>";
+    (quantasQuestoes ? quantasQuestoes + " questões no banco · " : "") +
+    meta.prova + "</span>";
   alvo.appendChild(cabecalho);
 
   bloco.secoes.forEach(secao => alvo.appendChild(montarSecao(secao)));
 
-  $("#btnTreinarAssunto").textContent = "Treinar " + MODULOS[modMateria].nome;
+  $("#btnTreinarAssunto").textContent = "Treinar " + meta.nome;
   $("#btnTreinarAssunto").disabled = quantasQuestoes === 0;
 }
 

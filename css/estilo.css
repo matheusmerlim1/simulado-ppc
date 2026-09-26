@@ -858,3 +858,13 @@ code,kbd,pre,.cod,.anim-palco{font-variant-ligatures:none;font-feature-settings:
 
 /* a linha da prova prática, no panorama, usa o petróleo da sincronização */
 .pan-prova.pratica{margin-top:7px;border-style:solid;border-color:var(--line);border-left:3px solid var(--petrol);background:var(--petrol-soft)}
+
+/* ── enunciado da questão, nas provas resolvidas ───────── */
+.prova-enun{
+  margin:0 0 14px;padding:13px 16px;border-radius:9px;
+  background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--petrol);
+  font-size:.94rem;line-height:1.6;color:var(--ink-2);
+}
+.prova-enun .rot{display:block;margin-bottom:4px;color:var(--petrol)}
+.prova-enun b{color:var(--ink)}
+.prova-enun code{background:var(--surface-3);padding:1px 5px;border-radius:4px;font-size:.88em;color:var(--ink)}
