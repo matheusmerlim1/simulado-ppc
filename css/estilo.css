@@ -868,3 +868,9 @@ code,kbd,pre,.cod,.anim-palco{font-variant-ligatures:none;font-feature-settings:
 .prova-enun .rot{display:block;margin-bottom:4px;color:var(--petrol)}
 .prova-enun b{color:var(--ink)}
 .prova-enun code{background:var(--surface-3);padding:1px 5px;border-radius:4px;font-size:.88em;color:var(--ink)}
+
+/* ── modelo desenhado dentro da matéria ────────────────── */
+.secao-rede{margin:16px 0 0;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);overflow-x:auto}
+.secao-rede figcaption{margin-top:10px;font-size:.87rem;line-height:1.55;color:var(--ink-2);text-align:left}
+.secao-rede figcaption code{background:var(--surface-3);padding:1px 5px;border-radius:4px;font-size:.88em;color:var(--ink)}
+.secao-rede figcaption b{color:var(--ink)}

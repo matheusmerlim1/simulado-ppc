@@ -21,6 +21,7 @@
       passos.push(Object.assign({ A: A.slice(), feito: feito.slice(), testa: -1, falhas: [], cabe: false, morto: false }, extra, { legenda }));
 
     push({}, "<b>C</b> é o que cada processo segura, <b>R</b> o que ainda pede e <b>A</b> o que está livre. A pergunta do algoritmo: no cenário mais otimista, alguém consegue terminar?");
+    push({}, "<b>Antes de calcular, confira a cópia.</b> Para cada recurso vale <b>A + soma da coluna de C = E</b>:<br>RS1: 0+(1+1+0) = 2 ✓ &nbsp; RS2: 3+(0+0+1) = 4 ✓ &nbsp; RS3: 2+(1+1+0) = 4 ✓ &nbsp; RS4: 0+(0+0+1) = 1 ✓<br>Se não fechar, a matriz foi copiada errado — e todo o resto vai junto.");
     push({ testa: 0, falhas: falhasDe(0, A) }, "<b>P1</b> pede 1 unidade de RS1, e há 0. Não pode avançar.");
     push({ testa: 1, falhas: falhasDe(1, A) }, "<b>P2</b> também precisa de RS1 — e de RS4, que está zerado. Não pode.");
     push({ testa: 2, cabe: true }, "<b>P3</b> cabe: 0&le;0, 1&le;3, 2&le;2, 0&le;0. No melhor cenário, P3 roda até o fim.");
@@ -29,7 +30,8 @@
     push({ testa: 2 }, "P3 termina e <b>devolve</b> o que segurava, (0 1 0 1). A passa a (0 4 2 1).");
     push({ testa: 0, falhas: falhasDe(0, A) }, "Nova rodada. <b>P1</b> continua pedindo RS1, que continua em 0.");
     push({ testa: 1, falhas: falhasDe(1, A) }, "<b>P2</b> também. E nenhum processo restante vai devolver RS1 — os dois que o seguram são justamente P1 e P2.");
-    push({ morto: true }, "<b>P1 e P2 estão em deadlock.</b> Isso é o tratamento por <b>detecção</b>: o sistema deixa acontecer, descobre, e agora precisa recuperar — tomar um recurso à força, voltar a um <i>checkpoint</i> ou encerrar um dos dois.");
+    push({ morto: true }, "<b>P1 e P2 estão em deadlock.</b> Os dois esperam por <b>RS1</b>, e as duas unidades que existem desse recurso estão justamente com eles. Ninguém mais vai devolvê-las.");
+    push({ morto: true }, "Repare no que <b>não</b> é deadlock: P3 também não coube na primeira rodada, e ainda assim terminou. &ldquo;Não dá para atender agora&rdquo; nunca é, sozinho, prova de deadlock — por isso o algoritmo repete as rodadas até ninguém mais avançar.<br><br>Detectado, resta <b>recuperar</b>: tomar um recurso à força, voltar a um <i>checkpoint</i> ou encerrar um dos dois processos.");
     return passos;
   }
 

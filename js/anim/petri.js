@@ -47,6 +47,59 @@
     }
   };
 
+
+  /* ── modelos do deck e do laboratório ─────────────────── */
+  REDES.semaforo = {
+    caixa: [420, 320],
+    lugares: { VERMELHO: [210, 60], VERDE: [80, 235], AMARELO: [340, 235] },
+    transicoes: { ABRE: [110, 130], ATENCAO: [210, 285], FECHA: [310, 130] },
+    arcos: [["VERMELHO", "ABRE"], ["ABRE", "VERDE"], ["VERDE", "ATENCAO"],
+            ["ATENCAO", "AMARELO"], ["AMARELO", "FECHA"], ["FECHA", "VERMELHO"]],
+    inicial: { VERMELHO: 1, VERDE: 0, AMARELO: 0 }
+  };
+
+  REDES.escalonador = {
+    caixa: [800, 270],
+    lugares: { PFE: [180, 70], PAR: [180, 200], PROC: [430, 135], PFS: [660, 70] },
+    transicoes: { COLOCAR: [70, 70], INICIAR: [305, 135], FINAL: [545, 135], INFO: [760, 70] },
+    arcos: [["COLOCAR", "PFE"], ["PFE", "INICIAR"], ["PAR", "INICIAR"], ["INICIAR", "PROC"],
+            ["PROC", "FINAL"], ["FINAL", "PFS"], ["FINAL", "PAR"], ["PFS", "INFO"]],
+    inicial: { PFE: 0, PAR: 1, PROC: 0, PFS: 0 }
+  };
+
+  /* jantar dos filósofos, 3 filósofos: Pega_i tem TRÊS arcos de entrada,
+     então o disparo atômico pega os dois garfos de uma vez */
+  REDES.jantar = (function () {
+    /* layout de mesa: garfos no centro, e cada filósofo num setor de 120 graus.
+       Pens -> Pega -> Come -> Larga -> Pens, girando no sentido horário. */
+    const C = [350, 285], r = { garfo: 92, trans: 162, lugar: 256 };
+    const pos = (ang, raio) => {
+      const a = (ang - 90) * Math.PI / 180;
+      return [Math.round(C[0] + raio * Math.cos(a)), Math.round(C[1] + raio * Math.sin(a))];
+    };
+    const r_ = { caixa: [700, 580], lugares: {}, transicoes: {}, arcos: [], inicial: {} };
+
+    for (let i = 0; i < 3; i++) {
+      const d = (i + 1) % 3;
+      const g = 120 * i;          /* garfo i */
+      const f = g + 60;           /* filósofo i, entre o garfo i e o i+1 */
+
+      r_.lugares["G" + i]    = pos(g, r.garfo);
+      r_.lugares["Pens" + i] = pos(f - 40, r.lugar);
+      r_.lugares["Come" + i] = pos(f + 40, r.lugar);
+      r_.transicoes["Pega" + i]  = pos(f - 20, r.trans);
+      r_.transicoes["Larga" + i] = pos(f + 20, r.trans);
+
+      r_.arcos.push(["Pens" + i, "Pega" + i], ["G" + i, "Pega" + i], ["G" + d, "Pega" + i],
+                    ["Pega" + i, "Come" + i], ["Come" + i, "Larga" + i],
+                    ["Larga" + i, "Pens" + i], ["Larga" + i, "G" + i], ["Larga" + i, "G" + d]);
+      r_.inicial["G" + i] = 1;
+      r_.inicial["Pens" + i] = 1;
+      r_.inicial["Come" + i] = 0;
+    }
+    return r_;
+  })();
+
   /* ── simulador ─────────────────────────────────────────── */
   const peso = ([, , p]) => p || 1;
   const entradas = (rede, t) => rede.arcos.filter(a => a[1] === t);
@@ -104,12 +157,47 @@
     ]
   };
 
+  ROTEIRO.semaforo = [
+    [null, "Um semáforo de trânsito. Três lugares em ciclo — as três lâmpadas — e <b>uma única marca</b>, que representa qual delas está acesa."],
+    ["ABRE", "A marca sai de <code>VERMELHO</code> e vai para <code>VERDE</code>. Como o disparo é atômico, não existe instante em que as duas estejam acesas."],
+    ["ATENCAO", "<code>VERDE</code> &rarr; <code>AMARELO</code>."],
+    ["FECHA", "<code>AMARELO</code> &rarr; <code>VERMELHO</code>, e o ciclo recomeça. A rede é <b>conservativa</b>: a marca não é criada nem destruída, só circula."],
+    [null, "<b>A marca única é a garantia.</b> Com duas marcas, duas lâmpadas ficariam acesas ao mesmo tempo — e a rede não teria como impedir.<br><br>Para <b>dois</b> semáforos de um cruzamento, acrescenta-se um lugar de controle <code>S</code> com uma marca, exigido pelas transições que abrem o verde: só um dos dois consegue pegá-la. É o mesmo padrão do mutex."]
+  ];
+
+  ROTEIRO.escalonador = [
+    [null, "Escalonador de CPU. <b>Condições viram lugares</b>: fila de entrada (<code>PFE</code>), CPU parada (<code>PAR</code>), em processamento (<code>PROC</code>) e fila de saída (<code>PFS</code>). <b>Eventos viram transições</b>. Há <b>uma</b> marca em <code>PAR</code>: uma CPU livre."],
+    ["COLOCAR", "<b>COLOCAR</b> não tem lugar de entrada: modela a <b>chegada</b> de processos, sempre possível. Um processo entra na fila."],
+    ["COLOCAR", "Chega outro. <code>PFE</code> = 2."],
+    ["INICIAR", "<b>INICIAR</b> consome <b>duas</b> condições ao mesmo tempo: um processo da fila <b>e</b> a CPU livre. É assim que a rede modela <b>sincronização</b>."],
+    [null, "Repare: ainda há processo esperando em <code>PFE</code>, mas <b>INICIAR</b> não está habilitada — <code>PAR</code> está vazio. A CPU está ocupada, e isso é só a ausência de uma marca."],
+    ["FINAL", "<b>FINAL</b> devolve a marca a <code>PAR</code> (a CPU volta a ficar livre) e põe o resultado em <code>PFS</code>. O lugar <code>PROC</code> entre INICIAR e FINAL é o que representa um evento que <b>leva tempo</b>."],
+    ["INICIAR", "Com a CPU livre de novo, o segundo processo começa."],
+    ["INFO", "<b>INFO</b> retira o resultado da fila de saída."],
+    [{ PFE: 3, PAR: 3, PROC: 0, PFS: 0 }, "<b>E se houvesse 3 CPUs?</b> Basta colocar <b>3 marcas</b> em <code>PAR</code> — a estrutura da rede não muda em nada. (Três processos foram recolocados na fila para a demonstração.)"],
+    ["INICIAR", "Uma das três CPUs foi ocupada: <code>PAR</code> cai para 2."],
+    ["INICIAR", "Segunda CPU ocupada, e <code>PROC</code> já tem duas marcas — dois processamentos ao mesmo tempo."],
+    ["INICIAR", "Terceira: <code>PROC</code> chega a <b>3</b> marcas e <code>PAR</code> zera. O lugar <code>PROC</code> é <b>3-limitado</b> — nunca passa do número de CPUs."]
+  ];
+
+  ROTEIRO.jantar = [
+    [null, "O Jantar dos Filósofos com <b>3 filósofos</b>: 9 lugares e 6 transições. Marcação inicial: <b>1 ficha</b> em cada <code>Pens</code> (todos pensando) e <b>1 ficha</b> em cada <code>G</code> (todos os garfos livres)."],
+    [null, "Olhe para <b>Pega0</b>: ela tem <b>três arcos de entrada</b> — <code>Pens0</code>, <code>G0</code> e <code>G1</code>. Só dispara com os <b>dois</b> garfos livres, e o disparo é atômico: o estado &ldquo;segurando um garfo só&rdquo; <b>não existe nesta rede</b>."],
+    ["Pega0", "<b>Pega0</b> dispara: consome o pensar e os dois garfos, e o filósofo 0 passa a comer."],
+    [null, "<b>Pega1</b> precisa de <code>G1</code> e <code>G2</code> — <code>G1</code> está com o filósofo 0. <b>Pega2</b> precisa de <code>G2</code> e <code>G0</code> — <code>G0</code> também. Nenhuma das duas está habilitada, mas <b>Larga0</b> está: a rede continua viva."],
+    ["Larga0", "<b>Larga0</b> devolve o filósofo a <code>Pens0</code> e os dois garfos à mesa. Voltamos exatamente à marcação inicial."],
+    ["Pega1", "Agora é a vez do filósofo 1. Os ramos de <code>Pega1</code> e <code>Pega2</code> são <b>simétricos</b> ao de <code>Pega0</code>, por rotação dos índices."],
+    ["Larga1", "E ele devolve os garfos."],
+    [null, "<b>O conjunto de alcançabilidade tem só 4 marcações</b> — a inicial e as três com um filósofo comendo — e <b>todas</b> têm pelo menos uma transição habilitada. Não existe marcação morta: a rede é <b>viva</b> e <b>livre de deadlock</b>. É também <b>segura</b>: nenhum lugar passa de 1 ficha.<br><br>Com 3 filósofos e 3 garfos, apenas <b>um</b> come por vez — o modelo é correto, mas com pouco paralelismo."]
+  ];
+
   function roteiro(modo) {
     const rede = REDES[modo];
     let m = Object.assign({}, rede.inicial);
     return ROTEIRO[modo].map(([acao, legenda]) => {
       let disparou = null;
       if (acao === "reset") m = Object.assign({}, rede.inicial);
+      else if (acao && typeof acao === "object") m = Object.assign({}, m, acao);  /* ajusta marcas */
       else if (acao) { m = disparar(rede, m, acao); disparou = acao; }
       return { m: Object.assign({}, m), hab: habilitadas(rede, m), disparou, legenda };
     });
@@ -117,6 +205,15 @@
 
   /* ── desenho ───────────────────────────────────────────── */
   const RAIO = { lugar: 25, transicao: 24 };
+  const PONTOS = { 1: [[0, 0]], 2: [[-9, 0], [9, 0]], 3: [[0, -9], [-9, 6], [9, 6]],
+                   4: [[-9, -9], [9, -9], [-9, 9], [9, 9]] };
+
+  function marcasSVG(x, y, n) {
+    return n && n <= 4
+      ? PONTOS[n].map(([dx, dy]) =>
+          '<circle class="pn-marca" cx="' + (x + dx) + '" cy="' + (y + dy) + '" r="5"></circle>').join("")
+      : "";
+  }
 
   function pontos(rede) {
     const p = {};
@@ -136,10 +233,9 @@
     return { d: "M" + a[0] + " " + a[1] + " Q" + mx + " " + my + " " + b[0] + " " + b[1], meio: [mx, my] };
   }
 
-  function montar(palco, modo) {
-    const rede = REDES[modo];
+  /* desenha a estrutura da rede; as marcas entram depois, no desenhar() */
+  function svgDaRede(rede, m) {
     const nos = pontos(rede);
-
     let svg = '<svg class="pn-rede" viewBox="0 0 ' + rede.caixa[0] + " " + rede.caixa[1] +
       '" role="img" aria-label="Rede de Petri"><defs>' +
       '<marker id="pn-ponta" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">' +
@@ -162,27 +258,28 @@
 
     Object.keys(rede.lugares).forEach(p => {
       const [x, y] = rede.lugares[p];
-      svg += '<g class="pn-lugar" data-p="' + p + '"><circle cx="' + x + '" cy="' + y + '" r="25"></circle>' +
-        '<g class="pn-marcas"></g>' +
-        '<text class="pn-conta" x="' + x + '" y="' + (y + 1) + '"></text>' +
+      const n = m ? (m[p] || 0) : 0;
+      svg += '<g class="pn-lugar' + (n ? " tem" : "") + '" data-p="' + p + '">' +
+        '<circle cx="' + x + '" cy="' + y + '" r="25"></circle>' +
+        '<g class="pn-marcas">' + marcasSVG(x, y, n) + "</g>" +
+        '<text class="pn-conta" x="' + x + '" y="' + (y + 1) + '">' + (n > 4 ? n : "") + "</text>" +
         '<text class="pn-nome" x="' + x + '" y="' + (y + 42) + '">' + p + "</text></g>";
     });
-    svg += "</svg>";
-    palco.innerHTML = svg +
+    return svg + "</svg>";
+  }
+
+  function montar(palco, modo) {
+    const rede = REDES[modo];
+    palco.innerHTML = svgDaRede(rede) +
       '<div class="pn-estado"><span class="rot">marcação</span><b></b>' +
       '<span class="rot">habilitadas</span><i></i></div>';
-
-    const PONTOS = { 1: [[0, 0]], 2: [[-9, 0], [9, 0]], 3: [[0, -9], [-9, 6], [9, 6]],
-                     4: [[-9, -9], [9, -9], [-9, 9], [9, 9]] };
 
     return function desenhar(e) {
       Object.keys(rede.lugares).forEach(p => {
         const g = palco.querySelector('.pn-lugar[data-p="' + p + '"]');
         const [x, y] = rede.lugares[p];
         const n = e.m[p] || 0;
-        g.querySelector(".pn-marcas").innerHTML = n && n <= 4
-          ? PONTOS[n].map(([dx, dy]) => '<circle class="pn-marca" cx="' + (x + dx) + '" cy="' + (y + dy) + '" r="5"></circle>').join("")
-          : "";
+        g.querySelector(".pn-marcas").innerHTML = marcasSVG(x, y, n);
         g.querySelector(".pn-conta").textContent = n > 4 ? n : "";
         g.setAttribute("class", "pn-lugar" + (n ? " tem" : ""));
       });
@@ -200,6 +297,13 @@
     };
   }
 
+  /* a matéria usa isto para mostrar um modelo como figura, sem controles */
+  function montarRedeEstatica(id) {
+    const rede = REDES[id];
+    return rede ? svgDaRede(rede, rede.inicial) : "";
+  }
+  window.montarRedeEstatica = montarRedeEstatica;
+
   registrarAnimacao({
     id: "petri",
     nome: "Redes de Petri",
@@ -210,6 +314,19 @@
       { id: "conflito", rotulo: "conflito e independência" },
       { id: "mutex", rotulo: "exclusão mútua" },
       { id: "produtor", rotulo: "produtor-consumidor" }
+    ],
+    montar, roteiro
+  });
+
+  registrarAnimacao({
+    id: "petri-modelos",
+    nome: "Petri: modelos do deck",
+    titulo: "Modelos em Rede de Petri",
+    ideia: "Os sistemas modelados nos slides e no laboratório, do semáforo de trânsito ao Jantar dos Filósofos — cada um com a sua marcação inicial e o que ela garante.",
+    modos: [
+      { id: "semaforo", rotulo: "semáforo de trânsito" },
+      { id: "escalonador", rotulo: "escalonador de CPU" },
+      { id: "jantar", rotulo: "jantar dos filósofos" }
     ],
     montar, roteiro
   });
