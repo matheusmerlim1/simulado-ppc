@@ -12,7 +12,7 @@ Site estático, sem build e sem dependências além das fontes do Google.
 
 ## O que tem
 
-**208 questões** com gabarito comentado, montadas a partir das provas teórica e prática
+**223 questões** com gabarito comentado, montadas a partir das provas teórica e prática
 anteriores, dos laboratórios e dos slides da disciplina.
 
 | Prova | Assuntos |
@@ -43,14 +43,15 @@ Além do simulado, a tela de estudo tem quatro abas:
 - **Panorama** — a disciplina inteira numa página, na ordem em que um assunto leva ao
   outro: concorrência &times; paralelismo, as 8 estações (pergunta central, essencial, o que
   cai na prova) e as ideias que atravessam P1 e P2.
-- **Matéria** — 77 tópicos explicados, com os casos numéricos resolvidos passo a passo e
+- **Matéria** — 80 tópicos explicados, com os casos numéricos resolvidos passo a passo e
   **18 exemplos de código comentados linha a linha**: enunciado, cada linha e o porquê
   de ela estar ali, com as linhas decisivas destacadas.
 - **Consulta rápida** — fichas de fórmulas e definições.
-- **Animações** — 7 cenas passo a passo, com play, velocidade e &larr;/&rarr;:
+- **Animações** — 8 cenas passo a passo, com play, velocidade e &larr;/&rarr;:
   fork e estados do processo; concorrência &times; paralelismo (1, 2 e 3 núcleos);
   condição de corrida sem proteção e com mutex; produtor-consumidor na ordem certa
   e invertida; o grafo de alocação fechando um ciclo (e a mesma carga sem deadlock);
+  redes de Petri (disparo, conflito, mutex e produtor-consumidor);
   jantar dos filósofos (ingênua, garfos em ordem, dois de uma vez); e
   detecção de deadlock e banqueiro. Cada passo tem legenda em texto.
 
@@ -88,12 +89,12 @@ js/
 │   ├── exclusao.js         45
 │   ├── padroes.js          37
 │   ├── deadlocks.js        38
-│   ├── petri.js            14
+│   ├── petri.js            29
 │   ├── hardware.js         17
 │   ├── desempenho.js       16
 │   └── openmp.js           16
 ├── resumo.js           fichas da aba "consulta rápida"
-├── materia.js          os 77 tópicos explicados
+├── materia.js          os 80 tópicos explicados
 ├── anotado/            código comentado linha a linha, ligado às seções pelo título
 ├── panorama.js         a aba panorama
 ├── colecoes.js         as coleções prontas

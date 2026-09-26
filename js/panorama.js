@@ -96,7 +96,7 @@ const PANORAMA = {
         "Rede <b>viva</b> (sempre dá para disparar tudo de novo), <b>limitada</b> (sem acúmulo infinito), <b>segura</b> (no máximo uma ficha por lugar)."
       ],
       prova: "Modelar o jantar dos filósofos na versão errada e na certa, e provar pela árvore de alcançabilidade.",
-      animacoes: ["filosofos"]
+      animacoes: ["petri", "filosofos"]
     },
     {
       mod: "hardware",

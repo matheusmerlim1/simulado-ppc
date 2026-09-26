@@ -835,3 +835,23 @@ code,kbd,pre,.cod,.anim-palco{font-variant-ligatures:none;font-feature-settings:
 .gr-legenda span{display:inline-flex;align-items:center;gap:7px}
 .gr-l{display:inline-block;width:26px;height:0;border-top:2.5px solid var(--petrol)}
 .gr-l.pedido{border-top:2.5px dashed var(--sinal)}
+
+/* ── cena: redes de Petri ──────────────────────────────── */
+.pn-rede{width:100%;min-width:430px;height:auto;display:block;margin:0 auto}
+.pn-lugar circle{fill:var(--surface);stroke:var(--line-2);stroke-width:2;transition:fill .25s,stroke .25s}
+.pn-lugar.tem circle{stroke:var(--petrol)}
+.pn-marca{fill:var(--ink);transition:opacity .25s}
+.pn-conta{fill:var(--ink);font-family:var(--f-mono);font-size:15px;font-weight:700;text-anchor:middle;dominant-baseline:middle}
+.pn-nome{fill:var(--muted);font-family:var(--f-mono);font-size:10px;text-anchor:middle}
+.pn-trans rect{fill:var(--line-2);transition:fill .2s,stroke .2s;stroke:transparent;stroke-width:3}
+.pn-trans text{fill:var(--ink-2);font-family:var(--f-mono);font-size:11px;font-weight:700;text-anchor:middle}
+.pn-trans.hab rect{fill:var(--sinal)}
+.pn-trans.hab text{fill:var(--sinal)}
+.pn-trans.disparou rect{fill:var(--sinal);stroke:var(--sinal-soft)}
+.pn-arco{fill:none;stroke:var(--line-2);stroke-width:2}
+.pn-peso{fill:var(--ink-2);font-family:var(--f-mono);font-size:11px;font-weight:700;text-anchor:middle}
+#pn-ponta path{fill:var(--line-2)}
+.pn-estado{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;justify-content:center;margin-top:12px;font-family:var(--f-mono);font-size:12px}
+.pn-estado b{font-size:14px;font-variant-numeric:tabular-nums}
+.pn-estado i{font-style:normal;color:var(--sinal)}
+.pn-estado i.morta{color:var(--err)}
