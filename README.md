@@ -48,8 +48,8 @@ Além do simulado, a tela de estudo tem quatro abas:
 - **Panorama** — a disciplina inteira numa página, na ordem em que um assunto leva ao
   outro: concorrência &times; paralelismo, as 8 estações (pergunta central, essencial, o que
   cai na prova) e as ideias que atravessam P1 e P2.
-- **Provas resolvidas** — o primeiro assunto da aba matéria: as **7 questões da prova
-  teórica** e as **4 da prova prática**, cada uma com o enunciado como caiu, a resposta
+- **Provas resolvidas** — dois assuntos no início da aba matéria, **prova teórica** e
+  **prova prática**, para estudar uma de cada vez. Cada questão traz o enunciado, a resposta
   desenvolvida, os erros que custam ponto e — nas de código — o programa comentado
   linha a linha. Inclui as duas contas resolvidas com os números da prova (detecção e
   banqueiro) e a análise do código dos Banheiros UNISSEX, item a item da especificação.
@@ -57,11 +57,12 @@ Além do simulado, a tela de estudo tem quatro abas:
   **18 exemplos de código comentados linha a linha**: enunciado, cada linha e o porquê
   de ela estar ali, com as linhas decisivas destacadas.
 - **Consulta rápida** — fichas de fórmulas e definições.
-- **Animações** — 8 cenas passo a passo, com play, velocidade e &larr;/&rarr;:
+- **Animações** — 9 cenas passo a passo, com play, velocidade e &larr;/&rarr;:
   fork e estados do processo; concorrência &times; paralelismo (1, 2 e 3 núcleos);
   condição de corrida sem proteção e com mutex; produtor-consumidor na ordem certa
   e invertida; o grafo de alocação fechando um ciclo (e a mesma carga sem deadlock);
-  redes de Petri (disparo, conflito, mutex e produtor-consumidor);
+  redes de Petri (disparo, conflito, mutex e produtor-consumidor) e os modelos do deck
+  (semáforo de trânsito, escalonador de CPU e o jantar dos filósofos);
   jantar dos filósofos (ingênua, garfos em ordem, dois de uma vez); e
   detecção de deadlock e banqueiro. Cada passo tem legenda em texto.
 

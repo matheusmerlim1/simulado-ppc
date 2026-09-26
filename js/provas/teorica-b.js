@@ -1,6 +1,6 @@
 /* Prova Teórica — questões 4, 5, 6 e 7 */
 
-secaoProva({
+secaoTeorica({
   h: "Teórica · Q4 — As quatro condições de deadlock e como atacá-las",
   p: enunciado("Para um deadlock acontecer, são necessárias 4 condições: <i>exclusão mútua</i>, <i>não-preempção</i>, <i>posse e espera</i> e <i>espera circular</i>. Explique-as. Quais delas podem ser atacadas para <u>prevenir</u> deadlocks, e o que deve ser feito nesses casos?") +
      "<b>As quatro (Coffman).</b> Precisam valer <b>ao mesmo tempo</b>; basta quebrar uma para tornar o deadlock impossível.<br><br>" +
@@ -22,12 +22,13 @@ secaoProva({
   box: "<b>A resposta completa tem duas partes</b> — explicar as quatro <b>e</b> dizer quais são atacáveis com o quê. Quem só explica as condições entrega metade. E o exemplo que amarra tudo: no Jantar dos Filósofos, pegar os dois garfos atomicamente ataca <b>posse e espera</b>; numerar os garfos ataca <b>espera circular</b>."
 });
 
-secaoProva({
+secaoTeorica({
   h: "Teórica · Q5 — Detecção de deadlock (resolvida com os números da prova)",
   p: enunciado("Considere o estado de sistema ao lado, com três processos P1, P2, P3 e quatro tipos de recursos RS1, RS2, RS3, RS4. Ele está em deadlock? Justifique utilizando o algoritmo de detecção estudado em aula.") +
      "<b>Confira a consistência antes de começar.</b> Para cada recurso, <b>A + soma da coluna de C = E</b>:<br>" +
      "RS1: 0 + (1+1+0) = 2 ✓ &nbsp;·&nbsp; RS2: 3 + (0+0+1) = 4 ✓ &nbsp;·&nbsp; RS3: 2 + (1+1+0) = 4 ✓ &nbsp;·&nbsp; RS4: 0 + (0+0+1) = 1 ✓<br><br>" +
      "<b>O algoritmo:</b> procure um processo cuja linha de <b>R</b> caiba em <b>A</b> (componente a componente); execute-o e devolva a linha dele de <b>C</b> para <b>A</b>. Repita. Quem sobrar está em deadlock.",
+  anima: { cena: "deteccao", modo: "deteccao", rotulo: "Ver o passo a passo animado, com estes números" },
   cod: "E = (2  4  4  1)        A = (0  3  2  0)\n\n" +
        "       C (tem)                    R (ainda pede)\n" +
        "     RS1 RS2 RS3 RS4            RS1 RS2 RS3 RS4\n" +
@@ -47,7 +48,7 @@ secaoProva({
   box: "<b>Por que P1 e P2 travam:</b> os dois esperam por <b>RS1</b>, e as duas unidades existentes de RS1 estão justamente com eles (1 com P1, 1 com P2). Ninguém mais vai devolver RS1.<br><br><b>Erro que custa a questão:</b> parar na primeira rodada e declarar deadlock geral. P3 <b>não</b> está em deadlock — ele não cabia de cara, mas coube depois. &ldquo;Não dá para atender agora&rdquo; nunca é, sozinho, prova de deadlock."
 });
 
-secaoProva({
+secaoTeorica({
   h: "Teórica · Q6 — Algoritmo do Banqueiro (resolvida com os números da prova)",
   p: enunciado("Considere o estado de alocação de recursos para os processos A, B, C e D ao lado. Suponha que o processo <b>B solicite 1 recurso</b>. O sistema irá ou não dar a esse processo? Responda utilizando o Algoritmo do Banqueiro estudado em aula.") +
      "<b>Resposta: não.</b> O pedido é legítimo e há recurso livre, mas conceder deixaria o sistema num <b>estado inseguro</b> — então o banqueiro nega e B espera.<br><br>" +
@@ -74,7 +75,7 @@ secaoProva({
   box: "<b>Inseguro não é deadlock.</b> Se o pedido fosse atendido, nada travaria naquele instante — os processos poderiam até devolver recursos sem pedir o máximo. O que se perde é a <b>garantia</b> de que todos terminam, e o banqueiro é conservador de propósito.<br><br><b>Para ganhar a questão inteira:</b> mostre a sequência segura do estado atual (é ela que prova que o estado de partida era seguro), a simulação, e a conclusão com o pedido negado."
 });
 
-secaoProva({
+secaoTeorica({
   h: "Teórica · Q7 — Rede de Petri do Jantar dos Filósofos, sem deadlock",
   p: enunciado("Crie um modelo de Rede de Petri para representar o Problema do Jantar dos Filósofos, considerando <b>3 filósofos</b>. <u>Seu modelo não deverá possuir deadlocks.</u>") +
      "A chave está em <b>não permitir o estado &ldquo;segurando um garfo só&rdquo;</b>. Isso se consegue com <b>uma única transição</b> que pega os dois garfos — como o disparo é atômico, o estado intermediário não existe na rede, e a condição de <b>posse-e-espera</b> desaparece por construção.<br><br>" +
@@ -84,7 +85,11 @@ secaoProva({
      "&bull; <code>Garfo_0</code>, <code>Garfo_1</code>, <code>Garfo_2</code> — <b>1 ficha em cada</b> (a ficha única é o que garante a exclusão sobre o garfo).<br><br>" +
      "<b>Transições (6)</b>, duas por filósofo:<br>" +
      "&bull; <code>Pega_i</code> — <b>entradas:</b> <code>Pensando_i</code>, <code>Garfo_i</code> e <code>Garfo_d</code>. <b>Saída:</b> <code>Comendo_i</code>.<br>" +
-     "&bull; <code>Larga_i</code> — <b>entrada:</b> <code>Comendo_i</code>. <b>Saídas:</b> <code>Pensando_i</code>, <code>Garfo_i</code> e <code>Garfo_d</code>.",
+     "&bull; <code>Larga_i</code> — <b>entrada:</b> <code>Comendo_i</code>. <b>Saídas:</b> <code>Pensando_i</code>, <code>Garfo_i</code> e <code>Garfo_d</code>.<br><br>" +
+     "<b>É este o desenho que se entrega na prova</b> — com a marcação inicial indicada pelas fichas:",
+  rede: "jantar",
+  legenda: "M<sub>0</sub> = uma ficha em cada <code>Pens</code> (todos pensando) e uma em cada <code>G</code> (garfos livres). Repare nos <b>três arcos de entrada</b> de cada <code>Pega</code>: é o que faz os dois garfos serem tomados num único disparo.",
+  anima: { cena: "petri-modelos", modo: "jantar", rotulo: "Ver a rede disparando, passo a passo" },
   cod: "M0 = [ Pens0,Pens1,Pens2 | Com0,Com1,Com2 | G0,G1,G2 ]\n" +
        "   = [   1,    1,    1   |  0,   0,   0   |  1, 1, 1 ]\n\n" +
        "PROVA POR ARVORE DE ALCANCABILIDADE\n\n" +

@@ -1,6 +1,6 @@
 /* Prova Teórica — questões 1, 2 e 3 */
 
-secaoProva({
+secaoTeorica({
   h: "Teórica · Q1 — Região crítica, condição de corrida e exclusão mútua",
   p: enunciado("Defina <i>Região Crítica</i>, <i>Condição de Corrida</i> e <i>Exclusão Mútua</i>. Qual é a relação entre esses conceitos?") +
      "<b>Região crítica</b> é o trecho de código em que um fluxo de execução acessa um <b>recurso compartilhado</b> — uma variável global, um arquivo, uma estrutura de dados — de forma que o acesso simultâneo de outro fluxo possa corromper o resultado. Não é o dado: é o <b>trecho de código</b> que mexe nele.<br><br>" +
@@ -30,7 +30,7 @@ secaoProva({
   box: "<b>O que faz perder ponto:</b> (1) definir região crítica como &ldquo;a variável compartilhada&rdquo; — é o <i>trecho de código</i>; (2) dizer que condição de corrida é &ldquo;quando duas threads usam a mesma variável&rdquo; — só há corrida se ao menos uma <b>escreve</b>; (3) responder as três definições e <b>esquecer a relação</b>, que é metade da questão."
 });
 
-secaoProva({
+secaoTeorica({
   h: "Teórica · Q2 — Semáforos, monitores e mutexes",
   p: enunciado("Compare semáforos, monitores e mutexes. Quais são suas primitivas? Como elas funcionam?") +
      "<b>Semáforo</b> (Dijkstra, 1965) é uma estrutura com uma <b>variável inteira</b> e uma <b>lista de processos bloqueados</b>. Duas operações <b>atômicas</b>:<br>" +
@@ -55,7 +55,7 @@ secaoProva({
   box: "<b>A pegadinha da questão:</b> ela pede <b>as primitivas</b> e <b>como funcionam</b>. Não basta listar <code>wait</code>/<code>post</code> — é preciso dizer o que cada uma faz com o contador e com a fila de bloqueados. E a diferença entre semáforo binário e mutex (o <b>dono</b>) é o ponto que separa a resposta completa da incompleta."
 });
 
-secaoProva({
+secaoTeorica({
   h: "Teórica · Q3 — Os seis padrões de projeto concorrente",
   p: enunciado("Explique os seguintes padrões de projeto concorrente: (a) Fork/Join, (b) Travar &amp; Destravar, (c) Dormir e acordar, (d) Despachante-operário, (e) Pipeline, (f) Barreiras.") +
      "<b>(a) Fork/Join.</b> O fluxo principal <b>divide</b> o trabalho criando N fluxos que executam em paralelo e depois <b>espera</b> todos terminarem antes de seguir. É o padrão base: <code>fork()</code>+<code>wait()</code> para processos, <code>pthread_create()</code>+<code>pthread_join()</code> para threads. Combina naturalmente com <b>redução</b>: cada thread acumula um resultado parcial numa variável privada e o mestre combina tudo depois do join — sem região crítica nenhuma.<br><br>" +

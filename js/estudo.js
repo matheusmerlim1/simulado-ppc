@@ -226,6 +226,14 @@ function montarSecao(secao) {
     texto.innerHTML = secao.p;
     artigo.appendChild(texto);
   }
+  if (secao.rede) {                                /* modelo desenhado, não descrito */
+    const figura = document.createElement("figure");
+    figura.className = "secao-rede";
+    figura.innerHTML = montarRedeEstatica(secao.rede) +
+      (secao.legenda ? "<figcaption>" + secao.legenda + "</figcaption>" : "");
+    artigo.appendChild(figura);
+  }
+  if (secao.anima) artigo.appendChild(montarAtalhoAnimacao(secao.anima));
   if (secao.anotado) artigo.appendChild(montarAnotado(secao.anotado));
   if (secao.cod) {
     const pre = document.createElement("pre");
@@ -241,6 +249,27 @@ function montarSecao(secao) {
   }
 
   return artigo;
+}
+
+/* Botão que abre a animação da matéria já no modo certo.
+   anima = { cena, modo, rotulo } */
+function montarAtalhoAnimacao(anima) {
+  const cena = ANIMACOES.find(c => c.id === anima.cena);
+  const caixa = document.createElement("div");
+  caixa.className = "pan-acoes";
+
+  const botao = document.createElement("button");
+  botao.className = "btn-mini anima";
+  botao.innerHTML = "&#9654; " + (anima.rotulo || (cena ? cena.nome : "animação"));
+  botao.disabled = !cena;
+  botao.addEventListener("click", () => {
+    mostrarAba("animacoes");
+    abrirAnimacao(anima.cena, anima.modo);
+    $("#abaAnimacoes").scrollIntoView({ block: "start", behavior: "smooth" });
+  });
+
+  caixa.appendChild(botao);
+  return caixa;
 }
 
 /* Código comentado linha a linha.

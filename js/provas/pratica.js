@@ -1,10 +1,11 @@
 /* Prova Prática — questões 1 a 4 */
 
-secaoProva({
+secaoPratica({
   h: "Prática · Q1 — 1000 threads incrementam, 1000 decrementam (1,5 ponto)",
   p: enunciado("Escreva um programa que instancie 1000 threads que incrementam em 1 uma variável compartilhada chamada <code>contador</code> e 1000 threads que decrementam em 1 essa mesma variável.") +
      "O enunciado não diz &ldquo;proteja&rdquo;, mas é isso que está sendo cobrado: sem exclusão mútua o resultado final <b>quase nunca</b> é zero, e muda a cada execução. Com proteção, é zero <b>sempre</b>.<br><br>" +
      "São 2000 threads e um único mutex (ou um semáforo iniciado em 1). Não é preciso guardar os 2000 identificadores em vetores separados — um vetor de <code>pthread_t</code> de 2000 posições resolve, e o <code>join</code> de todas vem num laço só.",
+  anima: { cena: "corrida", modo: "sem", rotulo: "Ver a corrida acontecendo, instrução por instrução" },
   anotado: {
     enunciado: "Programa completo, com a região crítica protegida e os dois laços de <code>join</code> separados da criação.",
     linhas: [
@@ -34,7 +35,7 @@ secaoProva({
   box: "<b>Alternativa com semáforo:</b> <code>sem_t s; sem_init(&s, 0, 1);</code> e <code>sem_wait</code>/<code>sem_post</code> no lugar de <code>lock</code>/<code>unlock</code>. Funciona igual — mas o mutex é a escolha mais expressiva, porque aqui o problema é <b>só</b> exclusão mútua."
 });
 
-secaoProva({
+secaoPratica({
   h: "Prática · Q2 — Imprimir BEBER com uma thread por letra (1,5 ponto)",
   p: enunciado("Escreva um programa concorrente que imprima a palavra <b>BEBER</b>. Seu programa deverá instanciar <u>apenas 1 thread para cada letra</u> — ou seja, não pode haver 2 threads para imprimir as letras &lsquo;E&rsquo; separadamente!") +
      "<b>A pegadinha está no enunciado.</b> BEBER tem 5 letras, mas só <b>3 distintas</b>: B, E e R. Como não pode haver duas threads para a mesma letra, são <b>3 threads</b> — e a thread do B imprime <b>duas vezes</b>, assim como a do E.<br><br>" +
@@ -67,12 +68,13 @@ secaoProva({
   box: "<b>Variação que já caiu:</b> a mesma ideia com a palavra <b>CAFE</b>, em que todas as letras são distintas — aí são 4 threads e 4 semáforos, um por letra, e cada thread imprime uma vez só. A estrutura da corrente é idêntica."
 });
 
-secaoProva({
+secaoPratica({
   h: "Prática · Q3 — Jantar dos Filósofos com 3 filósofos (4,0 pontos)",
   p: enunciado("O problema do Jantar dos Filósofos visto em aula é definido por: filósofos comem ou pensam; para comer, precisam pegar 2 garfos; existe um número de garfos igual ao número de filósofos (3 filósofos, 3 garfos). Implemente o problema em qualquer linguagem, considerando 3 filósofos. <u>Seu programa não deverá possuir deadlocks ou condições de corrida.</u>") +
      "É a questão de maior peso da prova, e o enunciado diz exatamente o que será verificado: <b>nem deadlock, nem condição de corrida</b>.<br><br>" +
      "<b>Por que a solução ingênua trava:</b> se cada filósofo pega o garfo da esquerda e depois o da direita, existe a intercalação em que todos pegam o da esquerda ao mesmo tempo — cada um segura um garfo e espera pelo do vizinho. As quatro condições de Coffman valem juntas.<br><br>" +
      "<b>A correção mais simples de defender numa prova</b> é atacar a <b>posse-e-espera</b>: o filósofo só pega garfos se <b>os dois</b> estiverem livres, e essa verificação acontece sob um mutex. Assim ninguém nunca segura um garfo só. Quem não pode comer <b>dorme</b> num semáforo próprio, em vez de ficar tentando — o que também evita espera ocupada e livelock.",
+  anima: { cena: "filosofos", modo: "dois", rotulo: "Ver esta solução animada (os dois garfos de uma vez)" },
   anotado: {
     enunciado: "Solução com vetor de estados (Tanenbaum), adaptada para N = 3. Cada filósofo é uma thread; o teste dos garfos é a região crítica.",
     linhas: [
@@ -100,7 +102,7 @@ secaoProva({
   box: "<b>Outras soluções aceitáveis</b>, se você souber defender: <b>(1)</b> numerar os garfos e pegá-los em ordem crescente — ataca a espera circular, e basta um filósofo &ldquo;canhoto&rdquo; para quebrar o ciclo; <b>(2)</b> limitar a N&minus;1 filósofos à mesa com um semáforo de contagem iniciado em 2.<br><br><b>O que não vale:</b> dormir um tempo aleatório antes de pegar o garfo. Isso só reduz a <i>probabilidade</i> do deadlock — não o elimina."
 });
 
-secaoProva({
+secaoPratica({
   h: "Prática · Q4 — Analisar o código dos Banheiros UNISSEX (3,0 pontos)",
   p: enunciado("Um aluno, ao receber um trabalho de programação, resolveu colocar a descrição e a especificação no ChatGPT, entregando o código retornado. Para cada item da &ldquo;Especificação&rdquo;, indique se ela foi implementada corretamente ou não e em quais linhas do código elas estão implementadas. Ainda, caso haja condição de corrida ou deadlock na implementação, indique em quais linhas e dê um exemplo de como ela ocorre.") +
      "<b>O problema:</b> o banheiro fica em um de três estados — VAZIO, COM MULHER ou COM HOMEM. Várias pessoas do mesmo gênero podem estar dentro ao mesmo tempo; gêneros diferentes, não. É uma variante de <b>leitores e escritores</b>, com dois &ldquo;tipos de leitor&rdquo; mutuamente exclusivos.<br><br>" +
