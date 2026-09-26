@@ -100,7 +100,8 @@ function montarEstacao(est, k) {
       '<p class="pan-perg">' + est.pergunta + "</p>" +
       '<div class="pan-texto">' + est.texto + "</div>" +
       '<ul class="pan-ess">' + est.essencial.map(e => "<li>" + e + "</li>").join("") + "</ul>" +
-      '<p class="pan-prova"><b>Na prova</b>' + est.prova + "</p>" +
+      '<p class="pan-prova"><b>Na teórica</b>' + est.prova + "</p>" +
+      (est.pratica ? '<p class="pan-prova pratica"><b>Na prática</b>' + est.pratica + "</p>" : "") +
       '<div class="pan-acoes"></div>' +
     "</div>";
 

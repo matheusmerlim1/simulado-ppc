@@ -17,6 +17,7 @@ const conf = {
   mods:  new Set(),
   difs:  new Set(["facil", "medio", "dificil"]),
   tipos: new Set(["mc", "vf", "disc", "code"]),
+  aval:  "ambas",                              /* teorica | pratica | ambas */
   qtd:   10,
   ordem: "rand"
 };
@@ -75,7 +76,8 @@ function baseProva() {
 
 function selecionadas() {
   return baseProva().filter(q =>
-    conf.mods.has(q.mod) && conf.difs.has(q.dif) && conf.tipos.has(q.tipo));
+    conf.mods.has(q.mod) && conf.difs.has(q.dif) && conf.tipos.has(q.tipo) &&
+    (conf.aval === "ambas" || avaliacaoDe(q) === conf.aval));
 }
 
 function modulosVisiveis() {

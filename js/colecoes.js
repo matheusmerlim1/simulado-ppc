@@ -21,6 +21,16 @@ const COLECOES = [
     ids:["em14","pp11","dl16","em20a","em20b","em20c","em20d"]
   },
   {
+    t:"Treino da prova teórica",
+    s:"tudo o que cai no papel, sem código",
+    filtro:(q) => avaliacaoDe(q) === "teorica"
+  },
+  {
+    t:"Treino da prova prática",
+    s:"escrever e analisar código",
+    filtro:(q) => avaliacaoDe(q) === "pratica"
+  },
+  {
     t:"Definições em 1 minuto",
     s:"só os conceitos, resposta curta",
     ids:["em01a","em01b","em01c",

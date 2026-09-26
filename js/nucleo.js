@@ -16,6 +16,23 @@ const MODULOS = {
   openmp:     { nome:"OpenMP",                    prova:"P2" }
 };
 
+/* As duas avaliações da disciplina. A prática é a prova em que se escreve
+   código; a teórica é a de papel — conceitos, comparações, traços e contas. */
+const AVALIACOES = {
+  teorica: { nome:"Teórica", desc:"conceitos, comparações, traços de execução e contas" },
+  pratica: { nome:"Prática", desc:"escrever, completar e analisar código" }
+};
+
+/* A regra abaixo classifica quase tudo; estes são os casos em que ela erraria.
+   Pedem decisão de implementação ou leitura de código, mas não são tipo "code". */
+const EXCECOES_PRATICA = new Set(["em13", "em35", "om06", "pt14"]);
+
+function avaliacaoDe(q) {
+  if (EXCECOES_PRATICA.has(q.id)) return "pratica";
+  if (q.tipo === "code") return "pratica";
+  return /Prática|Análise de (código|log)|Exemplo/.test(q.fonte) ? "pratica" : "teorica";
+}
+
 /* Banco de questões. Cada arquivo de js/questoes/ chama registrar(). */
 const BANCO = [];
 

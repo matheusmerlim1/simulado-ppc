@@ -71,6 +71,11 @@ function atualizarContagem() {
   $$("#tipos .cnt").forEach(el => {
     el.textContent = base.filter(q => q.tipo === el.dataset.cnt).length;
   });
+  $$("#avaliacao .cnt").forEach(el => {
+    el.textContent = el.dataset.cnt === "ambas"
+      ? base.length
+      : base.filter(q => avaliacaoDe(q) === el.dataset.cnt).length;
+  });
 
   const disponiveis = selecionadas().length;
   const naRodada = conf.qtd === 0 ? disponiveis : Math.min(conf.qtd, disponiveis);
@@ -141,6 +146,7 @@ function ligarConfiguracao() {
   ligarChips("#dificuldades", "difs",  "dif");
   ligarChips("#tipos",        "tipos", "tipo");
 
+  ligarSegmentado("#avaliacao", b => conf.aval = b.dataset.aval);
   ligarSegmentado("#qtd",   b => conf.qtd   = parseInt(b.dataset.qtd, 10));
   ligarSegmentado("#ordem", b => conf.ordem = b.dataset.ordem);
 

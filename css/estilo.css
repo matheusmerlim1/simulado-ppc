@@ -855,3 +855,6 @@ code,kbd,pre,.cod,.anim-palco{font-variant-ligatures:none;font-feature-settings:
 .pn-estado b{font-size:14px;font-variant-numeric:tabular-nums}
 .pn-estado i{font-style:normal;color:var(--sinal)}
 .pn-estado i.morta{color:var(--err)}
+
+/* a linha da prova prática, no panorama, usa o petróleo da sincronização */
+.pan-prova.pratica{margin-top:7px;border-style:solid;border-color:var(--line);border-left:3px solid var(--petrol);background:var(--petrol-soft)}

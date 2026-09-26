@@ -28,6 +28,7 @@ const PANORAMA = {
   estacoes: [
     {
       mod: "processos",
+      pratica: "Escrever <code>fork</code>/<code>wait</code> e as funções de thread: passar o índice certo, dar <code>join</code> fora do laço de criação e dividir um vetor em faixas.",
       pergunta: "Como um programa vira várias linhas de execução?",
       texto: "Um <b>processo</b> é um programa em execução, com espaço de endereçamento próprio; uma <b>thread</b> é uma linha de execução dentro dele. Processos nascem com <code>fork()</code> e não compartilham memória; threads nascem com <code>pthread_create()</code> e compartilham quase tudo. Quem decide o que roda a cada instante é o <b>escalonador</b>.",
       essencial: [
@@ -42,6 +43,7 @@ const PANORAMA = {
     },
     {
       mod: "exclusao",
+      pratica: "Proteger a região crítica com semáforo ou mutex, impor ordem com semáforos iniciados em 0, e achar a corrida ou o deadlock num trecho de código pronto.",
       pergunta: "O que dá errado quando duas threads mexem no mesmo dado?",
       texto: "Se duas threads leem e escrevem a mesma variável, o resultado passa a depender da ordem em que o escalonador intercala as instruções: é a <b>condição de corrida</b>. O trecho que acessa o dado é a <b>região crítica</b>, e o tratamento é a <b>exclusão mútua</b> — um fluxo por vez ali dentro. Qualquer solução só funciona se testar e tomar a trava for uma operação atômica.",
       essencial: [
@@ -56,6 +58,7 @@ const PANORAMA = {
     },
     {
       mod: "padroes",
+      pratica: "Implementar com semáforos: CAFE, barreira, pipeline, produtor-consumidor e os clássicos — e ler código de pool de threads e leitores/escritores.",
       pergunta: "Além de proteger, como fazer as threads trabalharem juntas?",
       texto: "Exclusão mútua impede o estrago; os <b>padrões</b> organizam a cooperação. Cada um é uma forma recorrente de ordenar eventos entre threads, montada com as mesmas peças: semáforo em 0 para sinalizar, contador para esperar todas, fila para distribuir trabalho. Os <b>problemas clássicos de IPC</b> são os casos de teste em que essas peças funcionam — ou travam.",
       essencial: [
@@ -71,6 +74,7 @@ const PANORAMA = {
     },
     {
       mod: "deadlocks",
+      pratica: "Escrever o jantar dos filósofos sem deadlock e a verificação de estado seguro do banqueiro.",
       pergunta: "E quando as threads ficam esperando umas pelas outras para sempre?",
       texto: "<b>Deadlock</b> é um conjunto de processos bloqueados em que cada um espera um recurso que outro do conjunto segura. Ele só acontece se as <b>quatro condições de Coffman</b> valerem juntas. Tratar deadlock é escolher uma estratégia: ignorar, <b>detectar</b> e recuperar, <b>evitar</b> a cada pedido, ou <b>prevenir</b> quebrando uma das condições.",
       essencial: [
@@ -129,6 +133,7 @@ const PANORAMA = {
     },
     {
       mod: "openmp",
+      pratica: "Paralelizar um laço, corrigir a corrida com <code>reduction</code>/<code>atomic</code>, escolher o <code>schedule</code> e medir o tempo direito.",
       pergunta: "Como paralelizar um laço sem escrever as threads à mão?",
       texto: "<b>OpenMP</b> é um conjunto de diretivas de compilador para memória compartilhada. Uma região paralela abre um time de threads e junta todas no final — é o fork/join da P1, automatizado. Continua sendo seu decidir o escopo das variáveis, onde há região crítica e como distribuir as iterações.",
       essencial: [
