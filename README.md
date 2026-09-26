@@ -57,12 +57,13 @@ Além do simulado, a tela de estudo tem quatro abas:
   **18 exemplos de código comentados linha a linha**: enunciado, cada linha e o porquê
   de ela estar ali, com as linhas decisivas destacadas.
 - **Consulta rápida** — fichas de fórmulas e definições.
-- **Animações** — 9 cenas passo a passo, com play, velocidade e &larr;/&rarr;:
+- **Animações** — 10 cenas passo a passo, com play, velocidade e &larr;/&rarr;:
   fork e estados do processo; concorrência &times; paralelismo (1, 2 e 3 núcleos);
   condição de corrida sem proteção e com mutex; produtor-consumidor na ordem certa
   e invertida; o grafo de alocação fechando um ciclo (e a mesma carga sem deadlock);
-  redes de Petri (disparo, conflito, mutex e produtor-consumidor) e os modelos do deck
-  (semáforo de trânsito, escalonador de CPU e o jantar dos filósofos);
+  redes de Petri (disparo, conflito, mutex e produtor-consumidor), os modelos do deck
+  (semáforo de trânsito e escalonador de CPU) e o **Jantar dos Filósofos em Petri**, com
+  os três modelos do laboratório — o que trava e os dois que previnem o deadlock;
   jantar dos filósofos (ingênua, garfos em ordem, dois de uma vez); e
   detecção de deadlock e banqueiro. Cada passo tem legenda em texto.
 

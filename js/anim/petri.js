@@ -67,39 +67,6 @@
     inicial: { PFE: 0, PAR: 1, PROC: 0, PFS: 0 }
   };
 
-  /* jantar dos filósofos, 3 filósofos: Pega_i tem TRÊS arcos de entrada,
-     então o disparo atômico pega os dois garfos de uma vez */
-  REDES.jantar = (function () {
-    /* layout de mesa: garfos no centro, e cada filósofo num setor de 120 graus.
-       Pens -> Pega -> Come -> Larga -> Pens, girando no sentido horário. */
-    const C = [350, 285], r = { garfo: 92, trans: 162, lugar: 256 };
-    const pos = (ang, raio) => {
-      const a = (ang - 90) * Math.PI / 180;
-      return [Math.round(C[0] + raio * Math.cos(a)), Math.round(C[1] + raio * Math.sin(a))];
-    };
-    const r_ = { caixa: [700, 580], lugares: {}, transicoes: {}, arcos: [], inicial: {} };
-
-    for (let i = 0; i < 3; i++) {
-      const d = (i + 1) % 3;
-      const g = 120 * i;          /* garfo i */
-      const f = g + 60;           /* filósofo i, entre o garfo i e o i+1 */
-
-      r_.lugares["G" + i]    = pos(g, r.garfo);
-      r_.lugares["Pens" + i] = pos(f - 40, r.lugar);
-      r_.lugares["Come" + i] = pos(f + 40, r.lugar);
-      r_.transicoes["Pega" + i]  = pos(f - 20, r.trans);
-      r_.transicoes["Larga" + i] = pos(f + 20, r.trans);
-
-      r_.arcos.push(["Pens" + i, "Pega" + i], ["G" + i, "Pega" + i], ["G" + d, "Pega" + i],
-                    ["Pega" + i, "Come" + i], ["Come" + i, "Larga" + i],
-                    ["Larga" + i, "Pens" + i], ["Larga" + i, "G" + i], ["Larga" + i, "G" + d]);
-      r_.inicial["G" + i] = 1;
-      r_.inicial["Pens" + i] = 1;
-      r_.inicial["Come" + i] = 0;
-    }
-    return r_;
-  })();
-
   /* ── simulador ─────────────────────────────────────────── */
   const peso = ([, , p]) => p || 1;
   const entradas = (rede, t) => rede.arcos.filter(a => a[1] === t);
@@ -178,17 +145,6 @@
     ["INICIAR", "Uma das três CPUs foi ocupada: <code>PAR</code> cai para 2."],
     ["INICIAR", "Segunda CPU ocupada, e <code>PROC</code> já tem duas marcas — dois processamentos ao mesmo tempo."],
     ["INICIAR", "Terceira: <code>PROC</code> chega a <b>3</b> marcas e <code>PAR</code> zera. O lugar <code>PROC</code> é <b>3-limitado</b> — nunca passa do número de CPUs."]
-  ];
-
-  ROTEIRO.jantar = [
-    [null, "O Jantar dos Filósofos com <b>3 filósofos</b>: 9 lugares e 6 transições. Marcação inicial: <b>1 ficha</b> em cada <code>Pens</code> (todos pensando) e <b>1 ficha</b> em cada <code>G</code> (todos os garfos livres)."],
-    [null, "Olhe para <b>Pega0</b>: ela tem <b>três arcos de entrada</b> — <code>Pens0</code>, <code>G0</code> e <code>G1</code>. Só dispara com os <b>dois</b> garfos livres, e o disparo é atômico: o estado &ldquo;segurando um garfo só&rdquo; <b>não existe nesta rede</b>."],
-    ["Pega0", "<b>Pega0</b> dispara: consome o pensar e os dois garfos, e o filósofo 0 passa a comer."],
-    [null, "<b>Pega1</b> precisa de <code>G1</code> e <code>G2</code> — <code>G1</code> está com o filósofo 0. <b>Pega2</b> precisa de <code>G2</code> e <code>G0</code> — <code>G0</code> também. Nenhuma das duas está habilitada, mas <b>Larga0</b> está: a rede continua viva."],
-    ["Larga0", "<b>Larga0</b> devolve o filósofo a <code>Pens0</code> e os dois garfos à mesa. Voltamos exatamente à marcação inicial."],
-    ["Pega1", "Agora é a vez do filósofo 1. Os ramos de <code>Pega1</code> e <code>Pega2</code> são <b>simétricos</b> ao de <code>Pega0</code>, por rotação dos índices."],
-    ["Larga1", "E ele devolve os garfos."],
-    [null, "<b>O conjunto de alcançabilidade tem só 4 marcações</b> — a inicial e as três com um filósofo comendo — e <b>todas</b> têm pelo menos uma transição habilitada. Não existe marcação morta: a rede é <b>viva</b> e <b>livre de deadlock</b>. É também <b>segura</b>: nenhum lugar passa de 1 ficha.<br><br>Com 3 filósofos e 3 garfos, apenas <b>um</b> come por vez — o modelo é correto, mas com pouco paralelismo."]
   ];
 
   function roteiro(modo) {
@@ -297,6 +253,16 @@
     };
   }
 
+  /* outra cena pode usar o mesmo motor: passa as redes, os roteiros e os modos */
+  window.petriCena = function (def) {
+    Object.assign(REDES, def.redes);
+    Object.assign(ROTEIRO, def.roteiros);
+    registrarAnimacao({
+      id: def.id, nome: def.nome, titulo: def.titulo, ideia: def.ideia,
+      modos: def.modos, montar: montar, roteiro: roteiro
+    });
+  };
+
   /* a matéria usa isto para mostrar um modelo como figura, sem controles */
   function montarRedeEstatica(id) {
     const rede = REDES[id];
@@ -322,11 +288,10 @@
     id: "petri-modelos",
     nome: "Petri: modelos do deck",
     titulo: "Modelos em Rede de Petri",
-    ideia: "Os sistemas modelados nos slides e no laboratório, do semáforo de trânsito ao Jantar dos Filósofos — cada um com a sua marcação inicial e o que ela garante.",
+    ideia: "Os sistemas modelados nos slides e no laboratório, cada um com a sua marcação inicial e o que ela garante.",
     modos: [
       { id: "semaforo", rotulo: "semáforo de trânsito" },
-      { id: "escalonador", rotulo: "escalonador de CPU" },
-      { id: "jantar", rotulo: "jantar dos filósofos" }
+      { id: "escalonador", rotulo: "escalonador de CPU" }
     ],
     montar, roteiro
   });

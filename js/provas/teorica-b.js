@@ -87,9 +87,9 @@ secaoTeorica({
      "&bull; <code>Pega_i</code> — <b>entradas:</b> <code>Pensando_i</code>, <code>Garfo_i</code> e <code>Garfo_d</code>. <b>Saída:</b> <code>Comendo_i</code>.<br>" +
      "&bull; <code>Larga_i</code> — <b>entrada:</b> <code>Comendo_i</code>. <b>Saídas:</b> <code>Pensando_i</code>, <code>Garfo_i</code> e <code>Garfo_d</code>.<br><br>" +
      "<b>É este o desenho que se entrega na prova</b> — com a marcação inicial indicada pelas fichas:",
-  rede: "jantar",
+  rede: "jantar-atomico",
   legenda: "M<sub>0</sub> = uma ficha em cada <code>Pens</code> (todos pensando) e uma em cada <code>G</code> (garfos livres). Repare nos <b>três arcos de entrada</b> de cada <code>Pega</code>: é o que faz os dois garfos serem tomados num único disparo.",
-  anima: { cena: "petri-modelos", modo: "jantar", rotulo: "Ver a rede disparando, passo a passo" },
+  anima: { cena: "petri-jantar", modo: "jantar-atomico", rotulo: "Ver a rede disparando, passo a passo" },
   cod: "M0 = [ Pens0,Pens1,Pens2 | Com0,Com1,Com2 | G0,G1,G2 ]\n" +
        "   = [   1,    1,    1   |  0,   0,   0   |  1, 1, 1 ]\n\n" +
        "PROVA POR ARVORE DE ALCANCABILIDADE\n\n" +
