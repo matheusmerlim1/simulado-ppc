@@ -114,10 +114,10 @@ registrar([
   fonte:"Slides / Tanenbaum cap. 2",
   enunciado:"Quais condições uma boa solução de exclusão mútua precisa satisfazer?",
   opcoes:[
-    "(1) Nunca dois processos simultaneamente na região crítica; (2) nenhuma suposição sobre velocidade ou número de CPUs; (3) nenhum processo fora da sua região crítica pode bloquear outro; (4) nenhum processo deve esperar eternamente para entrar.",
-    "(1) Só um processo por CPU; (2) todos os processos com a mesma prioridade; (3) o escalonador deve ser FIFO; (4) sem preempção.",
-    "(1) Uso obrigatório de semáforos; (2) espera ocupada proibida; (3) prioridade fixa; (4) memória compartilhada.",
-    "(1) Nenhum processo pode ser interrompido; (2) as regiões críticas devem ter o mesmo tamanho; (3) o número de processos deve ser par; (4) sem variáveis globais."
+    "(1) nunca dois processos na região crítica; (2) nenhuma suposição sobre velocidade ou número de CPUs; (3) ninguém fora da região crítica bloqueia outro; (4) ninguém espera para sempre.",
+    "(1) um processo por CPU; (2) todos os processos com a mesma prioridade; (3) escalonador FIFO; (4) nenhuma preempção durante a execução.",
+    "(1) uso obrigatório de semáforos; (2) espera ocupada proibida; (3) prioridade fixa por processo; (4) memória compartilhada entre todos.",
+    "(1) nenhum processo pode ser interrompido; (2) regiões críticas do mesmo tamanho; (3) número par de processos; (4) nenhuma variável global."
   ],
   correta:0,
   gabarito:"São as quatro condições clássicas de Tanenbaum. A (1) é a exclusão mútua propriamente dita; a (2) impede soluções que só funcionem em certa velocidade relativa; a (3) elimina a alternância estrita; e a (4) é a ausência de <i>starvation</i>. Repare que desativar interrupções violaria a (2) num sistema multiprocessador — desativar interrupção de um núcleo não impede outro núcleo de entrar na região crítica."
@@ -128,10 +128,10 @@ registrar([
   enunciado:"Por que <code>contador++</code> pode gerar condição de corrida mesmo sendo uma única linha em C?",
   cod:"/* contador++ vira, em assembly, algo como: */\n    mov  eax, [contador]     ; 1) LE  o valor da memoria\n    add  eax, 1              ; 2) INCREMENTA no registrador\n    mov  [contador], eax     ; 3) ESCREVE de volta na memoria",
   opcoes:[
-    "Porque a operação vira três instruções de máquina (ler, incrementar, escrever) e o escalonador pode trocar de thread entre elas, fazendo um incremento sobrescrever o outro.",
-    "Porque o compilador C não garante a ordem de avaliação dos operandos.",
-    "Porque <code>int</code> não cabe num registrador em máquinas de 64 bits.",
-    "Não gera — <code>++</code> é atômico por definição na linguagem C."
+    "Porque vira três instruções (ler, somar, escrever) e a troca de thread entre elas faz um incremento sobrescrever o outro.",
+    "Porque o compilador C não garante a ordem de avaliação dos operandos numa mesma linha.",
+    "Porque um <code>int</code> não cabe inteiro num registrador nas máquinas de 64 bits, exigindo dois acessos.",
+    "Não gera: o operador <code>++</code> é atômico por definição na linguagem C, segundo o padrão."
   ],
   correta:0,
   gabarito:"A operação é <b>read-modify-write</b>, não atômica. Se duas threads lêem 5 ao mesmo tempo, ambas calculam 6 e ambas escrevem 6: dois incrementos produziram um só. É exatamente o que faz a Questão 1 da Prova Prática (1000 threads incrementando + 1000 decrementando) terminar com um valor diferente de zero sem proteção."
@@ -142,10 +142,10 @@ registrar([
   enunciado:"Por que a solução de exclusão mútua com <b>variável de trava</b> (<i>lock variable</i>) não funciona?",
   cod:"int trava = 0;                 /* variavel compartilhada */\n\nvoid entra_regiao_critica(void) {\n    while (trava == 1)         /* A) espera enquanto estiver travado */\n        ;\n    trava = 1;                 /* B) trava */\n}\n\nvoid sai_regiao_critica(void) {\n    trava = 0;\n}",
   opcoes:[
-    "Porque testar a trava (A) e escrevê-la (B) não é uma operação atômica: duas threads podem ler <code>trava == 0</code> antes que qualquer uma escreva 1, e ambas entram na região crítica.",
-    "Porque a variável <code>trava</code> precisa ser <code>volatile</code>, e sem isso o compilador remove o laço.",
-    "Porque a espera ocupada consome CPU, o que torna a solução incorreta.",
-    "Porque só funciona com dois processos; com três ou mais estaria correta."
+    "Porque testar a trava e escrevê-la não é atômico: duas threads leem <code>trava == 0</code> antes de qualquer escrita e entram juntas.",
+    "Porque <code>trava</code> precisa ser <code>volatile</code>; sem isso o compilador elimina o laço de espera.",
+    "Porque a espera ocupada consome CPU, e isso por si só já torna a solução incorreta.",
+    "Porque só vale para dois processos; com três ou mais seria preciso outro vetor de travas."
   ],
   correta:0,
   gabarito:"O problema é a <b>janela entre o teste e a escrita</b>. É a demonstração pedida no Q6 do laboratório: simule um escalonamento em que a thread A sai do <code>while</code> (viu trava = 0) e é preemptada <i>antes</i> de fazer <code>trava = 1</code>; a thread B também vê 0, entra, e agora as duas estão na região crítica. Note que a própria variável de trava virou uma nova região crítica — é um problema circular. A saída é uma instrução atômica de hardware (<code>TSL</code>, <code>XCHG</code>, <i>compare-and-swap</i>) ou um algoritmo como o de Peterson. A espera ocupada e o <code>volatile</code> são problemas reais, mas secundários: o erro de <b>correção</b> é a não-atomicidade."
@@ -156,10 +156,10 @@ registrar([
   enunciado:"A solução por <b>alternância estrita</b> garante exclusão mútua, mas é considerada ruim. Qual condição de uma boa solução ela viola?",
   cod:"/* processo 0 */                    /* processo 1 */\nwhile (TRUE) {                     while (TRUE) {\n    while (turno != 0) ;               while (turno != 1) ;\n    regiao_critica();                  regiao_critica();\n    turno = 1;                         turno = 0;\n    regiao_nao_critica();              regiao_nao_critica();\n}                                  }",
   opcoes:[
-    "&ldquo;Nenhum processo fora da sua região crítica pode bloquear outro processo&rdquo; — se o processo 0 demorar na região <b>não</b> crítica, o processo 1 fica travado esperando a vez.",
-    "&ldquo;Nunca dois processos simultaneamente na região crítica&rdquo; — a alternância permite os dois entrarem.",
+    "&ldquo;Ninguém fora da região crítica pode bloquear outro&rdquo; — se o processo 0 demorar <b>fora</b> dela, o processo 1 fica preso esperando a vez.",
+    "&ldquo;Nunca dois processos na região crítica ao mesmo tempo&rdquo; — a alternância deixa os dois entrarem juntos.",
     "&ldquo;Nenhuma suposição sobre o número de CPUs&rdquo; — a solução só funciona em máquina de um núcleo.",
-    "Não viola nenhuma; a alternância estrita é a solução recomendada para dois processos."
+    "Não viola nenhuma: a alternância estrita é a solução recomendada para dois processos."
   ],
   correta:0,
   gabarito:"A alternância estrita força a ordem 0, 1, 0, 1, ... Se o processo 0 sai da região crítica, faz <code>turno = 1</code> e vai fazer um trabalho longo fora dela, o processo 1 executa sua região crítica, devolve <code>turno = 0</code> e <b>não pode entrar de novo</b> — mesmo com a região crítica livre — até que o processo 0 volte. Um processo que está fora da região crítica está bloqueando o outro. Além disso há espera ocupada. O algoritmo de <b>Peterson</b> corrige isso combinando um vetor de interesse (<code>flag[]</code>) com a variável <code>turno</code>."
@@ -169,10 +169,10 @@ registrar([
   fonte:"Slides · Exclusão Mútua",
   enunciado:"Qual é a diferença essencial entre um <b>semáforo binário</b> e um <b>mutex</b>?",
   opcoes:[
-    "O mutex tem <b>dono</b>: só a thread que o travou pode destravá-lo. O semáforo binário pode ser liberado por qualquer thread, o que permite usá-lo também para sinalização entre threads.",
-    "O mutex é implementado em hardware e o semáforo em software.",
-    "O semáforo só funciona entre processos e o mutex só entre threads.",
-    "Não há diferença prática: são dois nomes para a mesma primitiva."
+    "O mutex tem <b>dono</b>: só quem travou destrava. O semáforo binário pode ser liberado por qualquer thread, e serve para sinalizar.",
+    "O mutex é implementado em hardware e o semáforo, inteiramente em software dentro da biblioteca de threads do sistema operacional.",
+    "O semáforo só funciona entre processos e o mutex, só entre threads do mesmo processo.",
+    "Não há diferença prática: são dois nomes para a mesma primitiva de sincronização."
   ],
   correta:0,
   gabarito:"A <b>posse (ownership)</b> é a diferença que importa na prova. Ela permite ao mutex detectar erros (destravar algo que você não travou) e implementar herança de prioridade. Como o semáforo não tem dono, ele serve para um caso que o mutex não cobre: a thread A faz <code>sem_wait</code> e fica esperando até que a thread B faça <code>sem_post</code> — que é como se constrói ordem de execução, barreiras e o padrão produtor/consumidor."
@@ -182,10 +182,10 @@ registrar([
   fonte:"Slides · Exclusão Mútua",
   enunciado:"O que exatamente fazem as primitivas de um semáforo?",
   opcoes:[
-    "<code>wait/down/P</code> decrementa o contador e bloqueia a thread se ele ficar negativo; <code>signal/up/V</code> incrementa e acorda uma thread bloqueada, se houver.",
-    "<code>wait</code> incrementa o contador e <code>signal</code> decrementa.",
-    "<code>wait</code> pausa a thread por um tempo fixo; <code>signal</code> envia um sinal UNIX (<code>SIGUSR1</code>) para acordá-la.",
-    "As duas travam o semáforo; a diferença é que <code>signal</code> não bloqueia."
+    "<code>wait/down/P</code> decrementa e bloqueia se o contador ficar negativo; <code>signal/up/V</code> incrementa e acorda quem esperava.",
+    "<code>wait</code> incrementa o contador e <code>signal</code> o decrementa, na ordem inversa da clássica.",
+    "<code>wait</code> pausa a thread por um tempo fixo e <code>signal</code> envia um <code>SIGUSR1</code> para acordá-la.",
+    "As duas travam o semáforo; a diferença é que <code>signal</code> nunca bloqueia a thread."
   ],
   correta:0,
   gabarito:"São operações <b>atômicas</b>, garantidas pelo sistema operacional. <code>wait</code> (P, de <i>proberen</i>) decrementa e, se não houver recurso disponível, coloca a thread numa fila de bloqueados — sem espera ocupada. <code>signal</code> (V, de <i>verhogen</i>) incrementa e retira alguém da fila. Em POSIX: <code>sem_wait()</code> e <code>sem_post()</code>."
@@ -195,10 +195,10 @@ registrar([
   fonte:"Slides · POSIX / semaphore.h",
   enunciado:"Na chamada <code>sem_init(&s, 0, 1)</code>, o que significam o segundo e o terceiro argumentos?",
   opcoes:[
-    "O <code>0</code> indica que o semáforo é compartilhado apenas entre threads do mesmo processo; o <code>1</code> é o valor inicial do contador.",
-    "O <code>0</code> é o valor inicial do contador; o <code>1</code> é o número máximo de threads.",
-    "O <code>0</code> é a prioridade e o <code>1</code> é o tempo limite de espera em segundos.",
-    "O <code>0</code> desliga a espera ocupada e o <code>1</code> liga o modo binário."
+    "O <code>0</code> diz que o semáforo serve só a threads do mesmo processo; o <code>1</code> é o valor inicial do contador.",
+    "O <code>0</code> é o valor inicial do contador e o <code>1</code>, o número máximo de threads simultâneas permitidas.",
+    "O <code>0</code> é a prioridade do semáforo e o <code>1</code>, o tempo limite de espera.",
+    "O <code>0</code> desliga a espera ocupada e o <code>1</code> liga o modo binário do semáforo."
   ],
   correta:0,
   gabarito:"Assinatura: <code>sem_init(sem_t *sem, int pshared, unsigned int value)</code>. Com <code>pshared = 0</code> o semáforo vive na memória do processo e só as threads dele o enxergam; com valor diferente de zero ele pode ser compartilhado entre processos (e precisa estar em memória compartilhada, via <code>mmap</code>). O <code>value</code> inicial define o comportamento: <b>1</b> para exclusão mútua, <b>0</b> para sinalização/ordenação, <b>N</b> para contar N recursos."
@@ -208,10 +208,10 @@ registrar([
   fonte:"Slides · Exclusão Mútua",
   enunciado:"O que é <b>espera ocupada</b> (<i>busy waiting</i>) e qual seu principal problema?",
   opcoes:[
-    "É ficar num laço testando uma condição sem liberar a CPU; desperdiça tempo de processamento e, num sistema com prioridades, pode causar inversão de prioridade.",
-    "É a thread ser bloqueada pelo sistema operacional numa fila de espera até que o recurso seja liberado.",
-    "É o tempo que o kernel gasta trocando o contexto entre duas threads.",
-    "É quando duas threads esperam uma pela outra indefinidamente."
+    "É ficar em laço testando uma condição sem soltar a CPU; gasta processamento e pode causar inversão de prioridade.",
+    "É a thread ser bloqueada pelo sistema numa fila de espera até o recurso ser liberado.",
+    "É o tempo que o kernel gasta trocando o contexto entre duas threads prontas para rodar.",
+    "É quando duas threads ficam esperando uma pela outra indefinidamente, sem que nenhuma das duas consiga sair do lugar."
   ],
   correta:0,
   gabarito:"O laço <code>while (trava) ;</code> queima fatias de CPU inteiras sem fazer trabalho útil. O caso patológico é o <b>problema da inversão de prioridade</b>: um processo de alta prioridade em espera ocupada impede o processo de baixa prioridade — que está dentro da região crítica — de ser escalonado para sair dela. O sistema trava. A alternativa é bloquear a thread (<code>sleep/wakeup</code>, semáforos, mutexes), o que devolve a CPU. <i>Spinlocks</i> ainda são usados quando a espera é comprovadamente curtíssima. A última alternativa descreve deadlock."
@@ -221,10 +221,10 @@ registrar([
   fonte:"Slides · Exclusão Mútua",
   enunciado:"O que faz a instrução de hardware <code>TSL</code> (<i>Test and Set Lock</i>) e por que ela resolve o problema da variável de trava?",
   opcoes:[
-    "Lê o valor da trava para um registrador e escreve 1 nela em <b>uma única operação indivisível</b>, bloqueando o barramento de memória durante a operação.",
-    "Desabilita as interrupções do processador enquanto a região crítica é executada.",
-    "Faz o escalonador adiar a preempção da thread até que ela saia da região crítica.",
-    "Coloca a thread numa fila de espera do kernel sem consumir CPU."
+    "Lê a trava para um registrador e escreve 1 nela numa <b>única operação indivisível</b>, travando o barramento de memória.",
+    "Desabilita as interrupções do processador enquanto a região crítica é executada pela thread que entrou nela primeiro.",
+    "Faz o escalonador adiar a preempção da thread até que ela saia da região crítica por si.",
+    "Coloca a thread numa fila de espera do kernel, sem consumir CPU enquanto ela espera."
   ],
   correta:0,
   gabarito:"<code>TSL RX, LOCK</code> lê e escreve <b>atomicamente</b>, travando o barramento para que nenhum outro núcleo acesse a palavra de memória no meio da operação. É isso que fecha a janela entre o teste e a escrita que quebrava a variável de trava. Instruções equivalentes: <code>XCHG</code> (x86) e <i>compare-and-swap</i>. Note que ela ainda produz espera ocupada — resolve a <b>correção</b>, não a eficiência."
@@ -241,10 +241,10 @@ registrar([
   fonte:"Lab · Exclusão Mútua, Q5",
   enunciado:"O laboratório pede para contar a frequência de uma palavra num arquivo particionado em N segmentos, um por thread, e avisa: <i>&ldquo;não é tão simples quanto parece&rdquo;</i>. Qual é a dificuldade?",
   opcoes:[
-    "Uma ocorrência da palavra pode ficar <b>partida na fronteira</b> entre dois segmentos, deixando de ser contada por qualquer thread (ou sendo contada duas vezes).",
-    "Threads não podem abrir o mesmo arquivo simultaneamente em UNIX.",
-    "A soma final das frequências parciais não pode ser feita com variável compartilhada.",
-    "O número de segmentos precisa ser potência de 2 para a divisão funcionar."
+    "Uma ocorrência pode ficar <b>partida na fronteira</b> entre dois segmentos e não ser contada por ninguém (ou ser contada duas vezes).",
+    "Threads de um mesmo processo não podem abrir o mesmo arquivo simultaneamente em UNIX.",
+    "A soma final das frequências parciais não pode usar uma variável compartilhada entre as threads.",
+    "O número de segmentos precisa ser potência de 2 para a divisão do arquivo funcionar."
   ],
   correta:0,
   gabarito:"O corte é feito por <b>bytes</b>, não por palavras. Se a palavra procurada é &ldquo;paralelo&rdquo; e a fronteira cai entre &ldquo;para&rdquo; e &ldquo;lelo&rdquo;, nenhuma das duas threads a reconhece. Soluções: (a) fazer cada segmento avançar até o próximo separador antes de terminar; (b) sobrepor os segmentos em (tamanho da palavra &minus; 1) bytes e tratar a duplicidade; (c) deixar cada thread começar a contar só depois do primeiro separador do seu bloco e terminar a última palavra iniciada dentro dele. E além disso ainda há a região crítica na variável compartilhada do total."
@@ -283,9 +283,9 @@ registrar([
   cod:"/* thread A */                     /* thread B */\npthread_mutex_lock(&m1);          pthread_mutex_lock(&m2);\npthread_mutex_lock(&m2);          pthread_mutex_lock(&m1);\n    /* ... */                         /* ... */\npthread_mutex_unlock(&m2);        pthread_mutex_unlock(&m1);\npthread_mutex_unlock(&m1);        pthread_mutex_unlock(&m2);",
   opcoes:[
     "Deadlock: A pode ficar com <code>m1</code> esperando <code>m2</code> enquanto B fica com <code>m2</code> esperando <code>m1</code>.",
-    "Condição de corrida: as duas entram na região crítica ao mesmo tempo.",
-    "Nada de errado — a ordem de travamento é irrelevante.",
-    "Inversão de prioridade, resolvida pelo escalonador."
+    "Condição de corrida: as duas threads entram na região crítica exatamente ao mesmo tempo.",
+    "Nada de errado: a ordem em que os dois mutexes são travados é irrelevante.",
+    "Inversão de prioridade, que o escalonador resolve sozinho em seguida."
   ],
   correta:0,
   gabarito:"É o deadlock clássico, com as quatro condições de Coffman satisfeitas: exclusão mútua (mutex), posse-e-espera (cada uma segura um e pede o outro), não-preempção (ninguém arranca o mutex do outro) e espera circular (A&rarr;B&rarr;A). A correção padrão é <b>impor uma ordem global de travamento</b> — sempre <code>m1</code> antes de <code>m2</code> — o que ataca a espera circular. É a mesma solução do Jantar dos Filósofos por ordenação de garfos."
@@ -295,10 +295,10 @@ registrar([
   fonte:"Slides · Monitores",
   enunciado:"O que caracteriza um <b>monitor</b> e o que são suas <b>variáveis de condição</b>?",
   opcoes:[
-    "É uma construção de linguagem em que os dados são privados e todos os procedimentos têm exclusão mútua implícita; as variáveis de condição oferecem <code>wait</code> (libera o monitor e bloqueia) e <code>signal</code> (acorda quem esperava).",
-    "É uma estrutura de dados da biblioteca pthreads, criada com <code>pthread_monitor_init()</code>.",
-    "É um processo do sistema operacional que vigia as regiões críticas dos outros processos.",
-    "É outro nome para semáforo de contagem."
+    "Uma construção da linguagem com dados privados e exclusão mútua implícita; as variáveis de condição dão <code>wait</code> e <code>signal</code>.",
+    "Uma estrutura da biblioteca pthreads, criada com <code>pthread_monitor_init()</code> e destruída ao final.",
+    "Um processo do sistema operacional que vigia as regiões críticas de todos os demais processos em execução na máquina.",
+    "Outro nome para o semáforo de contagem, com as mesmas duas operações atômicas."
   ],
   correta:0,
   gabarito:"A vantagem do monitor é que a exclusão mútua é responsabilidade do <b>compilador</b>, não do programador — não existe &ldquo;esqueci o unlock&rdquo;. O detalhe crítico do <code>wait</code>: ele <b>libera o monitor</b> ao bloquear, senão ninguém mais entraria para sinalizar. Em Java, isso é <code>synchronized</code> com <code>wait()</code>/<code>notify()</code>. Monitor não existe como tipo nativo em C — daí a disciplina trabalhar com semáforos e mutexes."
@@ -309,10 +309,10 @@ registrar([
   enunciado:"Analise a função abaixo, de uma simulação de banheiro compartilhado. Qual é o defeito?",
   cod:"sem_t mutex;   /* inicializado em 1 */\nsem_t vazio;   /* inicializado em 1 */\nint mulheres_no_banheiro = 0;\n\nvoid mulher_quer_entrar(int id) {\n    sem_wait(&mutex);\n    if (mulheres_no_banheiro == 0) {\n        sem_wait(&vazio);                    /* <-- bloqueia SEGURANDO o mutex */\n        printf(\"BANHEIRO COM MULHER\\n\");\n    }\n    mulheres_no_banheiro++;\n    printf(\"Mulher %d entrou do banheiro\\n\", id);\n    sem_post(&mutex);\n}",
   opcoes:[
-    "Deadlock: a thread pode bloquear em <code>sem_wait(&vazio)</code> <b>ainda segurando</b> <code>mutex</code>; quem está no banheiro precisará do <code>mutex</code> para sair e liberar <code>vazio</code>, e ninguém avança.",
-    "Condição de corrida em <code>mulheres_no_banheiro++</code>, porque o incremento está fora da região crítica.",
-    "O <code>printf</code> não é <i>thread-safe</i> e corrompe a saída padrão.",
-    "Nenhum: a função está correta, apenas mal indentada."
+    "Deadlock: a thread bloqueia em <code>sem_wait(&vazio)</code> <b>segurando</b> o <code>mutex</code> de que o outro precisa para sair.",
+    "Condição de corrida em <code>mulheres_no_banheiro++</code>, que ficou fora da região crítica.",
+    "O <code>printf</code> não é <i>thread-safe</i> e acaba corrompendo a saída padrão do programa.",
+    "Nenhum: a função está correta, apenas mal indentada e difícil de ler à primeira vista de quem a abre."
   ],
   correta:0,
   gabarito:"É o caso da Questão 4 da Prova Prática. A primeira mulher a chegar encontra o banheiro com homem, bloqueia em <code>sem_wait(&vazio)</code> — e continua com o <code>mutex</code> na mão. O homem que está lá dentro chama <code>homem_sai()</code>, que precisa do <code>mutex</code> para decrementar o contador e dar <code>sem_post(&vazio)</code>: ele bloqueia. <b>Deadlock</b> perfeito (posse-e-espera + espera circular). A correção é nunca bloquear num semáforo de condição segurando o mutex de exclusão: solte o <code>mutex</code> antes do <code>sem_wait(&vazio)</code> e retome depois, ou use variável de condição, cujo <code>wait</code> libera o mutex automaticamente."
@@ -368,10 +368,10 @@ registrar([
   fonte:"Slides · Exclusão Mútua",
   enunciado:"Um programa concorrente executa 10 vezes e dá o resultado certo em 9 delas. O que isso indica?",
   opcoes:[
-    "Uma condição de corrida: o resultado depende do escalonamento, e acertar às vezes não é prova de correção.",
-    "Que o programa está correto e a execução errada foi falha de hardware.",
-    "Que falta memória compartilhada entre as threads.",
-    "Que o número de threads não é múltiplo do número de núcleos."
+    "Condição de corrida: o resultado depende do escalonamento, e acertar às vezes não prova correção.",
+    "Que o programa está correto e a execução errada foi uma falha de hardware ou do sistema operacional.",
+    "Que falta memória compartilhada entre as threads do programa concorrente.",
+    "Que o número de threads não é múltiplo do número de núcleos da máquina."
   ],
   correta:0,
   gabarito:"Este é o traço característico do bug de concorrência: <b>não determinismo</b>. Como a intercalação depende do escalonador, da carga da máquina e do número de núcleos, um programa com condição de corrida pode passar em muitos testes e falhar em produção. É por isso que a análise da região crítica precisa ser feita <b>lendo o código</b>, e não só testando — exatamente o que a Questão 4 da Prova Prática cobra."
@@ -382,10 +382,10 @@ registrar([
   enunciado:"Como o algoritmo de Peterson garante exclusão mútua entre dois processos?",
   cod:"int interesse[2] = {0, 0};\nint vez;\n\nvoid entra(int eu) {\n    int outro = 1 - eu;\n    interesse[eu] = 1;                    /* declaro que quero entrar */\n    vez = outro;                          /* cedo a vez ao outro      */\n    while (interesse[outro] && vez == outro)\n        ;                                 /* espero */\n}\n\nvoid sai(int eu) { interesse[eu] = 0; }",
   opcoes:[
-    "Combinando um vetor de interesse (quem quer entrar) com uma variável <code>vez</code> que cede a preferência ao outro — quem cedeu por último espera.",
-    "Desabilitando as interrupções durante toda a região crítica.",
-    "Usando a instrução atômica <code>TSL</code> para testar e travar simultaneamente.",
-    "Alternando estritamente a vez entre os dois processos, um de cada vez."
+    "Com um vetor de interesse e a variável <code>vez</code>, que cede a preferência ao outro — quem cedeu por último espera.",
+    "Desabilitando as interrupções durante toda a execução da região crítica dos dois processos envolvidos no acesso.",
+    "Usando a instrução atômica <code>TSL</code>, que testa e trava numa só operação.",
+    "Alternando estritamente a vez entre os dois processos, em rodízio fixo."
   ],
   correta:0,
   gabarito:"O truque é o <b>gesto de cortesia</b>: cada processo escreve <code>vez = outro</code>. Se os dois chegam juntos, a segunda escrita sobrescreve a primeira, e apenas um fica preso no <code>while</code> — o desempate é garantido. E, ao contrário da alternância estrita, quando o outro processo <b>não</b> tem interesse (<code>interesse[outro] == 0</code>) a entrada é imediata, sem precisar esperar a vez chegar. Peterson resolve as quatro condições, mas ainda usa espera ocupada e só funciona para dois processos."
@@ -399,7 +399,7 @@ registrar([
     "<code>exemplo1.s</code> desapareceu — B gravou por cima da posição 7 — e <code>in</code> terminou em 9, deixando a posição 8 nunca preenchida.",
     "Os dois arquivos foram gravados corretamente, <code>exemplo1.s</code> em 7 e <code>exemplo2.s</code> em 8; só a ordem ficou invertida.",
     "O programa aborta com acesso inválido ao vetor, porque <code>in</code> foi incrementado duas vezes seguidas.",
-    "Nada se perde: cada processo tem sua própria cópia de <code>in</code>, então os dois valores acabam em posições distintas."
+    "Nada se perde: cada processo tem sua própria cópia de <code>in</code>, então os dois valores acabam em posições distintas do vetor."
   ],
   correta:0,
   gabarito:"O prejuízo é <b>duplo</b>, e é isso que torna o exemplo tão didático:<br><br>&bull; <b>um item somado a menos</b> — <code>exemplo1.s</code> foi sobrescrito antes que alguém o lesse;<br>&bull; <b>um buraco no vetor</b> — <code>in</code> foi incrementado duas vezes para uma única gravação sobrevivente, então a posição 8 fica com lixo e será tratada como preenchida.<br><br>A causa é o intervalo entre <b>(1)</b> e <b>(2)</b>: nesse instante o buffer está num estado <b>inconsistente</b> — o dado já foi escrito, mas o índice ainda não avançou. Qualquer processo que entre aí enxerga a posição 7 como livre.<br><br>Repare que <b>não há erro de lógica</b> em <code>insert</code>: sozinha, a função está correta. O defeito só aparece na intercalação, e só em <i>algumas</i> intercalações — por isso o programa passa nos testes na maioria das execuções."
@@ -423,10 +423,10 @@ registrar([
   fonte:"Slides · Exclusão Mútua · soluções iniciais",
   enunciado:"Uma das primeiras soluções estudadas é <b>desabilitar as interrupções</b> ao entrar na região crítica. Por que ela é descartada?",
   opcoes:[
-    "É perigosa — um erro pode deixar as interrupções desligadas para sempre, travando a máquina — e só vale num sistema de <b>1 CPU</b>: desligar a interrupção de um núcleo não impede outro núcleo de entrar na região crítica.",
-    "Porque desabilitar interrupções é uma operação lenta demais para ser usada em laços apertados.",
-    "Porque ela não garante exclusão mútua nem mesmo com uma única CPU.",
-    "Porque só funciona para threads do mesmo processo, e não para processos distintos."
+    "É perigosa — um erro deixa as interrupções desligadas para sempre — e só vale com <b>1 CPU</b>: outro núcleo entra assim mesmo.",
+    "Porque desabilitar interrupções é lento demais para ser usado em laços apertados de espera por uma trava já ocupada.",
+    "Porque ela não garante exclusão mútua nem mesmo numa máquina com uma só CPU.",
+    "Porque só funciona entre threads do mesmo processo, e não entre processos distintos."
   ],
   correta:0,
   gabarito:"São dois problemas independentes:<br><br>&bull; <b>Confiabilidade</b> — desabilitar interrupções é um privilégio que o sistema operacional não pode entregar a um programa de usuário. Um único caminho de código que esqueça de reabilitá-las mata a máquina.<br>&bull; <b>Multiprocessador</b> — a instrução afeta apenas <b>o processador que a executou</b>. Com 4 núcleos, os outros 3 continuam livres para entrar na região crítica.<br><br>Repare que esse segundo ponto viola diretamente a condição <b>(2)</b> de uma boa solução: <i>não assumir nada sobre a velocidade ou o número de CPUs</i>.<br><br>Ela <b>funciona</b> num sistema monoprocessado — e é justamente assim que o próprio núcleo do sistema operacional protege algumas estruturas internas, por poucas instruções."
@@ -436,10 +436,10 @@ registrar([
   fonte:"Slides · Semáforos",
   enunciado:"O semáforo foi proposto por <b>Dijkstra, em 1965</b>. Que estrutura de dados ele é, exatamente?",
   opcoes:[
-    "Uma variável inteira acompanhada de uma <b>lista dos processos bloqueados</b> à espera da região crítica — e as duas operações sobre ela são atômicas.",
-    "Um único bit, indicando se a região crítica está livre ou ocupada.",
-    "Uma fila de mensagens em que cada processo deposita e retira avisos.",
-    "Um ponteiro para a thread que atualmente detém a região crítica."
+    "Um inteiro acompanhado da <b>lista dos processos bloqueados</b> à espera — e as duas operações sobre ele são atômicas.",
+    "Um único bit, que indica se a região crítica está livre ou ocupada no momento.",
+    "Uma fila de mensagens em que cada processo deposita e retira os avisos de entrada.",
+    "Um ponteiro para a thread que detém a região crítica, atualizado a cada entrada."
   ],
   correta:0,
   gabarito:"São <b>duas partes</b>, e a segunda é a que costuma ser esquecida na prova:<br><br>&bull; a <b>variável inteira</b>, que conta quantas permissões ainda existem;<br>&bull; a <b>lista de processos bloqueados</b>, onde ficam os que chamaram <code>wait</code> e não puderam passar.<br><br>É essa lista que separa o semáforo da espera ocupada: quem não pode entrar <b>sai da fila do escalonador</b> e não gasta mais CPU, em vez de ficar girando num <code>while</code>.<br><br>O valor do contador ficar <b>negativo</b> tem significado: <code>-3</code> quer dizer três processos dormindo nessa lista."
@@ -450,10 +450,10 @@ registrar([
   enunciado:"No pseudo-código do <code>wait()</code>, a trava interna do semáforo é liberada <b>antes</b> de o processo dormir. Por que essa ordem é obrigatória?",
   cod:"void wait() {\n    mutex_lock();\n    valor--;\n\n    if (valor < 0) {\n        colocar_na_lista_espera();\n        mutex_unlock();          /* <-- solta ANTES de dormir */\n        sleep(processo);\n    } else {\n        mutex_unlock();\n    }\n}",
   opcoes:[
-    "Porque dormir segurando a trava interna impediria qualquer outro processo de executar <code>post()</code> — ninguém conseguiria acordá-lo, e o semáforo travaria de vez.",
-    "Porque a operação <code>sleep</code> não pode ser chamada de dentro de uma região crítica por imposição do sistema operacional.",
-    "Porque assim o contador <code>valor</code> pode continuar sendo decrementado por outros processos enquanto este dorme.",
-    "Porque liberar a trava depois de dormir deixaria o valor do contador incorreto."
+    "Porque dormir com a trava interna na mão impediria qualquer outro processo de executar <code>post()</code> — ninguém o acordaria.",
+    "Porque <code>sleep</code> não pode ser chamada de dentro de uma região crítica, por imposição do sistema.",
+    "Porque assim o contador pode continuar sendo decrementado por outros processos enquanto este dorme na fila de espera.",
+    "Porque liberar a trava só depois de dormir deixaria o contador com um valor incorreto."
   ],
   correta:0,
   gabarito:"É a mesma armadilha do <b>Banheiro UNISSEX</b>, aqui dentro da própria implementação do semáforo: <b>nunca bloqueie segurando uma trava de que outro precisa para te liberar</b>.<br><br>Se o <code>sleep</code> viesse antes do <code>mutex_unlock</code>, o processo dormiria com a trava interna na mão. O <code>post()</code> começa exatamente por <code>mutex_lock()</code> — logo ele nunca chegaria a <code>acordar_processo_da_fila()</code>. Resultado: <b>posse-e-espera + espera circular</b>, ou seja, deadlock.<br><br><b>O detalhe fino:</b> <code>colocar_na_lista_espera()</code> acontece <b>antes</b> de soltar a trava. Assim, se um <code>post()</code> entrar na janela entre o <code>unlock</code> e o <code>sleep</code>, ele já encontra o processo na lista e o sinal não se perde. É a resposta do semáforo ao problema do <i>lost wakeup</i>.<br><br>Isso também explica por que o semáforo <b>não</b> elimina a necessidade de exclusão mútua — ele apenas a esconde, resolvida por dentro, numa região crítica curtíssima."
@@ -463,10 +463,10 @@ registrar([
   fonte:"Slides · Produtor-Consumidor",
   enunciado:"O que caracteriza o problema do <b>produtor-consumidor</b>, e por que ele é usado como <i>benchmark</i> de concorrência?",
   opcoes:[
-    "Uma ou mais tarefas inserem itens numa <b>fila de tamanho limitado</b> enquanto outras retiram, tudo concorrentemente — ele reúne exclusão mútua sobre a fila <b>e</b> sincronização por condição (esperar quando cheia ou vazia).",
-    "Dois processos disputam a mesma variável e o vencedor é sempre o que chegou primeiro; serve para medir a justiça do escalonador.",
+    "Tarefas inserem numa <b>fila limitada</b> e outras retiram, concorrentemente: reúne exclusão mútua <b>e</b> sincronização por condição.",
+    "Dois processos disputam a mesma variável e vence quem chegou primeiro; serve para medir a justiça do escalonador de processos.",
     "Um processo lento e um rápido dividem a CPU; serve para comparar algoritmos de escalonamento.",
-    "Vários processos leem um dado que apenas um pode escrever; serve para medir o custo da trava de leitura."
+    "Vários processos leem um dado que só um escreve; mede o custo da trava de leitura compartilhada."
   ],
   correta:0,
   gabarito:"O problema junta os <b>dois tipos de sincronização</b> num só enunciado, e é isso que o torna o teste padrão:<br><br>&bull; <b>Exclusão mútua</b> — a fila e o contador de itens são região crítica; produtor e consumidor mexem neles ao mesmo tempo.<br>&bull; <b>Sincronização por condição</b> — o produtor precisa <b>esperar</b> quando a fila está cheia, e o consumidor quando está vazia. Isso é ordem de execução, não proteção de dado, e nenhum mutex sozinho resolve.<br><br>Daí a solução clássica com <b>três semáforos</b>: <code>vazios</code> (lugares livres), <code>cheios</code> (itens prontos) e <code>mutex</code> (a trava da fila). Os dois primeiros contam; o terceiro protege.<br><br>É também o exemplo que reaparece nos monitores e nos canais de Go — sempre o mesmo problema, resolvido por mecanismos diferentes."
@@ -477,13 +477,13 @@ registrar([
   enunciado:"A solução do produtor-consumidor com <code>sleep</code>/<code>wakeup</code> abaixo está <b>errada</b>. Quais são os defeitos?",
   cod:"/* PRODUTOR */                      /* CONSUMIDOR */\nwhile (1) {                        while (1) {\n    item = produzir();                 if (size == 0)\n    if (size == N)                         sleep(consumidor);\n        sleep(produtor);\n                                       item = consumir();\n    inserir(item);                     size--;\n    size++;\n                                       if (size == N-1)\n    if (size == 1)                         wakeup(produtor);\n        wakeup(consumidor);        }\n}",
   opcoes:[
-    "<code>size</code> é lido e escrito pelos dois sem proteção nenhuma — é região crítica exposta — e o <code>wakeup</code> pode chegar <b>antes</b> de a outra tarefa conseguir dormir, perdendo-se: as duas podem acabar dormindo para sempre.",
-    "Os testes <code>size == 1</code> e <code>size == N-1</code> estão trocados; corrigindo-os a solução passa a funcionar.",
-    "O erro é usar <code>while (1)</code>: o laço infinito impede que o escalonador preempte as tarefas.",
-    "Faltam apenas os <code>join</code> ao final, para que o programa principal espere as duas tarefas terminarem."
+    "<code>size</code> é lido e escrito pelos dois sem proteção nenhuma, e o <code>wakeup</code> pode chegar <b>antes</b> do <code>sleep</code> e se perder.",
+    "Os testes <code>size == 1</code> e <code>size == N-1</code> estão trocados; corrigi-los faria a solução finalmente passar a funcionar.",
+    "O erro é o <code>while (1)</code>: o laço infinito impede o escalonador de preemptar as tarefas.",
+    "Faltam os <code>join</code> ao final, para o programa principal esperar as duas tarefas."
   ],
   correta:0,
-  gabarito:"São <b>dois</b> defeitos independentes, e a prova costuma cobrar os dois:<br><br><b>1. Condição de corrida em <code>size</code></b> — as duas tarefas fazem <code>size++</code> e <code>size--</code> sem exclusão mútua. É o mesmo lê-soma-escreve do <code>contador++</code>, com o agravante de que os testes (<code>size == 0</code>, <code>size == N</code>) também leem esse valor sujo.<br><br><b>2. Sinal perdido (<i>lost wakeup</i>)</b> — o consumidor testa <code>size == 0</code> e é preemptado <b>antes</b> de executar o <code>sleep</code>. O produtor insere um item e dispara <code>wakeup(consumidor)</code> — para alguém que ainda não está dormindo, e o aviso <b>se perde</b>. O consumidor volta, dorme, e ninguém mais o acordará. Com a fila enchendo, o produtor também dorme: <b>os dois travam</b>.<br><br><b>Por que o semáforo resolve:</b> ele <b>guarda o sinal no contador</b>. Um <code>post</code> que chega cedo não se perde — deixa o contador maior, e o <code>wait</code> seguinte passa direto.<br><br>Trocar os testes (alternativa B) não muda nada: o problema não é qual valor se testa, é que <b>testar e dormir não são atômicos</b>."
+  gabarito:"São <b>dois</b> defeitos independentes, e a prova costuma cobrar os dois:<br><br><b>1. Condição de corrida em <code>size</code></b> — as duas tarefas fazem <code>size++</code> e <code>size--</code> sem exclusão mútua. É o mesmo lê-soma-escreve do <code>contador++</code>, com o agravante de que os testes (<code>size == 0</code>, <code>size == N</code>) também leem esse valor sujo.<br><br><b>2. Sinal perdido (<i>lost wakeup</i>)</b> — o consumidor testa <code>size == 0</code> e é preemptado <b>antes</b> de executar o <code>sleep</code>. O produtor insere um item e dispara <code>wakeup(consumidor)</code> — para alguém que ainda não está dormindo, e o aviso <b>se perde</b>. O consumidor volta, dorme, e ninguém mais o acordará. Com a fila enchendo, o produtor também dorme: <b>os dois travam</b>.<br><br><b>Por que o semáforo resolve:</b> ele <b>guarda o sinal no contador</b>. Um <code>post</code> que chega cedo não se perde — deixa o contador maior, e o <code>wait</code> seguinte passa direto.<br><br>Apenas trocar os valores testados não muda nada: o problema não é qual valor se testa, é que <b>testar e dormir não são atômicos</b>."
 },
 {
   id:"em30", mod:"exclusao", dif:"medio", tipo:"vf",
@@ -497,10 +497,10 @@ registrar([
   fonte:"Slides · Monitores",
   enunciado:"Como o Java implementa monitores na prática?",
   opcoes:[
-    "<b>Todo objeto</b> tem uma trava implícita; um método ou bloco <code>synchronized</code> adquire a trava daquele objeto, e a JVM garante que só uma thread execute lá dentro por vez.",
-    "Através da classe <code>Semaphore</code>, que o programador precisa instanciar e liberar manualmente em cada método.",
+    "<b>Todo objeto</b> tem uma trava implícita; <code>synchronized</code> adquire a trava daquele objeto, e a JVM deixa só uma thread lá dentro.",
+    "Pela classe <code>Semaphore</code>, que o programador instancia e libera à mão em cada método.",
     "Desabilitando as interrupções da máquina virtual enquanto o método marcado executa.",
-    "Fazendo o coletor de lixo serializar as threads que acessam o mesmo objeto."
+    "Fazendo o coletor de lixo serializar as threads que acessam o mesmo objeto compartilhado."
   ],
   correta:0,
   gabarito:"A ideia do monitor é transferir a responsabilidade da exclusão mútua do <b>programador</b> para o <b>compilador / a linguagem</b>. Em Java isso aparece de forma bem concreta: cada objeto carrega uma trava implícita (o <i>monitor lock</i>), e a palavra <code>synchronized</code> num método ou bloco significa \"adquira a trava <b>deste</b> objeto antes de entrar e solte ao sair\".<br><br><b>A vantagem que vale ponto:</b> não existe \"esquecer o <code>unlock</code>\". A trava é liberada mesmo se o método terminar por uma exceção — algo que com <code>pthread_mutex_lock</code> em C depende inteiramente da disciplina de quem escreve.<br><br>Por isso a segurança cresce de <b>semáforo &rarr; mutex &rarr; monitor</b>, e o poder de expressão cresce no sentido contrário: o monitor não sabe contar N instâncias de um recurso."
@@ -513,7 +513,7 @@ registrar([
     "<code>wait()</code> põe a thread para dormir <b>liberando a trava</b>, deixando outras entrarem; <code>notify()</code> acorda <b>uma</b> das threads que esperam e <code>notifyAll()</code> acorda <b>todas</b>.",
     "<code>wait()</code> espera com a trava na mão para não perder a vez; <code>notify()</code> e <code>notifyAll()</code> são sinônimos.",
     "<code>wait()</code> suspende o programa inteiro até que o usuário libere; os dois outros retomam a execução.",
-    "<code>wait()</code> bloqueia apenas threads de menor prioridade; <code>notify()</code> as promove e <code>notifyAll()</code> reinicia o escalonador."
+    "<code>wait()</code> bloqueia apenas as threads de menor prioridade; <code>notify()</code> as promove e <code>notifyAll()</code> reinicia o escalonador de threads de toda a máquina virtual."
   ],
   correta:0,
   gabarito:"O ponto crítico é o <code>wait()</code> <b>liberar a trava</b> ao dormir. Sem isso, nenhuma outra thread conseguiria entrar no monitor para mudar a condição e sinalizar — o monitor inteiro travaria. É a mesma exigência do <code>mutex_unlock</code> antes do <code>sleep</code> dentro do semáforo.<br><br><b><code>notify</code> ou <code>notifyAll</code>?</b> Com threads esperando por <b>condições diferentes</b> na mesma trava (produtores esperando \"não cheia\", consumidores esperando \"não vazia\"), o <code>notify</code> pode acordar justamente quem não tem como prosseguir — que volta a dormir enquanto quem podia agir continua parado. Na dúvida, <code>notifyAll</code>.<br><br>E o teste da condição vai sempre num <code>while</code>, nunca num <code>if</code>: ao acordar, a thread precisa <b>reconferir</b> a condição, porque outra pode ter consumido o item nesse meio-tempo."
@@ -523,10 +523,10 @@ registrar([
   fonte:"Slides · Troca de Mensagens · canais em Go",
   enunciado:"Qual é a mudança de abordagem que a <b>troca de mensagens</b> (os canais de Go, por exemplo) propõe em relação a mutexes e semáforos?",
   opcoes:[
-    "Em vez de <b>compartilhar memória e protegê-la</b>, as tarefas trocam dados por um canal — o próprio canal sincroniza quem envia e quem recebe, e <code>close(ch)</code> avisa que não haverá mais envios.",
-    "O canal é apenas um mutex com outro nome: continua sendo preciso travá-lo antes de cada envio.",
-    "Os canais eliminam a concorrência, forçando as tarefas a executarem em sequência.",
-    "A troca de mensagens só funciona entre máquinas diferentes, em rede; dentro de um mesmo processo é obrigatório usar mutex."
+    "Em vez de <b>compartilhar memória e protegê-la</b>, as tarefas trocam dados por um canal, que já sincroniza quem envia e quem recebe.",
+    "O canal é um mutex com outro nome: continua sendo preciso travá-lo antes de cada envio.",
+    "Os canais eliminam a concorrência, forçando as tarefas a executarem em sequência, uma após a outra.",
+    "A troca de mensagens só funciona entre máquinas em rede; dentro de um processo, só mutex."
   ],
   correta:0,
   gabarito:"O lema da linguagem resume a inversão: <i>\"não se comunique compartilhando memória; compartilhe memória comunicando-se\"</i>.<br><br>Não existe região crítica a proteger porque <b>não há dado compartilhado</b>: o valor é <b>enviado</b> de uma tarefa para outra pelo canal. A sincronização vem de brinde — num canal sem buffer, o envio só completa quando alguém recebe, o que é uma barreira entre as duas tarefas.<br><br><code>close(ch)</code> não destrói o canal: sinaliza <b>fim de transmissão</b>. Quem estiver recebendo em laço sai do laço, em vez de esperar para sempre por um item que não vem — é a forma idiomática de encerrar um produtor-consumidor.<br><br>Isso não torna o problema fácil por mágica: continua sendo possível criar deadlock (todos esperando num canal que ninguém alimenta) e vazamento de goroutines."

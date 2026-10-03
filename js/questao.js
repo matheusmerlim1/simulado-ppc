@@ -18,10 +18,24 @@ function placar() {
 }
 
 /* ── início da rodada ────────────────────────────────────── */
+
+/* O banco guarda as alternativas sempre na mesma ordem. Cada rodada
+   sorteia uma ordem nova, para que a posição nunca seja a resposta.
+   Devolve uma cópia: o banco não é tocado. */
+function comAlternativasSorteadas(q) {
+  if (q.tipo !== "mc") return q;
+  const ordem = embaralhar(q.opcoes.map((_, k) => k));
+  return Object.assign({}, q, {
+    opcoes: ordem.map(k => q.opcoes[k]),
+    correta: ordem.indexOf(q.correta)
+  });
+}
+
 function iniciar(lista) {
   if (!lista.length) return;
 
-  run = { fila: lista, i: 0, resp: lista.map(() => null) };
+  const fila = lista.map(comAlternativasSorteadas);
+  run = { fila: fila, i: 0, resp: fila.map(() => null) };
 
   const trilha = $("#trilha");
   trilha.innerHTML = "";

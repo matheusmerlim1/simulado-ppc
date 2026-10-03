@@ -8,10 +8,10 @@ registrar([
   fonte:"Slides · Processos e Threads",
   enunciado:"O que a chamada de sistema <code>fork()</code> devolve em cada um dos dois processos que passam a existir depois dela?",
   opcoes:[
-    "No pai, o PID do filho; no filho, 0. Em caso de falha, retorna &minus;1 no pai.",
-    "Nos dois processos, o PID do filho.",
-    "No pai, 0; no filho, o PID do pai.",
-    "Nos dois processos, 0 &mdash; o PID só é obtido depois com <code>getpid()</code>."
+    "No pai, o PID do filho; no filho, 0; em caso de falha, &minus;1 no pai.",
+    "Nos dois processos, o PID do filho recém-criado pelo sistema operacional.",
+    "No pai, 0; no filho, o PID do processo pai que o criou.",
+    "Nos dois, 0 &mdash; o PID só se obtém depois, com <code>getpid()</code>."
   ],
   correta:0,
   gabarito:"<code>fork()</code> retorna <b>duas vezes</b>, uma em cada processo. O pai recebe o PID do filho (valor positivo), o filho recebe <b>0</b>, e um valor negativo indica erro na criação. É exatamente esse retorno diferente que permite escrever <code>if (pid = fork()) { /* pai */ } else { /* filho */ }</code>, como no exemplo <code>fork.c</code> da disciplina."
@@ -21,10 +21,10 @@ registrar([
   fonte:"Slides · Processos e Threads",
   enunciado:"Qual a diferença entre <code>wait()</code> e <code>waitpid()</code>?",
   opcoes:[
-    "<code>wait()</code> suspende até que <b>qualquer</b> filho termine; <code>waitpid()</code> espera o filho com o PID indicado.",
-    "<code>wait()</code> espera todos os filhos de uma vez; <code>waitpid()</code> espera apenas um.",
-    "<code>wait()</code> bloqueia o filho; <code>waitpid()</code> bloqueia o pai.",
-    "Não há diferença — <code>waitpid()</code> é apenas o nome POSIX moderno de <code>wait()</code>."
+    "<code>wait()</code> suspende até que <b>qualquer</b> filho termine; <code>waitpid()</code> espera o filho do PID indicado.",
+    "<code>wait()</code> espera todos os filhos de uma vez; <code>waitpid()</code> espera apenas um deles.",
+    "<code>wait()</code> bloqueia o filho e <code>waitpid()</code> bloqueia o pai que fez a chamada.",
+    "Não há diferença: <code>waitpid()</code> é só o nome POSIX moderno de <code>wait()</code>."
   ],
   correta:0,
   gabarito:"Atenção ao detalhe que os slides destacam: <code>wait()</code> devolve assim que <b>um filho qualquer</b> termina. Se você criou 26 filhos e quer esperar todos, precisa chamar <code>wait(NULL)</code> 26 vezes (ou usar <code>waitpid()</code> para cada PID específico)."
@@ -34,9 +34,9 @@ registrar([
   fonte:"Slides · Processos e Threads",
   enunciado:"Quais são as áreas principais da memória de um processo UNIX?",
   opcoes:[
-    "Texto (código), Dados (incluindo BSS), Heap e Pilha.",
-    "Cache L1, Cache L2, RAM e swap.",
-    "Kernel, usuário, vídeo e rede.",
+    "Texto (código), Dados (incluindo o BSS), Heap e Pilha.",
+    "Cache L1, Cache L2, memória RAM e área de swap.",
+    "Kernel, usuário, memória de vídeo e buffers de rede do sistema.",
     "Registradores, pilha e memória compartilhada."
   ],
   correta:0,
@@ -82,10 +82,10 @@ registrar([
   fonte:"Slides · POSIX Threads",
   enunciado:"O que as threads de um mesmo processo <b>compartilham</b> e o que é <b>privado</b> de cada uma?",
   opcoes:[
-    "Compartilham a memória global (dados e heap), descritores de arquivo e PID; cada thread tem sua própria pilha, contador de programa, <code>errno</code> e máscara de sinais.",
-    "Compartilham a pilha e o contador de programa; cada uma tem seu próprio heap.",
-    "Compartilham absolutamente tudo — não há estado privado por thread.",
-    "Não compartilham nada; a comunicação é feita apenas por troca de mensagens."
+    "Compartilham memória global, descritores de arquivo e PID; cada uma tem pilha, contador de programa e <code>errno</code> próprios.",
+    "Compartilham a pilha e o contador de programa; cada uma tem o seu próprio heap privado, separado do das demais threads.",
+    "Compartilham absolutamente tudo: não existe estado privado de thread dentro do processo.",
+    "Não compartilham nada; a comunicação entre elas é só por troca de mensagens pelo núcleo."
   ],
   correta:0,
   gabarito:"Todas as threads dividem o espaço de endereçamento do processo: memória de dados, heap, IDs (PID, grupo, sessão, usuário), terminal, descritores de arquivos abertos, travas, sinais e diretório de trabalho. São <b>específicos de cada thread</b>: o thread ID, a pilha, o contador de programa, a variável <code>errno</code>, a máscara de sinais, a pilha alternativa de sinais e a política/prioridade de escalonamento."
@@ -98,7 +98,7 @@ registrar([
     "<code>gcc programa.c -o programa -pthread</code>",
     "<code>gcc programa.c -o programa -lthreads</code>",
     "<code>gcc programa.c -o programa -fopenmp</code>",
-    "Não é preciso nenhuma opção — <code>pthread.h</code> já é parte da libc padrão."
+    "Nenhuma opção: <code>pthread.h</code> já faz parte da libc."
   ],
   correta:0,
   gabarito:"A opção <code>-pthread</code> liga a biblioteca e ainda define as macros de compilação corretas para código <i>thread-safe</i>. <code>-fopenmp</code> é para OpenMP (assunto da P2). No Code::Blocks, o equivalente é adicionar <code>pthread</code> em <i>Project &rarr; Build Options &rarr; Linker Settings</i>."
@@ -108,10 +108,10 @@ registrar([
   fonte:"Slides · Parâmetros de Thread",
   enunciado:"Sobre <code>pthread_attr_setdetachstate()</code>, qual afirmação está correta?",
   opcoes:[
-    "Os valores possíveis são <code>PTHREAD_CREATE_DETACHED</code> e <code>PTHREAD_CREATE_JOINABLE</code>, sendo <i>joinable</i> o padrão; numa thread <i>detached</i> não se pode dar <code>pthread_join()</code>.",
-    "Os valores possíveis são <code>SCHED_FIFO</code> e <code>SCHED_RR</code>, sendo FIFO o padrão.",
-    "Define se a thread compartilha ou não o heap com o processo pai.",
-    "Só pode ser chamada depois de <code>pthread_create()</code>, sobre uma thread já em execução."
+    "Os valores são <code>PTHREAD_CREATE_DETACHED</code> e <code>PTHREAD_CREATE_JOINABLE</code>; o padrão é <i>joinable</i>, e em <i>detached</i> não cabe <code>join</code>.",
+    "Os valores são <code>SCHED_FIFO</code> e <code>SCHED_RR</code>, e o padrão é FIFO em todas as threads criadas.",
+    "Define se a thread compartilha ou não o heap com o processo que a criou, e o padrão é compartilhar.",
+    "Só pode ser chamada depois de <code>pthread_create()</code>, sobre uma thread que já está em execução."
   ],
   correta:0,
   gabarito:"O padrão é <b>joinable</b>: a thread guarda seu estado de término até que alguém chame <code>pthread_join()</code>. Uma thread <i>detached</i> libera seus recursos sozinha ao terminar, e por isso não pode ser aguardada com <code>join</code>. Os atributos são preparados antes com <code>pthread_attr_init()</code> e liberados com <code>pthread_attr_destroy()</code>."
@@ -134,10 +134,10 @@ registrar([
   fonte:"Slides · POSIX Threads / NPTL",
   enunciado:"Sobre a implementação de threads no Linux, qual afirmação está correta?",
   opcoes:[
-    "LinuxThreads e NPTL são implementações 1:1; ambas usam <code>clone()</code> para criar a thread, e a NPTL usa <code>futex()</code> para sincronização.",
-    "A NPTL é uma implementação N:1 — muitas threads de usuário sobre uma única thread de kernel.",
-    "A NPTL cria threads com <code>fork()</code> e as sincroniza com sinais.",
-    "LinuxThreads é a implementação atual e NPTL foi abandonada."
+    "LinuxThreads e NPTL são 1:1 e criam a thread com <code>clone()</code>; a NPTL sincroniza com <code>futex()</code>.",
+    "A NPTL é N:1 — muitas threads de usuário sobre uma só thread de kernel, escalonadas na biblioteca.",
+    "A NPTL cria as threads com <code>fork()</code> e as sincroniza por meio de sinais do sistema.",
+    "LinuxThreads é a implementação atual, e a NPTL acabou abandonada ainda no kernel 2.6."
   ],
   correta:0,
   gabarito:"Ambas são <b>1:1</b> (uma thread de usuário para uma thread de kernel), o que permite escalonamento simultâneo em múltiplos núcleos. As duas usam a chamada <code>clone()</code>; o diferencial da <b>NPTL</b> (<i>Native POSIX Threads Library</i>, a atual) é usar <code>futex()</code> — <i>fast userspace mutex</i> — para sincronizar sem entrar no kernel quando não há disputa. LinuxThreads está em desuso."
@@ -161,10 +161,10 @@ registrar([
   enunciado:"O exemplo <code>pthread_shared.c</code> cria 4 threads e tem os <code>pthread_join()</code> desativados por <code>#if 0</code>. O que pode acontecer ao executar?",
   cod:"pthread_create(&thread_id[0], NULL, Hello, &data[0]);\npthread_create(&thread_id[1], NULL, Hello, &data[1]);\npthread_create(&thread_id[2], NULL, Hello, &data[2]);\npthread_create(&thread_id[3], NULL, Hello, &data[3]);\n\n#if 0\n    pthread_join(thread_id[0], NULL);\n    /* ... */\n#endif\n\nreturn 0;   // main termina aqui",
   opcoes:[
-    "A <code>main</code> retorna, o processo inteiro termina e algumas (ou todas) as threads podem nunca imprimir nada.",
-    "O programa fica travado para sempre, esperando as threads.",
+    "A <code>main</code> retorna, o processo inteiro termina e algumas threads podem nunca imprimir nada.",
+    "O programa fica travado para sempre, esperando que as quatro threads criadas terminem o trabalho.",
     "As 4 threads sempre imprimem na ordem 0, 1, 2, 3 antes de o programa sair.",
-    "O compilador recusa o programa: <code>pthread_create()</code> exige um <code>join</code> correspondente."
+    "O compilador recusa o programa: todo <code>pthread_create()</code> exige um <code>join</code>."
   ],
   correta:0,
   gabarito:"Quando a thread principal retorna de <code>main</code>, é como chamar <code>exit()</code>: <b>todo o processo acaba</b>, levando junto as threads que ainda estavam rodando. Como cada <code>Hello()</code> ainda executa um laço longo antes de retornar, é bem provável que nenhuma chegue a terminar. Daí o aviso do laboratório: <i>&ldquo;não se esqueça de fazer um join após criar todas as threads!&rdquo;</i>"
@@ -175,10 +175,10 @@ registrar([
   enunciado:"Num laço que dá <code>fork()</code> 26 vezes para criar 26 filhos, por que o <code>exit(0)</code> dentro do bloco do filho é indispensável?",
   cod:"for (i = 0; i < ALFABETO; i++) {\n    pid = fork();\n    if (pid == 0) {\n        printf(\"PID %d imprimindo letra: %c\\n\", getpid(), vetorLetra[i]);\n        exit(0);            // <-- indispensável\n    } else if (pid < 0) {\n        perror(\"erro no fork\"); exit(1);\n    }\n}",
   opcoes:[
-    "Sem ele, cada filho continua o laço e passa a criar filhos próprios — o número de processos cresce exponencialmente em vez de linearmente.",
-    "Sem ele, o filho vaza memória, mas o número de processos continua sendo 26.",
-    "Sem ele, o pai não consegue mais chamar <code>wait()</code>.",
-    "É apenas boa prática de estilo; o comportamento é idêntico com ou sem ele."
+    "Sem ele, cada filho segue o laço e cria filhos próprios — o número de processos cresce exponencialmente.",
+    "Sem ele, o filho vaza memória, mas o número de processos continua sendo exatamente 26.",
+    "Sem ele, o pai perde o direito de chamar <code>wait()</code> sobre os filhos que criou.",
+    "É só boa prática de estilo: o comportamento do laço é idêntico com ou sem ele."
   ],
   correta:0,
   gabarito:"O filho herda o <b>mesmo ponto de execução</b> do pai, incluindo o laço e o valor de <code>i</code>. Sem o <code>exit(0)</code>, ele volta ao <code>for</code> e também começa a criar filhos. Em vez de 26 processos você teria da ordem de 2<sup>26</sup> — uma <i>fork bomb</i> acidental. O <code>exit(0)</code> encerra o filho logo após ele fazer o seu trabalho."
@@ -196,7 +196,7 @@ registrar([
   enunciado:"Quais são as formas de compartilhar dados entre múltiplos processos em UNIX citadas na disciplina?",
   opcoes:[
     "Memória compartilhada, sockets, pipes e troca de mensagens.",
-    "Apenas memória compartilhada via <code>mmap()</code>.",
+    "Apenas memória compartilhada, criada com <code>mmap()</code>.",
     "Variáveis globais, já que o filho herda o espaço de endereçamento do pai.",
     "Registradores do processador e a pilha do processo pai."
   ],
