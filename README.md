@@ -12,14 +12,14 @@ Site estático, sem build e sem dependências além das fontes do Google.
 
 ## O que tem
 
-**223 questões** com gabarito comentado, montadas a partir das provas teórica e prática
+**250 questões** com gabarito comentado, montadas a partir das provas teórica e prática
 anteriores, dos laboratórios e dos slides da disciplina.
 
 | Prova | Assuntos |
 |---|---|
 A disciplina tem duas avaliações, e dá para treinar uma de cada vez: a **teórica**
 (conceitos, comparações, traços de execução e contas — 186 questões) e a **prática**
-(escrever, completar e analisar código — 37 questões). O filtro fica na tela inicial,
+(escrever, completar e analisar código — 64 questões, da mais básica à da prova). O filtro fica na tela inicial,
 e há uma coleção pronta para cada uma.
 
 | **P1** — Programação Concorrente | Processos e Threads · Exclusão Mútua · Padrões Concorrentes · Deadlocks · Redes de Petri |

@@ -560,7 +560,107 @@ registrar([
   chaves:["sem_wait","vazios","mutex","inserir","sem_post","cheios"],
   modelo:"void *produtor(void *arg) {\n    while (1) {\n        int item = produzir();       /* fora da regiao critica! */\n\n        sem_wait(&vazios);           /* ha lugar livre? senao espera */\n        sem_wait(&mutex);            /* entra na regiao critica      */\n\n        inserir(item);\n\n        sem_post(&mutex);            /* sai da regiao critica        */\n        sem_post(&cheios);           /* avisa: ha mais um item       */\n    }\n    return NULL;\n}",
   gabarito:"<b>A ordem dos dois <code>sem_wait</code> é a questão inteira.</b><br><br>Invertendo-os — <code>mutex</code> primeiro, <code>vazios</code> depois — o produtor que encontra o buffer <b>cheio</b> vai dormir em <code>vazios</code> <b>segurando o mutex</b>. O consumidor precisa desse mesmo mutex para retirar um item e liberar um lugar. Nenhum dos dois anda: <b>deadlock</b>.<br><br>A regra é a mesma do Banheiro UNISSEX e a mesma do <code>wait()</code> por dentro do semáforo: <b>nunca bloqueie segurando uma trava de que outro precisa para te liberar</b>. Semáforos de contagem vêm sempre <b>por fora</b> do mutex.<br><br><b>Os outros dois cuidados:</b><br>&bull; <code>produzir()</code> fica <b>fora</b> da região crítica — travar durante o trabalho útil serializa o programa e mata o paralelismo;<br>&bull; na saída, <code>sem_post(&mutex)</code> antes de <code>sem_post(&cheios)</code>: solta a trava o quanto antes, para que quem for acordado já encontre o caminho livre.<br><br>O consumidor é o espelho exato: <code>sem_wait(&cheios)</code>, <code>sem_wait(&mutex)</code>, consome, <code>sem_post(&mutex)</code>, <code>sem_post(&vazios)</code>."
+},
+{
+  id:"em37", mod:"exclusao", dif:"facil", tipo:"mc",
+  fonte:"Prática · primeiros passos com mutex",
+  enunciado:"Uma thread executa a função abaixo. O mutex é o comum do pthreads (<code>PTHREAD_MUTEX_INITIALIZER</code>, não recursivo). O que acontece?",
+  cod:"pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;\nint contador = 0;\n\nvoid *tarefa(void *arg) {\n    pthread_mutex_lock(&m);\n    pthread_mutex_lock(&m);      /* trava de novo, na mesma thread */\n    contador++;\n    pthread_mutex_unlock(&m);\n    return NULL;\n}",
+  opcoes:[
+    "A thread trava nela mesma: o mutex comum não é recursivo e já está na mão dela.",
+    "Nada de diferente: travar duas vezes só aumenta o contador interno daquele mutex.",
+    "O segundo <code>lock</code> devolve erro, mas a thread segue e incrementa o contador.",
+    "O compilador remove a segunda chamada, por ser idêntica à primeira linha."
+  ],
+  correta:0,
+  gabarito:"O mutex só tem dois estados: <b>livre</b> ou <b>na mão de alguém</b>. No segundo <code>lock</code> ele já está ocupado — e quem o segura é a própria thread que agora espera por ele. Ninguém vai destravar: é um <b>deadlock de uma thread só</b>.<br><br><b>Onde isso aparece de verdade:</b> uma função protegida que chama outra função também protegida pelo mesmo mutex. O chamador trava, o chamado tenta travar, e o programa para.<br><br>Existe o tipo <code>PTHREAD_MUTEX_RECURSIVE</code>, que conta quantas vezes o dono travou e só libera no último <code>unlock</code>, mas o padrão da disciplina é o comum."
+},
+{
+  id:"em38", mod:"exclusao", dif:"facil", tipo:"mc",
+  fonte:"Prática · primeiros passos com semáforo",
+  enunciado:"O semáforo <code>s</code> começa em <b>0</b>. A thread A e a thread B rodam ao mesmo tempo, e B leva meio segundo até chegar na linha dela. O que a tela mostra?",
+  cod:"sem_t s;\nsem_init(&s, 0, 0);        /* contador começa em zero */\n\n/* thread A */                    /* thread B */\nsem_wait(&s);                     usleep(500000);\nputs(\"A passou\");                 sem_post(&s);",
+  opcoes:[
+    "<code>A passou</code>, meio segundo depois: com o contador em 0 a thread A fica bloqueada até o <code>post</code>.",
+    "<code>A passou</code> na hora, porque o <code>sem_wait</code> só bloqueia com o contador negativo.",
+    "Nada: um semáforo iniciado em 0 bloqueia as duas threads, e nenhuma delas chega a prosseguir.",
+    "<code>A passou</code> duas vezes, uma para cada thread que passa por aquele semáforo."
+  ],
+  correta:0,
+  gabarito:"<code>sem_wait</code> decrementa o contador e <b>bloqueia a thread se ele ficar negativo</b>. Com o semáforo em 0, A para ali. <code>sem_post</code> incrementa e acorda quem espera — por isso A só passa depois de B.<br><br><b>Semáforo em 0 é o padrão de sinalização:</b> quem espera é o que depende, quem dá <code>post</code> é o que cumpre. É assim que se impõe ordem entre threads (a palavra <b>BEBER</b> da prova prática é exatamente isso, com um semáforo por letra).<br><br>Semáforo iniciado em <b>1</b> é outra coisa: serve como trava de exclusão mútua."
+},
+{
+  id:"em39", mod:"exclusao", dif:"facil", tipo:"code",
+  fonte:"Prática · primeiros passos com mutex",
+  enunciado:"Várias threads chamam <code>deposito</code> ao mesmo tempo sobre o mesmo <code>saldo</code>. O mutex <code>m</code> já está declarado e inicializado. Escreva as <b>3 linhas</b> do corpo da função, com a soma protegida.",
+  cod:"int saldo = 0;\npthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;\n\nvoid *deposito(void *arg) {\n    int valor = *(int *)arg;\n\n    /* escreva aqui as 3 linhas: a soma saldo += valor, protegida */\n\n    return NULL;\n}",
+  chaves:["pthread_mutex_lock","saldo","pthread_mutex_unlock"],
+  modelo:"    pthread_mutex_lock(&m);\n    saldo += valor;\n    pthread_mutex_unlock(&m);",
+  gabarito:"<code>saldo += valor</code> parece uma instrução, mas vira <b>três</b>: ler o saldo, somar, escrever de volta. Se o escalonador troca de thread no meio, um depósito sobrescreve o outro e o dinheiro some.<br><br>A região crítica é só a linha da soma — e é só ela que deve ficar entre o <code>lock</code> e o <code>unlock</code>. Proteger mais do que o necessário (um <code>printf</code> demorado, por exemplo) não deixa o programa errado, mas o deixa <b>lento</b>, porque as outras threads esperam à toa."
+},
+{
+  id:"em40", mod:"exclusao", dif:"facil", tipo:"code",
+  fonte:"Prática · inicialização de semáforos",
+  enunciado:"Um produtor-consumidor com buffer de <b>5 posições</b> usa três semáforos, já declarados. Escreva as <b>3 chamadas de <code>sem_init</code></b>, com os valores iniciais corretos.",
+  cod:"#define N 5\n\nsem_t vazios;    /* posições livres no buffer   */\nsem_t cheios;    /* itens prontos para consumir  */\nsem_t mutex;     /* trava de acesso ao buffer    */\n\nint main(void) {\n    /* escreva aqui as 3 chamadas de sem_init */\n\n    /* ... cria as threads do produtor e do consumidor ... */\n}",
+  chaves:["sem_init","vazios","cheios","mutex"],
+  modelo:"    sem_init(&vazios, 0, N);    /* 5 posições livres no começo */\n    sem_init(&cheios, 0, 0);    /* nenhum item ainda           */\n    sem_init(&mutex,  0, 1);    /* trava livre                 */",
+  gabarito:"Os valores iniciais <b>são</b> o modelo do buffer:<br>&bull; <code>vazios = N</code> — há 5 lugares livres, então o produtor pode inserir 5 vezes antes de bloquear;<br>&bull; <code>cheios = 0</code> — não há nada para consumir, então o consumidor bloqueia de cara;<br>&bull; <code>mutex = 1</code> — a trava começa livre.<br><br>O <b>segundo parâmetro</b> (<code>0</code>) diz que o semáforo é compartilhado apenas entre <b>threads do mesmo processo</b>; com valor diferente de zero, ele seria compartilhado entre processos, em memória compartilhada.<br><br>Vale sempre o invariante <code>vazios + cheios + (itens em trânsito) = N</code>."
+},
+{
+  id:"em41", mod:"exclusao", dif:"facil", tipo:"code",
+  fonte:"Prática · ordenando threads com semáforo",
+  enunciado:"As duas threads são criadas juntas, mas a saída tem que ser sempre <code>primeiro</code> e depois <code>segundo</code>. O semáforo <code>pronto</code> já foi inicializado em <b>0</b>. Escreva as <b>2 linhas</b> marcadas.",
+  cod:"sem_t pronto;                  /* sem_init(&pronto, 0, 0) já foi feito */\n\nvoid *A(void *arg) {\n    puts(\"primeiro\");\n    /* (1) escreva a linha que avisa B */\n    return NULL;\n}\n\nvoid *B(void *arg) {\n    /* (2) escreva a linha que espera por A */\n    puts(\"segundo\");\n    return NULL;\n}",
+  chaves:["sem_post","sem_wait","pronto"],
+  modelo:"/* em A, depois do puts  */   sem_post(&pronto);\n\n/* em B, antes do puts   */   sem_wait(&pronto);",
+  gabarito:"Com o semáforo em <b>0</b>, B bloqueia no <code>sem_wait</code> e só segue quando A der o <code>sem_post</code>. A ordem fica garantida <b>sem espera ocupada</b>: B dorme e o sistema a acorda.<br><br><b>Por que não uma barreira:</b> a barreira é simétrica — ela faria A esperar por B também. Para impor ordem basta um mecanismo assimétrico, e o semáforo em 0 é exatamente isso.<br><br>Se o <code>sem_post</code> chegar <b>antes</b> de B chamar o <code>sem_wait</code>, nada se perde: o contador vai a 1 e o <code>wait</code> seguinte passa direto. É esta a diferença para o <i>sleep/wakeup</i>, que perde o aviso."
+},
+{
+  id:"em42", mod:"exclusao", dif:"medio", tipo:"code",
+  fonte:"Prática · contador com semáforo",
+  enunciado:"Mesmo contador da Questão 1 da prova, agora <b>com semáforo</b> em vez de mutex. Escreva a linha de inicialização e o corpo da função de incremento (4 linhas no total).",
+  cod:"long contador = 0;\nsem_t s;\n\nint main(void) {\n    /* (1) escreva aqui a inicialização de s */\n    /* ... cria 1000 threads com incrementa e espera todas ... */\n}\n\nvoid *incrementa(void *arg) {\n    /* (2) escreva aqui o corpo, sem condição de corrida */\n}",
+  chaves:["sem_init","sem_wait","contador","sem_post"],
+  modelo:"/* (1) */  sem_init(&s, 0, 1);      /* binário: vale como trava */\n\n/* (2) */  void *incrementa(void *arg) {\n               sem_wait(&s);\n               contador++;\n               sem_post(&s);\n               return NULL;\n           }",
+  gabarito:"Um semáforo iniciado em <b>1</b> é um <b>semáforo binário</b> e funciona como trava: o primeiro <code>sem_wait</code> leva o contador a 0 e os demais bloqueiam até o <code>sem_post</code>.<br><br><b>A diferença para o mutex</b> é a posse: o mutex só pode ser destravado por quem o travou; o semáforo pode receber <code>post</code> de qualquer thread. Isso o torna mais flexível — e mais fácil de usar errado.<br><br>Se a inicialização fosse <code>sem_init(&s, 0, 0)</code>, a primeira thread bloquearia para sempre: ninguém daria o <code>post</code>."
+},
+{
+  id:"em43", mod:"exclusao", dif:"medio", tipo:"mc",
+  fonte:"Análise de código · mutex e caminhos de retorno",
+  enunciado:"Várias threads chamam <code>saque()</code>. O programa roda bem por um tempo e, de repente, <b>trava inteiro</b>. O que aconteceu?",
+  cod:"int saldo = 100;\npthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;\n\nint saque(int valor) {\n    pthread_mutex_lock(&m);\n\n    if (valor > saldo)\n        return -1;                     /* saldo insuficiente */\n\n    saldo -= valor;\n    pthread_mutex_unlock(&m);\n    return 0;\n}",
+  opcoes:[
+    "O <code>return -1</code> sai <b>sem destravar</b>: o mutex fica preso e trava todas as threads seguintes.",
+    "O <code>pthread_mutex_lock</code> é liberado sozinho no retorno da função, mas com atraso.",
+    "O saldo pode ficar negativo, porque o teste acontece antes de a subtração ser protegida.",
+    "A thread que sacou de menos perde a vez e precisa chamar <code>pthread_mutex_trylock</code>."
+  ],
+  correta:0,
+  gabarito:"O mutex <b>não</b> é liberado sozinho no <code>return</code> — isso é C, não uma linguagem com destrutor automático. O primeiro saque recusado deixa a trava na mão de uma thread que já foi embora, e qualquer <code>pthread_mutex_lock</code> seguinte bloqueia para sempre.<br><br>Repare que o defeito é <b>intermitente</b>: enquanto ninguém sacar mais do que o saldo, o programa parece perfeito. É o tipo de erro que passa no teste e aparece na apresentação.<br><br><b>Duas correções:</b> destravar antes de cada <code>return</code>, ou usar um único ponto de saída na função, com o <code>unlock</code> logo antes dele."
+},
+{
+  id:"em44", mod:"exclusao", dif:"medio", tipo:"mc",
+  fonte:"Análise de código · exclusão mútua",
+  enunciado:"As duas funções protegem a região crítica com mutex, mas o contador final <b>continua errado</b> a cada execução. Por quê?",
+  cod:"pthread_mutex_t m1 = PTHREAD_MUTEX_INITIALIZER;\npthread_mutex_t m2 = PTHREAD_MUTEX_INITIALIZER;\nlong contador = 0;\n\nvoid *incrementa(void *arg) {\n    pthread_mutex_lock(&m1);\n    contador++;\n    pthread_mutex_unlock(&m1);\n    return NULL;\n}\n\nvoid *decrementa(void *arg) {\n    pthread_mutex_lock(&m2);\n    contador--;\n    pthread_mutex_unlock(&m2);\n    return NULL;\n}",
+  opcoes:[
+    "Cada função tranca um mutex diferente: as duas entram na região crítica ao mesmo tempo.",
+    "Faltou <code>pthread_mutex_init</code> nos dois mutexes antes de as threads começarem.",
+    "Os dois mutexes são travados em ordem invertida, e com isso o programa entra em deadlock.",
+    "O <code>contador</code> precisa ser <code>volatile</code>, senão cada thread guarda a sua cópia."
+  ],
+  correta:0,
+  gabarito:"Exclusão mútua se dá <b>sobre o dado</b>, não sobre a função. Como <code>incrementa</code> e <code>decrementa</code> mexem no <b>mesmo</b> <code>contador</code>, elas têm que disputar a <b>mesma</b> trava. Com mutexes diferentes, cada uma se protege apenas de si mesma: uma pode estar lendo enquanto a outra escreve, e um dos incrementos se perde.<br><br>É o erro mais comum na Questão 1 da prova prática — o código fica cheio de <code>lock</code> e <code>unlock</code>, parece protegido, e o resultado continua variando.<br><br><b>Regra prática:</b> um mutex por recurso compartilhado, e todo mundo que toca nele usa aquele mutex."
+},
+{
+  id:"em45", mod:"exclusao", dif:"medio", tipo:"code",
+  fonte:"Prática · corrigindo o caminho de erro",
+  enunciado:"Corrija a função <code>saque()</code> abaixo: o mutex precisa ser liberado <b>nos dois caminhos</b>, o do saque recusado e o do saque feito. Reescreva a função inteira (ela tem 8 linhas).",
+  cod:"int saldo = 100;\npthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;\n\nint saque(int valor) {\n    pthread_mutex_lock(&m);\n\n    if (valor > saldo)\n        return -1;                     /* <-- sai sem destravar */\n\n    saldo -= valor;\n    pthread_mutex_unlock(&m);\n    return 0;\n}",
+  chaves:["pthread_mutex_unlock","return","saldo","pthread_mutex_lock"],
+  modelo:"int saque(int valor) {\n    pthread_mutex_lock(&m);\n\n    if (valor > saldo) {\n        pthread_mutex_unlock(&m);      /* destrava antes de sair */\n        return -1;\n    }\n\n    saldo -= valor;\n    pthread_mutex_unlock(&m);\n    return 0;\n}",
+  gabarito:"Toda saída da função tem que passar por um <code>unlock</code>. Repare que as chaves no <code>if</code> deixam de ser opcionais: sem elas, só o <code>unlock</code> ficaria dentro do teste.<br><br><b>Variação que vale saber:</b> guardar o resultado numa variável e ter <b>um único <code>return</code></b> no fim, logo depois do <code>unlock</code> — fica impossível esquecer um caminho.<br><br>O teste <code>valor &gt; saldo</code> precisa mesmo estar dentro da região crítica: entre ler o saldo e subtrair, nenhuma outra thread pode mexer nele."
 }
-
 
 ]);

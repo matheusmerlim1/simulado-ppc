@@ -325,7 +325,7 @@ registrar([
     "O <code>mutex</code> só sai <b>depois da refeição</b>: come um por vez, mesmo havendo garfos para dois, e quem falha fica em espera ocupada.",
     "Ela pode travar se dois filósofos chamarem <code>sem_getvalue</code> ao mesmo tempo no mesmo garfo.",
     "O <code>sched_yield</code> bloqueia a thread até o garfo ser liberado, o que traz o deadlock de volta.",
-    "Nenhum: é a solução ótima, com dois filósofos não vizinhos comendo ao mesmo tempo, sem nenhuma espera ocupada no meio."
+    "Nenhum: é a solução ótima, com dois filósofos não vizinhos comendo ao mesmo tempo, sem espera ocupada no meio do caminho."
   ],
   correta:0,
   gabarito:"<b>Por que não trava:</b> o teste e a tomada dos dois garfos acontecem sob o mesmo mutex, então ou o filósofo leva os dois, ou solta tudo e não fica com nenhum. É o ataque à <b>posse-e-espera</b>.<br><br><b>O custo está na última linha.</b> O <code>sem_post(mutex)</code> vem depois de comer. Com 5 filósofos e 5 garfos, dois não vizinhos poderiam comer juntos — aqui, nunca. O programa virou <b>sequencial</b>.<br><br>Repare numa consequência curiosa: como o mutex fica retido do teste até a devolução, os semáforos dos garfos viraram <b>decoração</b>. É o mutex, e só ele, que garante tudo.<br><br><b>Segundo custo:</b> quem não consegue os garfos solta o mutex, chama <code>sched_yield()</code> e tenta de novo — <b>espera ocupada</b>. A thread não dorme; volta à fila de prontos e gasta CPU testando.<br><br><b>Terceiro detalhe:</b> <code>sem_getvalue</code> seguido de <code>sem_wait</code> é um teste-depois-uso que só é seguro porque todos seguram o mutex. Fora dele, seria uma condição de corrida.<br><br><b>E um bug de brinde:</b> <code>n</code> é incrementado duas vezes por volta (no <code>for</code> e no <code>printf</code>), então cada filósofo come cerca de 5 000 vezes, não 10 000.<br><br>A versão sem esses custos é a de <code>take_forks</code>/<code>test</code>, que <b>bloqueia</b> o filósofo num semáforo próprio em vez de fazê-lo tentar em laço."
@@ -454,7 +454,144 @@ registrar([
   ],
   modelo:"void test(int i) {\n    int esquerda = (i + 1) % N;\n    int direita  = (i + N - 1) % N;\n\n    if (state[i] == HUNGRY &&\n        state[esquerda] != EATING &&\n        state[direita]  != EATING) {\n\n        state[i] = EATING;\n        sem_post(&filosofos[i]);    /* libera o sem_wait de take_forks */\n    }\n}",
   gabarito:"<b>As três condições</b> precisam valer juntas: o filósofo quer comer, e <b>nenhum</b> dos dois vizinhos está comendo.<br><br><b>Por que funciona sem deadlock:</b> <code>test</code> é sempre chamada com o <code>mutex</code> na mão, então o estado dos três filósofos é lido e alterado de forma atômica. O filósofo passa de faminto para comendo <b>de uma vez</b>, com os dois garfos — nunca segura só um. É o ataque à <b>posse-e-espera</b>.<br><br><b>O papel do semáforo por filósofo</b> (iniciado em 0): o <code>sem_wait</code> em <code>take_forks</code> é o <i>sleep</i>, e o <code>sem_post</code> em <code>test</code> é o <i>wakeup</i>. Quando <code>test(i)</code> dá certo logo de cara, o <code>post</code> acontece <b>antes</b> do <code>wait</code> — e como o semáforo guarda o sinal, o <code>wait</code> seguinte passa direto. Sem sinal perdido.<br><br><b>Detalhe de C:</b> o vizinho é <code>(i + N - 1) % N</code>, e não <code>(i - 1) % N</code>. Em C, o resto de um número negativo é negativo: para <code>i = 0</code>, <code>-1 % 5</code> dá <b>-1</b>, um índice inválido.<br><br><b>O que ela ainda não resolve:</b> <i>starvation</i> — dois vizinhos podem se revezar para sempre e deixar o do meio com fome."
+},
+{
+  id:"pp32", mod:"padroes", dif:"facil", tipo:"mc",
+  fonte:"Prática · primeiros passos com barreira",
+  enunciado:"A barreira foi criada para <b>3</b> participantes, mas o programa cria apenas <b>2</b> threads, e as duas chamam <code>pthread_barrier_wait</code>. O que acontece?",
+  cod:"pthread_barrier_t b;\npthread_barrier_init(&b, NULL, 3);      /* espera 3 chegarem */\n\n/* as 2 threads criadas executam: */\npthread_barrier_wait(&b);\nputs(\"passei\");",
+  opcoes:[
+    "As duas ficam presas na barreira: ela só abre quando o terceiro participante chegar.",
+    "As duas passam normalmente, porque a barreira conta só as threads que existem.",
+    "A barreira devolve erro na segunda thread e o programa segue, imprimindo uma única vez.",
+    "A primeira passa direto e a segunda espera, pela ordem em que elas chegaram."
+  ],
+  correta:0,
+  gabarito:"A barreira é um <b>ponto de encontro com número marcado</b>: ela conta as chegadas e só libera todo mundo quando o contador atinge o valor dado no <code>init</code>. Com 3 esperado e 2 chegando, ninguém passa — e <code>passei</code> nunca é impresso.<br><br><b>O número é dos participantes daquela barreira</b>, e não do total de threads do programa. Uma barreira de 2 num programa de 3 threads funciona perfeitamente, desde que só duas passem por ela.<br><br>Esse erro aparece muito quando o <code>main</code> também espera na barreira (ou deixa de esperar) e a conta fica fora por um."
+},
+{
+  id:"pp33", mod:"padroes", dif:"facil", tipo:"mc",
+  fonte:"Prática · primeiros passos com despachante-operário",
+  enunciado:"Num pool com 4 operárias, a fila de tarefas está <b>vazia</b> e o despachante ainda não enfileirou nada. O que as operárias estão fazendo neste instante?",
+  cod:"sem_t cheios;                  /* itens na fila; começa em 0 */\npthread_mutex_t mutex;         /* protege a fila             */\n\nvoid *operaria(void *arg) {\n    while (1) {\n        sem_wait(&cheios);                 /* <-- fila vazia agora */\n        pthread_mutex_lock(&mutex);\n        Tarefa t = retira_da_fila();\n        pthread_mutex_unlock(&mutex);\n        executa(t);\n    }\n}",
+  opcoes:[
+    "Bloqueadas no <code>sem_wait</code>, sem gastar CPU, até o despachante dar o <code>sem_post</code>.",
+    "Girando em espera ocupada no <code>while</code>, gastando CPU até aparecer alguma tarefa.",
+    "Destruídas pelo sistema e recriadas pelo despachante quando a próxima tarefa chegar.",
+    "Retirando uma tarefa vazia da fila e executando, o que costuma dar falha de segmentação."
+  ],
+  correta:0,
+  gabarito:"O <code>sem_wait</code> com o contador em 0 <b>bloqueia</b> a thread: ela sai da fila de prontos e não consome processador. É justamente o que se quer num pool — operárias ociosas não podem custar CPU.<br><br>É a diferença para a <b>espera ocupada</b>, em que a thread ficaria testando a fila num laço e desperdiçando o núcleo.<br><br><b>O ganho do padrão despachante-operário</b> é esse: as threads são criadas uma vez e ficam dormindo entre as tarefas, em vez de nascer e morrer a cada requisição."
+},
+{
+  id:"pp34", mod:"padroes", dif:"facil", tipo:"mc",
+  fonte:"Análise de código · pipeline com semáforos",
+  enunciado:"Pipeline de três estágios ligados por dois semáforos, <code>pronto1</code> e <code>pronto2</code>, ambos iniciados em <b>0</b>. O programa imprime o resultado do estágio 2 e para. O que aconteceu?",
+  cod:"void *estagio1(void *a) {\n    calcula1();\n    sem_post(&pronto1);\n    return NULL;\n}\n\nvoid *estagio2(void *a) {\n    sem_wait(&pronto1);\n    calcula2();\n    /* faltou avisar o estágio 3 */\n    return NULL;\n}\n\nvoid *estagio3(void *a) {\n    sem_wait(&pronto2);\n    calcula3();\n    return NULL;\n}",
+  opcoes:[
+    "O estágio 3 ficou preso em <code>sem_wait(&pronto2)</code>: ninguém dá o <code>post</code> daquele semáforo.",
+    "O estágio 3 rodou antes do 2, porque o semáforo <code>pronto2</code> começa liberado em 1.",
+    "O estágio 2 travou depois de calcular, por ter consumido o sinal do estágio anterior.",
+    "Os três rodaram na ordem certa e a saída do terceiro se perdeu no buffer de saída."
+  ],
+  correta:0,
+  gabarito:"Num pipeline, cada junção é um <b>par</b>: quem termina dá <code>sem_post</code>, quem depende dá <code>sem_wait</code>. Faltando o <code>post</code> do estágio 2, o semáforo <code>pronto2</code> nunca sai do zero e o estágio 3 dorme para sempre.<br><br>O <code>main</code> costuma travar junto, no <code>pthread_join</code> do terceiro estágio.<br><br><b>Como achar esse erro:</b> conte os <code>sem_post</code> e os <code>sem_wait</code> de cada semáforo. Num pipeline que roda uma vez, cada semáforo de ligação tem exatamente um de cada."
+},
+{
+  id:"pp35", mod:"padroes", dif:"facil", tipo:"code",
+  fonte:"Prática · despachante-operário",
+  enunciado:"As funções <code>retira_da_fila()</code> e <code>executa()</code> já existem, assim como o semáforo <code>cheios</code> (começa em 0) e o <code>mutex</code> da fila. Escreva o <b>corpo do laço</b> da operária (5 linhas).",
+  cod:"sem_t cheios;                   /* itens prontos na fila   */\npthread_mutex_t mutex;          /* protege a fila          */\n\nTarefa retira_da_fila(void);    /* já implementada         */\nvoid executa(Tarefa t);         /* já implementada, demora */\n\nvoid *operaria(void *arg) {\n    while (1) {\n        /* escreva aqui: espere ter tarefa, retire com segurança e execute */\n    }\n}",
+  chaves:["sem_wait","pthread_mutex_lock","retira_da_fila","pthread_mutex_unlock","executa"],
+  modelo:"        sem_wait(&cheios);              /* dorme enquanto a fila está vazia */\n        pthread_mutex_lock(&mutex);\n        Tarefa t = retira_da_fila();\n        pthread_mutex_unlock(&mutex);\n        executa(t);                     /* fora da região crítica */",
+  gabarito:"A ordem importa duas vezes:<br>&bull; <b>primeiro o <code>sem_wait</code>, depois o <code>mutex</code></b> — bloquear esperando tarefa <i>com a trava na mão</i> impediria o despachante de enfileirar, e o pool travaria;<br>&bull; <b><code>executa(t)</code> fica fora da região crítica</b> — é a parte demorada, e deixá-la dentro faria as 4 operárias trabalharem uma de cada vez, jogando fora o paralelismo do pool.<br><br>Dentro do mutex fica só o que mexe na estrutura da fila."
+},
+{
+  id:"pp36", mod:"padroes", dif:"facil", tipo:"code",
+  fonte:"Prática · despachante-operário",
+  enunciado:"Do outro lado do mesmo pool: <code>insere_na_fila()</code> já existe. Escreva o <b>corpo do despachante</b> (4 linhas), que recebe uma tarefa, põe na fila e acorda uma operária.",
+  cod:"sem_t cheios;                   /* itens prontos na fila */\npthread_mutex_t mutex;          /* protege a fila        */\n\nvoid insere_na_fila(Tarefa t);  /* já implementada       */\n\nvoid despachante(Tarefa t) {\n    /* escreva aqui */\n}",
+  chaves:["pthread_mutex_lock","insere_na_fila","pthread_mutex_unlock","sem_post"],
+  modelo:"    pthread_mutex_lock(&mutex);\n    insere_na_fila(t);\n    pthread_mutex_unlock(&mutex);\n    sem_post(&cheios);              /* avisa uma operária */",
+  gabarito:"O <code>sem_post</code> é o &ldquo;acorda&rdquo; do padrão: ele incrementa o contador de itens e libera <b>uma</b> operária parada no <code>sem_wait</code>.<br><br>Dar o <code>post</code> <b>depois</b> do <code>unlock</code> é o detalhe fino: se fosse antes, a operária acordaria e bateria de cara na trava que o despachante ainda segura — funciona, mas custa uma troca de contexto à toa.<br><br><b>Fila com limite:</b> numa fila de tamanho fixo o despachante também precisaria de um <code>sem_wait(&amp;vazios)</code> antes de inserir — senão uma rajada de tarefas estoura a fila. É o produtor-consumidor completo."
+},
+{
+  id:"pp37", mod:"padroes", dif:"facil", tipo:"code",
+  fonte:"Prática · barreira pronta do pthreads",
+  enunciado:"Quatro threads devem imprimir <b>todos os A antes de qualquer B</b>. Use a barreira pronta do pthreads: escreva a linha (1) de inicialização, a (2) dentro da thread e a (3) de destruição.",
+  cod:"pthread_barrier_t barreira;\n\nvoid *tarefa(void *arg) {\n    printf(\"A\");\n    /* (2) espere as outras três aqui */\n    printf(\"B\");\n    return NULL;\n}\n\nint main(void) {\n    pthread_t t[4];\n    /* (1) inicialize a barreira */\n\n    /* ... cria as 4 threads e dá join nas 4 ... */\n\n    /* (3) destrua a barreira */\n    return 0;\n}",
+  chaves:["pthread_barrier_init","pthread_barrier_wait","pthread_barrier_destroy"],
+  modelo:"/* (1) */  pthread_barrier_init(&barreira, NULL, 4);\n\n/* (2) */  pthread_barrier_wait(&barreira);\n\n/* (3) */  pthread_barrier_destroy(&barreira);",
+  gabarito:"O <b>4</b> do <code>init</code> é o número de threads que passam <b>por aquela barreira</b>. Como as quatro só imprimem <code>B</code> depois de todas terem chegado, a saída começa com <code>AAAA</code> e termina com <code>BBBB</code> — a ordem dentro de cada bloco continua livre.<br><br>O <code>NULL</code> do meio é o atributo da barreira, que quase nunca se usa.<br><br><b>Sem a biblioteca:</b> dá para montar a mesma coisa com um contador protegido por mutex e um semáforo iniciado em 0 — a última thread a chegar dá <code>N &minus; 1</code> <code>sem_post</code>."
+},
+{
+  id:"pp38", mod:"padroes", dif:"facil", tipo:"code",
+  fonte:"Prática · pipeline com semáforos",
+  enunciado:"Pipeline de três estágios: o 1 escreve em <code>dado1</code>, o 2 dobra o valor em <code>dado2</code> e o 3 imprime. Os semáforos <code>pronto1</code> e <code>pronto2</code> começam em <b>0</b>. Escreva o corpo do <b>estágio 2</b> (4 linhas).",
+  cod:"int dado1, dado2;               /* caixas entre os estágios */\nsem_t pronto1, pronto2;         /* os dois começam em 0     */\n\nvoid *estagio2(void *arg) {\n    /* escreva aqui: espere o dado do estágio 1, dobre o valor\n       em dado2 e libere o estágio 3 */\n}",
+  chaves:["sem_wait","pronto1","dado2","sem_post","pronto2"],
+  modelo:"    sem_wait(&pronto1);         /* espera o estágio 1 terminar */\n    dado2 = dado1 * 2;\n    sem_post(&pronto2);         /* libera o estágio 3          */\n    return NULL;",
+  gabarito:"Cada estágio do pipeline tem a mesma forma: <b>espera o anterior, faz o seu trabalho, avisa o seguinte</b>. O <code>sem_wait</code> na entrada e o <code>sem_post</code> na saída são a ligação entre os estágios.<br><br>Com um só dado circulando, uma variável por junção basta. Para o pipeline <b>processar um fluxo</b> de dados, cada junção vira um <b>buffer</b> com os três semáforos do produtor-consumidor (<code>vazios</code>, <code>cheios</code> e <code>mutex</code>) — é assim que os estágios passam a trabalhar ao mesmo tempo, cada um num item diferente.<br><br>A vazão do pipeline inteiro é a do <b>estágio mais lento</b>."
+},
+{
+  id:"pp39", mod:"padroes", dif:"medio", tipo:"mc",
+  fonte:"Análise de código · despachante-operário",
+  enunciado:"O pool tem 4 operárias e esta é a função delas. O despachante enfileirou 100 tarefas, mas no fim algumas aparecem <b>executadas duas vezes</b> e outras <b>nunca</b>. Onde está o erro?",
+  cod:"Tarefa fila[N];\nint inicio = 0;\nsem_t cheios;                 /* o despachante dá sem_post a cada tarefa */\n\nvoid *operaria(void *arg) {\n    while (1) {\n        sem_wait(&cheios);\n        Tarefa t = fila[inicio];           /* sem mutex nenhum */\n        inicio = (inicio + 1) % N;\n        executa(t);\n    }\n}",
+  opcoes:[
+    "Duas operárias podem ler o mesmo <code>inicio</code> antes de qualquer uma incrementá-lo.",
+    "O <code>sem_wait</code> já garante exclusão mútua, mas falta ele também no despachante.",
+    "As tarefas saem fora de ordem, mas cada uma delas é executada exatamente uma vez.",
+    "O semáforo <code>cheios</code> fica negativo e o programa aborta na segunda retirada."
+  ],
+  correta:0,
+  gabarito:"O semáforo <code>cheios</code> controla <b>quantas</b> tarefas existem, e não <b>quem</b> mexe na fila. Com 4 operárias liberadas ao mesmo tempo, duas podem ler <code>inicio</code> com o mesmo valor: pegam a mesma tarefa e, nas duas incrementadas seguidas, uma posição é pulada.<br><br>São duas regiões críticas numa linha só: a leitura de <code>fila[inicio]</code> e o <code>inicio = (inicio + 1) % N</code>, que é o mesmo <i>ler-modificar-escrever</i> do <code>contador++</code>.<br><br><b>A correção</b> é envolver as duas linhas com <code>pthread_mutex_lock</code> / <code>unlock</code>, deixando o <code>executa(t)</code> de fora."
+},
+{
+  id:"pp40", mod:"padroes", dif:"medio", tipo:"mc",
+  fonte:"Análise de código · barreira",
+  enunciado:"O programa cria 4 threads de trabalho; o <code>main</code> apenas cria e dá <code>join</code>, sem passar pela barreira. Nenhuma thread chega a imprimir <code>fase 2</code>. Por quê?",
+  cod:"#define THREADS 4\npthread_barrier_t b;\n\nint main(void) {\n    pthread_barrier_init(&b, NULL, THREADS + 1);     /* <-- */\n    /* cria as 4 threads e dá join nas 4 */\n}\n\nvoid *trabalho(void *arg) {\n    fase1();\n    pthread_barrier_wait(&b);\n    puts(\"fase 2\");\n    return NULL;\n}",
+  opcoes:[
+    "A barreira espera <b>5</b> participantes e só 4 chegam: as quatro ficam presas nela.",
+    "A barreira abre na quarta thread, mas o <code>main</code> ainda segura o <code>join</code> delas.",
+    "Uma thread passa e as outras três esperam, já que sobra um lugar na barreira.",
+    "O <code>pthread_barrier_init</code> devolve erro e as quatro passam direto sem esperar."
+  ],
+  correta:0,
+  gabarito:"<code>THREADS + 1</code> faz a barreira esperar <b>5</b> chegadas. Como o <code>main</code> não chama <code>pthread_barrier_wait</code>, a quinta nunca acontece: as 4 threads ficam bloqueadas e o <code>main</code> trava no <code>pthread_join</code>.<br><br>O <code>+ 1</code> só faria sentido se o <code>main</code> também participasse da barreira — o que é um padrão legítimo, quando a thread principal precisa esperar o fim de uma fase junto com as outras.<br><br><b>Regra:</b> o número do <code>init</code> é exatamente a quantidade de threads que executam o <code>wait</code> naquela barreira — nem uma a mais."
+},
+{
+  id:"pp41", mod:"padroes", dif:"medio", tipo:"mc",
+  fonte:"Análise de código · pipeline sem sincronização",
+  enunciado:"As duas threads são criadas na mesma hora e o <code>main</code> dá <code>join</code> nas duas. O programa às vezes imprime o valor certo, às vezes imprime <code>0</code>. Qual é o defeito?",
+  cod:"int dado;\n\nvoid *produz(void *a) {\n    dado = calcula();          /* demora um pouco */\n    return NULL;\n}\n\nvoid *consome(void *a) {\n    printf(\"%d\\n\", dado);      /* lê sem esperar */\n    return NULL;\n}",
+  opcoes:[
+    "Nada liga os dois estágios: o consumidor pode ler <code>dado</code> antes de o produtor escrever.",
+    "Falta um mutex: os dois estágios escrevem em <code>dado</code> e um sobrescreve o outro.",
+    "Falta <code>pthread_detach</code> no produtor, para o consumidor começar depois dele.",
+    "Nada de errado: o <code>pthread_create</code> executa as threads na ordem da criação."
+  ],
+  correta:0,
+  gabarito:"Criar primeiro <b>não</b> significa executar primeiro: quem decide é o escalonador. Sem nenhuma sincronização, o consumidor pode ler <code>dado</code> enquanto o produtor ainda calcula — e imprime o valor antigo.<br><br>Repare que <b>não</b> é um problema de exclusão mútua: só uma thread escreve. É falta de <b>sincronização por condição</b> — o consumidor precisa esperar um <b>evento</b>, que é o dado ficar pronto.<br><br><b>A correção</b> é um semáforo iniciado em 0: <code>sem_post</code> no fim do produtor e <code>sem_wait</code> no começo do consumidor. É a ligação que todo pipeline tem entre dois estágios."
+},
+{
+  id:"pp42", mod:"padroes", dif:"medio", tipo:"code",
+  fonte:"Prática · de dormir-e-acordar para semáforo",
+  enunciado:"A versão abaixo usa <i>sleep/wakeup</i> e às vezes trava, porque o aviso se perde. O semáforo <code>cheios</code> (começa em 0) já está declarado. Escreva as <b>duas linhas</b> que substituem os trechos marcados.",
+  cod:"int contador = 0;               /* itens no buffer */\nsem_t cheios;                   /* sem_init(&cheios, 0, 0) já feito */\n\nvoid *consumidor(void *arg) {\n    while (1) {\n        if (contador == 0) sleep();          /* (1) troque esta linha */\n        retira_item();\n        contador--;\n    }\n}\n\nvoid *produtor(void *arg) {\n    while (1) {\n        insere_item();\n        contador++;\n        if (contador == 1) wakeup(consumidor);   /* (2) troque esta linha */\n    }\n}",
+  chaves:["sem_wait","cheios","sem_post"],
+  modelo:"/* (1) no consumidor */   sem_wait(&cheios);     /* espera ter item, sem testar nada */\n\n/* (2) no produtor   */   sem_post(&cheios);     /* avisa; o aviso fica guardado */",
+  gabarito:"O <i>lost wakeup</i> acontece porque <b>testar e dormir não são atômicos</b>: o consumidor vê <code>contador == 0</code>, é preemptado antes do <code>sleep</code>, o produtor insere e chama <code>wakeup</code> para quem ainda não dorme — e o aviso evapora. O consumidor volta, dorme, e ninguém mais o acorda.<br><br>O semáforo resolve porque <b>guarda o sinal no contador</b>: um <code>sem_post</code> que chega cedo deixa o contador em 1, e o <code>sem_wait</code> seguinte passa direto.<br><br>Repare que o teste <code>if</code> <b>desaparece</b> — o próprio <code>sem_wait</code> já é o teste e o bloqueio, numa operação atômica. O <code>contador</code> continua existindo só se o programa precisar dele para outra coisa, e aí vira região crítica com mutex."
+},
+{
+  id:"pp43", mod:"padroes", dif:"facil", tipo:"code",
+  fonte:"Prática · pipeline com semáforos",
+  enunciado:"No mesmo pipeline de três estágios (<code>dado1</code>, <code>dado2</code>, semáforos <code>pronto1</code> e <code>pronto2</code> em 0), escreva o corpo do <b>estágio 1</b> — o primeiro da fila, que não espera ninguém (3 linhas).",
+  cod:"int dado1, dado2;\nsem_t pronto1, pronto2;         /* os dois começam em 0 */\n\nint le_entrada(void);           /* já implementada      */\n\nvoid *estagio1(void *arg) {\n    /* escreva aqui: produza o valor em dado1 e libere o estágio 2 */\n}",
+  chaves:["dado1","sem_post","pronto1"],
+  modelo:"    dado1 = le_entrada();\n    sem_post(&pronto1);         /* libera o estágio 2 */\n    return NULL;",
+  gabarito:"O <b>primeiro</b> estágio é só <b>produtor</b>: não há ninguém antes dele, então ele não tem <code>sem_wait</code> nenhum — apenas produz e avisa.<br><br>Pela mesma razão, o <b>último</b> estágio é só <b>consumidor</b>: tem <code>sem_wait</code> e nenhum <code>sem_post</code>. Os do meio têm os dois.<br><br>Saber identificar esses três papéis é o que permite montar um pipeline de qualquer tamanho: conte as junções, dê um semáforo (ou um buffer) a cada uma e distribua <code>wait</code> e <code>post</code> nas pontas certas."
 }
-
 
 ]);

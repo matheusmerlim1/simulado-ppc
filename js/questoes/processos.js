@@ -295,6 +295,75 @@ registrar([
   ],
   correta:0,
   gabarito:"O par <b>fork + exec</b> é como o UNIX cria processos que executam <i>outro</i> programa: o <code>fork()</code> duplica o processo e, no filho, o <code>exec()</code> troca todo o conteúdo (texto, dados, heap, pilha) pelo do novo executável — mas o PID continua o mesmo. O pai segue no <code>wait()</code> até receber o <i>status</i> de saída do filho."
+},
+{
+  id:"pt23", mod:"processos", dif:"facil", tipo:"mc",
+  fonte:"Prática · primeiros passos com fork",
+  enunciado:"O programa abaixo é compilado com <code>gcc p.c -o p</code> e executado uma vez. <b>Quantas vezes</b> a palavra <code>OI</code> aparece na tela?",
+  cod:"#include <stdio.h>\n#include <unistd.h>\n\nint main(void) {\n    fork();\n    printf(\"OI\\n\");\n    return 0;\n}",
+  opcoes:[
+    "Duas vezes: depois do <code>fork()</code> existem dois processos, e cada um executa o <code>printf</code>.",
+    "Uma vez: o <code>printf</code> está fora do bloco do filho, então só o processo pai chega nele.",
+    "Nenhuma: sem <code>wait()</code> o pai termina primeiro e derruba o filho antes da impressão.",
+    "Depende do escalonador: pode sair uma ou duas vezes, sem nenhuma garantia de qual delas."
+  ],
+  correta:0,
+  gabarito:"<code>fork()</code> <b>duplica o processo</b>. A partir dali existem dois programas iguais, cada um com sua cópia da memória, e <b>os dois continuam da linha seguinte</b> — por isso o <code>printf</code> roda duas vezes.<br><br>O que o <code>fork()</code> devolve é o único jeito de saber quem é quem: <b>0 no filho</b> e o <b>PID do filho no pai</b> (ou &minus;1 se falhar).<br><br><b>A ordem das duas linhas é imprevisível</b>: quem imprime primeiro depende do escalonador. Para garantir que o pai imprima por último, é preciso <code>wait()</code>."
+},
+{
+  id:"pt24", mod:"processos", dif:"facil", tipo:"code",
+  fonte:"Prática · primeiros passos com fork",
+  enunciado:"O <code>fork()</code> já foi chamado e o retorno está em <code>pid</code>. Escreva as <b>4 ou 5 linhas</b> que faltam: o <b>filho</b> imprime <code>filho</code> e o <b>pai</b> espera o filho terminar antes de imprimir <code>pai</code>.",
+  cod:"#include <stdio.h>\n#include <unistd.h>\n#include <sys/wait.h>\n\nint main(void) {\n    pid_t pid = fork();\n\n    /* escreva daqui para baixo */\n\n    return 0;\n}",
+  chaves:[["pid == 0","pid==0","== 0"],"printf",["wait","waitpid"],"else"],
+  modelo:"    if (pid == 0) {\n        printf(\"filho\\n\");\n    } else {\n        wait(NULL);                 /* bloqueia até o filho terminar */\n        printf(\"pai\\n\");\n    }",
+  gabarito:"O teste <code>pid == 0</code> é o que separa os dois processos: só o <b>filho</b> vê zero ali. No pai, <code>pid</code> vale o PID do filho.<br><br><code>wait(NULL)</code> bloqueia o pai até <b>qualquer</b> filho terminar e ainda recolhe o <i>status</i> de saída — sem ele o filho vira <b>zumbi</b> na tabela de processos. O <code>NULL</code> diz apenas que não queremos olhar esse status.<br><br>Sem o <code>wait()</code>, a ordem das duas mensagens fica por conta do escalonador."
+},
+{
+  id:"pt25", mod:"processos", dif:"facil", tipo:"code",
+  fonte:"Prática · fork em laço",
+  enunciado:"O pai deve criar <b>exatamente 3 filhos</b>, cada um imprimindo o seu número. O laço de espera já está escrito. Escreva o <b>corpo do primeiro laço</b> (4 linhas).",
+  cod:"#include <stdio.h>\n#include <stdlib.h>\n#include <unistd.h>\n#include <sys/wait.h>\n\nint main(void) {\n    for (int i = 0; i < 3; i++) {\n        /* escreva aqui: crie o filho; no filho, imprima\n           \"filho %d\" com o i e termine o processo        */\n    }\n\n    for (int i = 0; i < 3; i++) wait(NULL);   /* o pai espera os três */\n    return 0;\n}",
+  chaves:["fork",["pid == 0","pid==0","== 0"],"printf","exit"],
+  modelo:"        pid_t pid = fork();\n        if (pid == 0) {\n            printf(\"filho %d\\n\", i);\n            exit(0);                /* sem isto, o filho continua o laço */\n        }",
+  gabarito:"O <code>exit(0)</code> é a linha que vale a questão. Sem ele, o filho <b>continua o laço</b> e também chama <code>fork()</code>, criando netos: em vez de 3 processos, nascem <b>2³ &minus; 1 = 7</b>. É o mesmo erro cobrado na Q1 do laboratório de Processos e Threads.<br><br>O pai, esse sim, segue o laço até o fim e só depois espera os três com <code>wait(NULL)</code>, um por filho."
+},
+{
+  id:"pt26", mod:"processos", dif:"facil", tipo:"code",
+  fonte:"Prática · fork/join com threads",
+  enunciado:"Quatro threads devem imprimir <b>0, 1, 2 e 3</b> — cada uma o seu número. O vetor <code>id</code> existe justamente para isso. Escreva as <b>2 linhas</b> do corpo do primeiro laço.",
+  cod:"#include <stdio.h>\n#include <pthread.h>\n\nvoid *tarefa(void *arg) {\n    int meu = *(int *)arg;\n    printf(\"thread %d\\n\", meu);\n    return NULL;\n}\n\nint main(void) {\n    pthread_t t[4];\n    int id[4];\n\n    for (int i = 0; i < 4; i++) {\n        /* escreva aqui: guarde o i e crie a thread */\n    }\n\n    for (int i = 0; i < 4; i++) pthread_join(t[i], NULL);\n    return 0;\n}",
+  chaves:["pthread_create","tarefa","id"],
+  modelo:"        id[i] = i;\n        pthread_create(&t[i], NULL, tarefa, &id[i]);",
+  gabarito:"Cada thread precisa de um endereço <b>só dela</b>. Por isso o valor é copiado para <code>id[i]</code> e o que se passa é <code>&amp;id[i]</code>.<br><br>Passar <code>&amp;i</code> direto é o erro clássico: as quatro threads receberiam o <b>mesmo</b> endereço, cujo conteúdo o laço continua mudando — a saída costuma sair repetida (<code>3 3 3 3</code>) ou fora de ordem.<br><br>Este é o padrão <b>fork/join</b>: o laço de cima é o <i>fork</i> (divide o trabalho) e o de baixo é o <i>join</i> (espera todo mundo). Os dois laços são separados de propósito: criar e esperar na mesma volta serializaria tudo."
+},
+{
+  id:"pt27", mod:"processos", dif:"medio", tipo:"mc",
+  fonte:"Análise de código · passagem de argumento para threads",
+  enunciado:"O programa deveria imprimir <code>0</code>, <code>1</code> e <code>2</code>, em qualquer ordem. Rodando, sai <code>2 2 2</code> numa vez e <code>1 2 2</code> na outra. Qual é o defeito?",
+  cod:"void *tarefa(void *arg) {\n    printf(\"%d\\n\", *(int *)arg);\n    return NULL;\n}\n\nint main(void) {\n    pthread_t t[3];\n\n    for (int i = 0; i < 3; i++)\n        pthread_create(&t[i], NULL, tarefa, &i);      /* <-- */\n\n    for (int i = 0; i < 3; i++)\n        pthread_join(t[i], NULL);\n    return 0;\n}",
+  opcoes:[
+    "As três threads recebem o endereço do <b>mesmo</b> <code>i</code>, que o laço segue alterando enquanto elas leem.",
+    "O <code>pthread_join</code> do segundo laço embaralha a saída de threads que já tinham lido o valor correto.",
+    "O <code>printf</code> não é <i>thread-safe</i> e acaba repetindo o último número impresso na tela.",
+    "Falta <code>pthread_detach</code>: sem ele, cada thread lê o argumento que foi dado à anterior."
+  ],
+  correta:0,
+  gabarito:"<code>&amp;i</code> é <b>um endereço só</b>, compartilhado pelas três threads. Entre o <code>pthread_create</code> e o momento em que a thread finalmente lê <code>*arg</code>, o laço já incrementou <code>i</code> — por isso a saída muda de execução para execução. É uma <b>condição de corrida sobre o argumento</b>.<br><br>Pior: quando o laço termina, <code>i</code> sai de escopo. Se alguma thread demorar a ler, estará lendo memória que não é mais dela.<br><br><b>A correção</b> é dar a cada thread um endereço próprio — um vetor <code>int id[3]</code> com <code>id[i] = i</code> e <code>&amp;id[i]</code> na criação —, ou passar o valor direto no ponteiro quando ele cabe (<code>(void *)(long) i</code>)."
+},
+{
+  id:"pt28", mod:"processos", dif:"medio", tipo:"mc",
+  fonte:"Análise de código · fork/join com threads",
+  enunciado:"O programa abaixo dá o resultado <b>certo</b>, mas numa máquina de 4 núcleos ele leva o mesmo tempo da versão de uma thread só. Por quê?",
+  cod:"for (int i = 0; i < 4; i++) {\n    pthread_create(&t[i], NULL, trabalho, &arg[i]);\n    pthread_join(t[i], NULL);                        /* <-- */\n}",
+  opcoes:[
+    "Cada thread é esperada antes de a próxima nascer: o programa roda <b>uma thread por vez</b>, em sequência.",
+    "O <code>pthread_join</code> dentro do laço cria uma corrida entre cada thread e o laço principal.",
+    "Faltou <code>pthread_detach</code>, e por isso o sistema reaproveita a mesma thread a cada volta.",
+    "O vetor <code>arg</code> é compartilhado, então as quatro threads processam sempre o mesmo valor."
+  ],
+  correta:0,
+  gabarito:"<code>pthread_join</code> <b>bloqueia</b> quem chamou até aquela thread terminar. Posto dentro do laço de criação, ele faz nascer uma thread, esperar, nascer a próxima, esperar — o paralelismo desaparece e ainda sobra o custo de criar e destruir threads.<br><br><b>A forma certa são dois laços separados:</b> um que cria as quatro e outro que espera as quatro. É o padrão <b>fork/join</b>, e a mesma estrutura aparece na Questão 1 da prova prática, com os 1000 <code>pthread_create</code> antes dos 1000 <code>pthread_join</code>.<br><br>O resultado sai certo nos dois casos — o que muda é só o tempo. Por isso o erro passa despercebido em teste pequeno."
 }
 
 ]);
