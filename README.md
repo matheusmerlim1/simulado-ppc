@@ -55,7 +55,9 @@ Além do simulado, a tela de estudo tem quatro abas:
   banqueiro) e a análise do código dos Banheiros UNISSEX, item a item da especificação.
 - **Matéria** — 80 tópicos explicados, com os casos numéricos resolvidos passo a passo e
   **18 exemplos de código comentados linha a linha**: enunciado, cada linha e o porquê
-  de ela estar ali, com as linhas decisivas destacadas.
+  de ela estar ali, com as linhas decisivas destacadas. Cada padrão concorrente traz
+  ainda um **programa completo em C** — os dez compilam com `gcc … -pthread` e a saída
+  publicada é a da execução real.
 - **Consulta rápida** — fichas de fórmulas e definições.
 - **Animações** — 10 cenas passo a passo, com play, velocidade e &larr;/&rarr;:
   fork e estados do processo; concorrência &times; paralelismo (1, 2 e 3 núcleos);

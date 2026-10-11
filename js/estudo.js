@@ -241,6 +241,7 @@ function montarSecao(secao) {
     pre.textContent = secao.cod;               /* textContent: código não é HTML */
     artigo.appendChild(pre);
   }
+  if (secao.programa) artigo.appendChild(montarPrograma(secao.programa));
   if (secao.box) {
     const caixa = document.createElement("div");
     caixa.className = "box";
@@ -249,6 +250,33 @@ function montarSecao(secao) {
   }
 
   return artigo;
+}
+
+/* Programa pequeno e completo, do jeito que compila e roda.
+   programa = { arquivo, cod, compila, saida, nota? } */
+function montarPrograma(p) {
+  const bloco = document.createElement("div");
+  bloco.className = "prog";
+
+  const cabecalho = document.createElement("div");
+  cabecalho.className = "prog-cab";
+  cabecalho.innerHTML = '<span class="rot">programa completo</span><code>' + p.arquivo + "</code>";
+  bloco.appendChild(cabecalho);
+
+  const pre = document.createElement("pre");
+  pre.className = "cod";
+  pre.textContent = p.cod;                     /* textContent: código não é HTML */
+  bloco.appendChild(pre);
+
+  const pe = document.createElement("div");
+  pe.className = "prog-pe";
+  pe.innerHTML =
+    '<div class="prog-linha"><span class="rot">compilar e rodar</span><code>' + p.compila + "</code></div>" +
+    '<div class="prog-linha saida"><span class="rot">saída</span><pre>' + p.saida + "</pre></div>" +
+    (p.nota ? '<p class="prog-nota">' + p.nota + "</p>" : "");
+  bloco.appendChild(pe);
+
+  return bloco;
 }
 
 /* Botão que abre a animação da matéria já no modo certo.

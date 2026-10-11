@@ -874,3 +874,16 @@ code,kbd,pre,.cod,.anim-palco{font-variant-ligatures:none;font-feature-settings:
 .secao-rede figcaption{margin-top:10px;font-size:.87rem;line-height:1.55;color:var(--ink-2);text-align:left}
 .secao-rede figcaption code{background:var(--surface-3);padding:1px 5px;border-radius:4px;font-size:.88em;color:var(--ink)}
 .secao-rede figcaption b{color:var(--ink)}
+
+/* ── programa completo dentro da matéria ───────────────── */
+.prog{margin:16px 0 0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface-2)}
+.prog-cab{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--surface-3)}
+.prog-cab code{font-size:.84rem;color:var(--ink)}
+.prog .cod{margin:0;border:0;border-radius:0;background:transparent}
+.prog-pe{border-top:1px solid var(--line);padding:4px 14px 12px}
+.prog-linha{margin-top:10px}
+.prog-linha .rot{display:block;margin-bottom:4px}
+.prog-linha code,.prog-linha pre{display:block;font-size:.84rem;line-height:1.6;color:var(--ink-2);white-space:pre;overflow-x:auto;margin:0;font-variant-ligatures:none}
+.prog-linha.saida pre{color:var(--ok, var(--ink));border-left:2px solid var(--line);padding-left:10px}
+.prog-nota{margin:10px 0 0;font-size:.85rem;line-height:1.6;color:var(--ink-2)}
+.prog-nota code{background:var(--surface-3);padding:1px 5px;border-radius:4px;font-size:.9em;color:var(--ink)}
