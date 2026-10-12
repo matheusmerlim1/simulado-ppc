@@ -887,3 +887,7 @@ code,kbd,pre,.cod,.anim-palco{font-variant-ligatures:none;font-feature-settings:
 .prog-linha.saida pre{color:var(--ok, var(--ink));border-left:2px solid var(--line);padding-left:10px}
 .prog-nota{margin:10px 0 0;font-size:.85rem;line-height:1.6;color:var(--ink-2)}
 .prog-nota code{background:var(--surface-3);padding:1px 5px;border-radius:4px;font-size:.9em;color:var(--ink)}
+
+/* ── voltar ao ponto da matéria de onde a animação foi aberta ── */
+.volta{margin:0 0 14px}
+.volta button{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

@@ -6,6 +6,10 @@
 let modMateria = MATERIA[0].mod;
 let abaEstudo = "panorama";
 
+/* Tópico de onde a animação foi aberta, para o leitor voltar ao ponto
+   em que estava em vez de cair no começo da matéria. */
+let voltaDaMateria = null;
+
 const ABAS_ESTUDO = {
   panorama:  "#abaPanorama",
   materia:   "#abaMateria",
@@ -35,7 +39,7 @@ function mostrarAba(aba) {
     $(ABAS_ESTUDO[k]).classList.toggle("hidden", k !== aba));
   $("#btnTreinarAssunto").classList.toggle("hidden", aba !== "materia");
 
-  if (aba !== "animacoes") pausarAnimacao();
+  if (aba !== "animacoes") { pausarAnimacao(); esconderVolta(); }
   if (aba === "animacoes" && !player.cena) abrirAnimacao(ANIMACOES[0].id);
 }
 
@@ -291,13 +295,57 @@ function montarAtalhoAnimacao(anima) {
   botao.innerHTML = "&#9654; " + (anima.rotulo || (cena ? cena.nome : "animação"));
   botao.disabled = !cena;
   botao.addEventListener("click", () => {
+    voltaDaMateria = { secao: caixa.closest(".secao"), y: window.scrollY };
     mostrarAba("animacoes");
     abrirAnimacao(anima.cena, anima.modo);
+    mostrarVolta();
     $("#abaAnimacoes").scrollIntoView({ block: "start", behavior: "smooth" });
   });
 
   caixa.appendChild(botao);
   return caixa;
+}
+
+/* Faixa &laquo;voltar&raquo; no topo das animações. Só existe quando a
+   animação foi aberta de dentro de um tópico da matéria. */
+function mostrarVolta() {
+  const aba = $("#abaAnimacoes");
+  let faixa = $("#voltaMateria");
+
+  if (!faixa) {
+    faixa = document.createElement("div");
+    faixa.id = "voltaMateria";
+    faixa.className = "volta";
+    const botao = document.createElement("button");
+    botao.className = "btn-mini";
+    botao.addEventListener("click", voltarParaMateria);
+    faixa.appendChild(botao);
+    aba.insertBefore(faixa, aba.firstChild);
+  }
+
+  const topico = voltaDaMateria && voltaDaMateria.secao
+    ? voltaDaMateria.secao.querySelector("h3").textContent.trim() : "";
+  faixa.querySelector("button").innerHTML =
+    "&larr; voltar para " + (topico ? "&ldquo;" + topico + "&rdquo;" : "a matéria");
+  faixa.classList.remove("hidden");
+}
+
+function voltarParaMateria() {
+  const origem = voltaDaMateria;                 /* guarda antes de limpar */
+  mostrarAba("materia");
+
+  /* instantâneo de propósito: voltar não é passear, e uma rolagem suave
+     de milhares de pixels fica pior do que simplesmente aparecer ali. */
+  if (origem && origem.secao && document.body.contains(origem.secao))
+    origem.secao.scrollIntoView({ block: "start" });
+  else if (origem)
+    window.scrollTo(0, origem.y);
+}
+
+function esconderVolta() {
+  const faixa = $("#voltaMateria");
+  if (faixa) faixa.classList.add("hidden");
+  voltaDaMateria = null;
 }
 
 /* Código comentado linha a linha.
