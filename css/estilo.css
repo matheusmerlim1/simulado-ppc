@@ -891,3 +891,35 @@ code,kbd,pre,.cod,.anim-palco{font-variant-ligatures:none;font-feature-settings:
 /* ── voltar ao ponto da matéria de onde a animação foi aberta ── */
 .volta{margin:0 0 14px}
 .volta button{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── padrões de projeto paralelo (fork/join, map, stencil, redução) ── */
+.ppl-nos{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.ppl-no{font:600 .8rem/1 var(--mono);padding:4px 9px;border-radius:6px}
+.ppl-no.no0{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok-line)}
+.ppl-no.no1{background:var(--info-soft, var(--surface-3));color:var(--acento);border:1px solid var(--line)}
+.ppl-oque{font-size:.82rem;color:var(--ink-2)}
+.ppl-linha{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:nowrap;overflow-x:auto}
+.ppl-linha .rot{min-width:46px;flex:0 0 auto}
+.ppl-cel{flex:0 0 auto;min-width:38px;height:36px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--line);border-radius:6px;background:var(--surface-2);
+  font:600 .85rem/1 var(--mono);color:var(--ink-2);transition:background .15s,color .15s,border-color .15s}
+.ppl-cel.pronta{color:var(--ink)}
+.ppl-cel.pronta.no0{background:var(--ok-soft);border-color:var(--ok-line);color:var(--ok)}
+.ppl-cel.pronta.no1{background:var(--surface-3);border-color:var(--acento);color:var(--acento)}
+.ppl-cel.lendo{border-color:var(--ink-3, var(--line));background:var(--surface-3)}
+.ppl-cel.janela{background:var(--surface-3)}
+.ppl-cel.janela.j0{box-shadow:inset 0 0 0 1px var(--ok-line)}
+.ppl-cel.janela.j1{box-shadow:inset 0 0 0 1px var(--acento)}
+.ppl-cel.agora{outline:2px solid var(--acento);outline-offset:1px}
+.ppl-grade{display:grid;grid-template-columns:repeat(6,minmax(38px,1fr));gap:4px;max-width:340px}
+.ppl-parciais{display:flex;align-items:flex-end;gap:12px;margin:14px 0 10px;flex-wrap:wrap}
+.ppl-parcial b{display:block;min-width:64px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;
+  background:var(--surface-2);font:600 1rem/1 var(--mono);color:var(--ink)}
+.ppl-parcial.p0 b{border-color:var(--ok-line)}
+.ppl-parcial.p1 b{border-color:var(--acento)}
+.ppl-seta{font-size:1.2rem;color:var(--line);padding-bottom:8px;transform:rotate(180deg)}
+.ppl-seta.ativa{color:var(--acento)}
+.ppl-total b{display:inline-block;min-width:64px;padding:8px 10px;border:1px dashed var(--line);border-radius:8px;
+  font:600 1rem/1 var(--mono);color:var(--ink-2)}
+.ppl-total b.pronta{border-style:solid}
+.ppl-total b.pronta.no0{background:var(--ok-soft);border-color:var(--ok-line);color:var(--ok)}

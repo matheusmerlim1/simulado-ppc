@@ -12,14 +12,14 @@ Site estático, sem build e sem dependências além das fontes do Google.
 
 ## O que tem
 
-**250 questões** com gabarito comentado, montadas a partir das provas teórica e prática
+**272 questões** com gabarito comentado, montadas a partir das provas teórica e prática
 anteriores, dos laboratórios e dos slides da disciplina.
 
 | Prova | Assuntos |
 |---|---|
 A disciplina tem duas avaliações, e dá para treinar uma de cada vez: a **teórica**
-(conceitos, comparações, traços de execução e contas — 186 questões) e a **prática**
-(escrever, completar e analisar código — 64 questões, da mais básica à da prova). O filtro fica na tela inicial,
+(conceitos, comparações, traços de execução e contas — 204 questões) e a **prática**
+(escrever, completar e analisar código — 68 questões, da mais básica à da prova). O filtro fica na tela inicial,
 e há uma coleção pronta para cada uma.
 
 | **P1** — Programação Concorrente | Processos e Threads · Exclusão Mútua · Padrões Concorrentes · Deadlocks · Redes de Petri |
@@ -53,19 +53,21 @@ Além do simulado, a tela de estudo tem quatro abas:
   desenvolvida, os erros que custam ponto e — nas de código — o programa comentado
   linha a linha. Inclui as duas contas resolvidas com os números da prova (detecção e
   banqueiro) e a análise do código dos Banheiros UNISSEX, item a item da especificação.
-- **Matéria** — 80 tópicos explicados, com os casos numéricos resolvidos passo a passo e
+- **Matéria** — 103 tópicos explicados, com os casos numéricos resolvidos passo a passo e
   **18 exemplos de código comentados linha a linha**: enunciado, cada linha e o porquê
   de ela estar ali, com as linhas decisivas destacadas. Cada padrão concorrente traz
-  ainda um **programa completo em C** — os dez compilam com `gcc … -pthread` e a saída
-  publicada é a da execução real.
+  ainda um **programa completo em C** — os quinze compilam com `gcc` e a saída publicada
+  é a da execução real.
 - **Consulta rápida** — fichas de fórmulas e definições.
-- **Animações** — 10 cenas passo a passo, com play, velocidade e &larr;/&rarr;:
+- **Animações** — 11 cenas passo a passo, com play, velocidade e &larr;/&rarr;:
   fork e estados do processo; concorrência &times; paralelismo (1, 2 e 3 núcleos);
   condição de corrida sem proteção e com mutex; produtor-consumidor na ordem certa
   e invertida; o grafo de alocação fechando um ciclo (e a mesma carga sem deadlock);
   redes de Petri (disparo, conflito, mutex e produtor-consumidor), os modelos do deck
   (semáforo de trânsito e escalonador de CPU) e o **Jantar dos Filósofos em Petri**, com
   os três modelos do laboratório — o que trava e os dois que previnem o deadlock;
+  e os **quatro padrões de projeto paralelo** (fork/join, map, stencil e redução), com os
+  mesmos dois nós dividindo os dados de quatro formas;
   jantar dos filósofos (ingênua, garfos em ordem, dois de uma vez); e
   detecção de deadlock e banqueiro. Cada passo tem legenda em texto.
 
@@ -108,7 +110,7 @@ js/
 │   ├── desempenho.js       16
 │   └── openmp.js           16
 ├── resumo.js           fichas da aba "consulta rápida"
-├── materia.js          os 80 tópicos explicados
+├── materia.js          os 103 tópicos explicados
 ├── anotado/            código comentado linha a linha, ligado às seções pelo título
 ├── provas/             as duas provas resolvidas, questão a questão
 ├── panorama.js         a aba panorama
