@@ -12,14 +12,14 @@ Site estático, sem build e sem dependências além das fontes do Google.
 
 ## O que tem
 
-**272 questões** com gabarito comentado, montadas a partir das provas teórica e prática
-anteriores, dos laboratórios e dos slides da disciplina.
+**320 questões** com gabarito comentado, montadas a partir das provas teórica e prática
+anteriores, das listas de exercícios, dos laboratórios e dos slides da disciplina.
 
 | Prova | Assuntos |
 |---|---|
 A disciplina tem duas avaliações, e dá para treinar uma de cada vez: a **teórica**
-(conceitos, comparações, traços de execução e contas — 204 questões) e a **prática**
-(escrever, completar e analisar código — 68 questões, da mais básica à da prova). O filtro fica na tela inicial,
+(conceitos, comparações, traços de execução, contas e **discursivas** — 241 questões) e a **prática**
+(escrever, completar e analisar código — 79 questões, da mais básica à da prova). O filtro fica na tela inicial,
 e há uma coleção pronta para cada uma.
 
 | **P1** — Programação Concorrente | Processos e Threads · Exclusão Mútua · Padrões Concorrentes · Deadlocks · Redes de Petri |
@@ -53,11 +53,12 @@ Além do simulado, a tela de estudo tem quatro abas:
   desenvolvida, os erros que custam ponto e — nas de código — o programa comentado
   linha a linha. Inclui as duas contas resolvidas com os números da prova (detecção e
   banqueiro) e a análise do código dos Banheiros UNISSEX, item a item da especificação.
-- **Matéria** — 103 tópicos explicados, com os casos numéricos resolvidos passo a passo e
+- **Matéria** — 127 tópicos explicados, com os casos numéricos resolvidos passo a passo e
   **18 exemplos de código comentados linha a linha**: enunciado, cada linha e o porquê
   de ela estar ali, com as linhas decisivas destacadas. Cada padrão concorrente traz
-  ainda um **programa completo em C** — os quinze compilam com `gcc` e a saída publicada
-  é a da execução real.
+  ainda um **programa completo em C** — os vinte compilam com `gcc -Wall` e a saída publicada
+  é a da execução real. A **lista de OpenMP** está resolvida algoritmo por algoritmo,
+  cada um com o programa medido com 1, 2, 4 e 8 threads.
 - **Consulta rápida** — fichas de fórmulas e definições.
 - **Animações** — 11 cenas passo a passo, com play, velocidade e &larr;/&rarr;:
   fork e estados do processo; concorrência &times; paralelismo (1, 2 e 3 núcleos);
@@ -101,16 +102,16 @@ css/estilo.css          tokens de cor e tipografia, claro e escuro
 js/
 ├── nucleo.js           MODULOS, BANCO e registrar() — carrega primeiro
 ├── questoes/           um arquivo por assunto
-│   ├── processos.js        25 questões
-│   ├── exclusao.js         45
-│   ├── padroes.js          37
+│   ├── processos.js        31 questões
+│   ├── exclusao.js         54
+│   ├── padroes.js          49
 │   ├── deadlocks.js        38
 │   ├── petri.js            29
-│   ├── hardware.js         17
-│   ├── desempenho.js       16
-│   └── openmp.js           16
+│   ├── hardware.js         32
+│   ├── desempenho.js       48
+│   └── openmp.js           39
 ├── resumo.js           fichas da aba "consulta rápida"
-├── materia.js          os 103 tópicos explicados
+├── materia.js          os 127 tópicos explicados
 ├── anotado/            código comentado linha a linha, ligado às seções pelo título
 ├── provas/             as duas provas resolvidas, questão a questão
 ├── panorama.js         a aba panorama

@@ -1,5 +1,5 @@
 /* ─── Padrões de Projeto Concorrente ────────────────────────
-   P1 · 37 questões
+   P1 · 49 questões
    ─────────────────────────────────────────────────────────── */
 registrar([
 
