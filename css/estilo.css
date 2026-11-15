@@ -223,6 +223,12 @@ code,kbd{font-family:var(--f-mono)}
 .prova .desc{font-size:.845rem;color:var(--muted);line-height:1.45}
 
 .chips{display:flex;flex-wrap:wrap;gap:7px}
+.chips-grupos{display:flex;flex-direction:column;gap:14px}
+.chip-grupo{display:flex;flex-direction:column;gap:7px}
+.grupo-rot{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--muted);
+}
 .chip{
   background:var(--surface);border:1px solid var(--line);border-radius:999px;
   padding:6px 13px;font-size:.86rem;cursor:pointer;color:var(--ink-2);

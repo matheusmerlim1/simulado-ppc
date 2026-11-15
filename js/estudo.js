@@ -168,23 +168,59 @@ function montarNavMateria() {
     return;
   }
 
+  /* Os assuntos ficam agrupados pela prova em que caem. A etiqueta P1/P2
+     sai do chip e vira o título do grupo; no lugar dela o chip passa a
+     mostrar quantos tópicos tem. Os grupos saem dos próprios dados, na
+     ordem em que aparecem em MATERIA. */
+  const ROTULO = {
+    resolvida: "Provas resolvidas",
+    P1: "P1 &middot; Programação Concorrente",
+    P2: "P2 &middot; Programação Paralela"
+  };
+
+  const grupos = [];
   MATERIA.forEach(bloco => {
     const meta = MODULOS[bloco.mod] || bloco;        /* "provas" não é um assunto do banco */
-    const chip = document.createElement("button");
-    chip.className = "chip";
-    chip.dataset.mod = bloco.mod;
-    chip.setAttribute("aria-pressed", String(bloco.mod === modMateria));
-    chip.innerHTML = meta.nome + ' <span class="cnt">' + meta.prova + "</span>";
+    let grupo = grupos.find(g => g.prova === meta.prova);
+    if (!grupo) grupos.push(grupo = { prova: meta.prova, itens: [] });
+    grupo.itens.push({ bloco: bloco, meta: meta });
+  });
 
-    chip.addEventListener("click", () => {
-      modMateria = bloco.mod;
-      $$("#navMateria .chip").forEach(o =>
-        o.setAttribute("aria-pressed", String(o === chip)));
-      renderMateria();
-      nav.scrollIntoView({ block: "start", behavior: "smooth" });
+  grupos.forEach(grupo => {
+    const caixa = document.createElement("div");
+    caixa.className = "chip-grupo";
+
+    const rotulo = document.createElement("span");
+    rotulo.className = "grupo-rot";
+    rotulo.innerHTML = ROTULO[grupo.prova] || grupo.prova;
+    caixa.appendChild(rotulo);
+
+    const linha = document.createElement("div");
+    linha.className = "chips";
+    caixa.appendChild(linha);
+
+    grupo.itens.forEach(item => {
+      const bloco = item.bloco, meta = item.meta;
+      const chip = document.createElement("button");
+      chip.className = "chip";
+      chip.dataset.mod = bloco.mod;
+      chip.setAttribute("aria-pressed", String(bloco.mod === modMateria));
+      chip.innerHTML = meta.nome +
+        ' <span class="cnt">' + bloco.secoes.length + "</span>";
+      chip.title = bloco.secoes.length + " tópicos";
+
+      chip.addEventListener("click", () => {
+        modMateria = bloco.mod;
+        $$("#navMateria .chip").forEach(o =>
+          o.setAttribute("aria-pressed", String(o === chip)));
+        renderMateria();
+        nav.scrollIntoView({ block: "start", behavior: "smooth" });
+      });
+
+      linha.appendChild(chip);
     });
 
-    nav.appendChild(chip);
+    nav.appendChild(caixa);
   });
 }
 
