@@ -130,6 +130,7 @@ function montarRevisao() {
     item.appendChild(corpo);
     alvo.appendChild(item);
   });
+  marcarRolaveis(alvo);
 }
 
 function ligarResultado() {

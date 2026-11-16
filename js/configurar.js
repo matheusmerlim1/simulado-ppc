@@ -52,7 +52,7 @@ function montarColecoes() {
     cartao.className = "colecao";
     cartao.innerHTML =
       '<span class="t">' + colecao.t + "</span>" +
-      '<span class="s">' + lista.length + " questões · " + colecao.s + "</span>";
+      '<span class="s">' + plural(lista.length, "questão", "questões") + " · " + colecao.s + "</span>";
 
     /* lista de ids preserva a ordem; filtro é sorteado */
     cartao.addEventListener("click", () =>

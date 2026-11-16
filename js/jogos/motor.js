@@ -112,6 +112,7 @@ function trocarModoJogo(modo) {
   $("#jogo .jogo-trilho span").style.width = "0%";
 
   def.montar(palco, modo, apiDoJogo());
+  marcarRolaveis($("#jogo"));
 }
 
 function apiDoJogo() {

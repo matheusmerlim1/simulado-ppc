@@ -64,6 +64,35 @@ function embaralhar(lista) {
   return v;
 }
 
+/* Um bloco que rola na horizontal tem de receber foco: senão quem usa só
+   o teclado não consegue rolá-lo (WCAG 2.1.1). */
+function rolavel(el) {
+  el.tabIndex = 0;
+  return el;
+}
+
+/* Tudo o que pode rolar na horizontal, dentro de um trecho recém-montado.
+   Quem já tem botão ou link dentro não precisa: o teclado chega lá por eles. */
+const ROLAVEIS = [
+  "pre", "figure", "table", ".tabela-wrap", ".anim-palco", ".jogo-palco",
+  ".par-gantt-wrap", ".secao-rede", ".ppl-linha", ".prog-linha code"
+].join(",");
+
+function marcarRolaveis(raiz) {
+  if (!raiz) return;
+  raiz.querySelectorAll(ROLAVEIS).forEach(el => {
+    if (el.hasAttribute("tabindex")) return;
+    if (el.querySelector("a[href],button,input,select,textarea,[tabindex]")) return;
+    el.tabIndex = 0;
+  });
+}
+
+/* "1 tópico" / "19 tópicos". O plural irregular vai no terceiro
+   argumento: plural(n, "questão", "questões"). */
+function plural(n, um, muitos) {
+  return n + " " + (n === 1 ? um : (muitos || um + "s"));
+}
+
 /* ── consultas ao banco ──────────────────────────────────── */
 function provaDe(q)   { return MODULOS[q.mod].prova; }
 

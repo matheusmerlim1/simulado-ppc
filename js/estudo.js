@@ -61,7 +61,7 @@ function montarPanorama() {
   PANORAMA.eixos.forEach(e => {
     const card = document.createElement("div");
     card.className = "pan-eixo";
-    card.innerHTML = "<h3>" + e.nome + " <span>" + e.prova + "</span></h3><p>" + e.def + "</p><p>" + e.foco + "</p>";
+    card.innerHTML = "<h2>" + e.nome + " <span>" + e.prova + "</span></h2><p>" + e.def + "</p><p>" + e.foco + "</p>";
     eixos.appendChild(card);
   });
   alvo.appendChild(eixos);
@@ -103,7 +103,8 @@ function montarEstacao(est, k) {
   item.innerHTML =
     '<span class="pan-num">' + String(k + 1).padStart(2, "0") + "</span>" +
     '<div class="pan-card">' +
-      "<h3>" + modulo.nome + ' <span class="selo">' + modulo.prova + " · " + qtd + " questões</span></h3>" +
+      "<h3>" + modulo.nome + ' <span class="selo">' + modulo.prova + " · " +
+        plural(qtd, "questão", "questões") + "</span></h3>" +
       '<p class="pan-perg">' + est.pergunta + "</p>" +
       '<div class="pan-texto">' + est.texto + "</div>" +
       '<ul class="pan-ess">' + est.essencial.map(e => "<li>" + e + "</li>").join("") + "</ul>" +
@@ -156,9 +157,10 @@ function montarFormulas() {
       .map(([termo, definicao]) => "<dt>" + termo + "</dt><dd>" + definicao + "</dd>")
       .join("");
 
-    cartao.innerHTML = "<h3>" + ficha.t + "</h3><dl>" + itens + "</dl>";
+    cartao.innerHTML = "<h2>" + ficha.t + "</h2><dl>" + itens + "</dl>";
     alvo.appendChild(cartao);
   });
+  marcarRolaveis(alvo);
 }
 
 /* ── navegação por assunto ───────────────────────────────── */
@@ -210,7 +212,7 @@ function montarNavMateria() {
       chip.setAttribute("aria-pressed", String(bloco.mod === modMateria));
       chip.innerHTML = meta.nome +
         ' <span class="cnt">' + bloco.secoes.length + "</span>";
-      chip.title = bloco.secoes.length + " tópicos";
+      chip.title = plural(bloco.secoes.length, "tópico");
 
       chip.addEventListener("click", () => {
         modMateria = bloco.mod;
@@ -242,14 +244,15 @@ function renderMateria() {
   cabecalho.className = "materia-titulo";
   cabecalho.innerHTML =
     "<h2>" + meta.nome + "</h2>" +
-    '<span class="conta">' + bloco.secoes.length + " tópicos · " +
-    (comentados ? comentados + " códigos comentados · " : "") +
-    (quantasQuestoes ? quantasQuestoes + " questões no banco · " : "") +
+    '<span class="conta">' + plural(bloco.secoes.length, "tópico") + " · " +
+    (comentados ? plural(comentados, "código comentado", "códigos comentados") + " · " : "") +
+    (quantasQuestoes ? plural(quantasQuestoes, "questão", "questões") + " no banco · " : "") +
     meta.prova + "</span>";
   alvo.appendChild(cabecalho);
 
   bloco.secoes.forEach(secao => alvo.appendChild(montarSecao(secao)));
 
+  marcarRolaveis(alvo);
   $("#btnTreinarAssunto").textContent = "Treinar " + meta.nome;
   $("#btnTreinarAssunto").disabled = quantasQuestoes === 0;
 }

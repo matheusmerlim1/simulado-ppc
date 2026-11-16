@@ -65,7 +65,7 @@
     if (modo === "banqueiro") {
       palco.innerHTML =
         '<div class="det-wrap"><table class="det-tab">' +
-          "<thead><tr><th></th><th>posse</th><th>máximo</th><th>precisa</th><th></th></tr></thead><tbody>" +
+          "<thead><tr><td></td><th>posse</th><th>máximo</th><th>precisa</th><th></th></tr></thead><tbody>" +
           [0, 1, 2].map(p => '<tr data-p="' + p + '"><th>P' + p + '</th><td class="po"></td><td>' + MAXIMO[p] +
             '</td><td class="ne"></td><td class="st"></td></tr>').join("") +
           "</tbody></table>" +
@@ -90,7 +90,7 @@
       };
     }
 
-    const cab = "<tr><th></th>" + RS.map(r => "<th>" + r + "</th>").join("") + "</tr>";
+    const cab = "<tr><td></td>" + RS.map(r => "<th>" + r + "</th>").join("") + "</tr>";
     const corpo = (M, cls) => [0, 1, 2].map(p =>
       '<tr data-p="' + p + '"><th>P' + (p + 1) + "</th>" +
       M[p].map((v, j) => '<td class="' + cls + '" data-j="' + j + '">' + v + "</td>").join("") + "</tr>").join("");

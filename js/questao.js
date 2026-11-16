@@ -78,6 +78,7 @@ function render() {
   montarApoio(q);
   montarResposta(q, resposta);
   montarRetorno(q, resposta);
+  marcarRolaveis($("#telaQuestao"));
 
   atualizarTrilha();
   atualizarPlacar();

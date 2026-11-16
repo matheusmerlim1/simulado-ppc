@@ -112,6 +112,7 @@ function trocarModo(modo) {
   palco.innerHTML = "";
   palco.className = "anim-palco palco-" + cena.id;
   player.desenhar = cena.montar(palco, modo);
+  marcarRolaveis($("#animacao"));
   player.passos = cena.roteiro(modo);
   irParaPasso(0);
 }
