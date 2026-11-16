@@ -60,6 +60,15 @@ Além do simulado, a tela de estudo tem quatro abas:
   é a da execução real. A **lista de OpenMP** está resolvida algoritmo por algoritmo,
   cada um com o programa medido com 1, 2, 4 e 8 threads.
 - **Consulta rápida** — fichas de fórmulas e definições.
+- **Jogos** — três jogos curtos para treinar a conta da P2, cada um com uma lógica
+  própria testada à parte:
+  **Acerto ou falta?** (uma cache de 8 linhas recebe endereços; você diz se acerta ou
+  falta, nos três mapeamentos, e no fim vê a mesma sequência comparada nos três);
+  **Desentope o pipeline** (reordene 6 instruções para tirar as bolhas — a troca é
+  recusada, com o motivo, se quebrar uma RAW, WAR ou WAW);
+  **Escolha o schedule** (24 iterações, 4 threads: escolha entre `static`, `static,2`,
+  `dynamic,4`, `dynamic,1` e `guided` e veja o Gantt, o tempo e o balanceamento
+  de todas elas).
 - **Animações** — 11 cenas passo a passo, com play, velocidade e &larr;/&rarr;:
   fork e estados do processo; concorrência &times; paralelismo (1, 2 e 3 núcleos);
   condição de corrida sem proteção e com mutex; produtor-consumidor na ordem certa
@@ -122,7 +131,8 @@ js/
 ├── questao.js          execução: trilha, renderização e correção
 ├── resultado.js        nota, desempenho por assunto e revisão
 ├── anim/               motor do player + uma cena por arquivo
-├── estudo.js           panorama, matéria, consulta rápida e animações
+├── jogos/              motor dos jogos + um jogo por arquivo
+├── estudo.js           panorama, matéria, consulta rápida, animações e jogos
 └── main.js             liga tudo e monta a tela inicial
 build.py                gera uma versão de arquivo único em dist/
 ```

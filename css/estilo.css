@@ -226,7 +226,7 @@ code,kbd{font-family:var(--f-mono)}
 .chips-grupos{display:flex;flex-direction:column;gap:14px}
 .chip-grupo{display:flex;flex-direction:column;gap:7px}
 .grupo-rot{
-  font-family:var(--f-mono);font-size:11px;letter-spacing:.11em;
+  font-family:var(--f-mono);font-size:12px;letter-spacing:.11em;
   text-transform:uppercase;color:var(--muted);
 }
 .chip{
@@ -929,3 +929,145 @@ code,kbd,pre,.cod,.anim-palco{font-variant-ligatures:none;font-feature-settings:
   font:600 1rem/1 var(--mono);color:var(--ink-2)}
 .ppl-total b.pronta{border-style:solid}
 .ppl-total b.pronta.no0{background:var(--ok-soft);border-color:var(--ok-line);color:var(--ok)}
+
+/* ── jogos: casca comum ────────────────────────────────── */
+/* .rot e .dica usam --muted, que não chega a 4,5:1. Dentro dos jogos
+   eles ganham --ink-2 para não reprovar no audit. */
+#abaJogos .dica,.jogo .rot{color:var(--ink-2)}
+.jogo{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 22px 18px;margin-top:18px}
+.jogo-cab h2{font-size:1.25rem;letter-spacing:-.025em}
+.jogo-ideia{margin-top:6px;font-size:.95rem;color:var(--ink-2);max-width:64ch}
+.jogo-ideia code{background:var(--surface-3);padding:1px 5px;border-radius:4px;font-size:.88em;color:var(--ink)}
+.jogo-modos{margin-top:14px;width:fit-content;max-width:100%;overflow-x:auto}
+.jogo-modos button{white-space:nowrap}
+
+.jogo-regras{margin-top:14px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2)}
+.jogo-regras summary{
+  padding:9px 14px;cursor:pointer;font-family:var(--f-mono);font-size:12px;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2)
+}
+.jogo-regras summary:hover{color:var(--ink)}
+.jogo-regras-txt{padding:2px 16px 14px;font-size:.92rem;line-height:1.6;color:var(--ink-2)}
+.jogo-regras-txt p{margin:0 0 9px}
+.jogo-regras-txt p:last-child{margin-bottom:0}
+.jogo-regras-txt code{background:var(--surface-3);padding:1px 5px;border-radius:4px;font-size:.88em;color:var(--ink)}
+
+.jogo-barra{display:flex;align-items:center;gap:14px;margin-top:16px;flex-wrap:wrap}
+.jogo-placar{font-family:var(--f-mono);font-size:.9rem;color:var(--ink-2);white-space:nowrap}
+.jogo-placar b{color:var(--ink);font-size:1.05rem}
+.jogo-trilho{flex:1 1 120px;height:3px;background:var(--line);border-radius:2px;overflow:hidden}
+.jogo-trilho span{display:block;height:100%;background:var(--sinal);width:0;transition:width .25s}
+.jogo-novo{padding:6px 14px;font-size:.85rem}
+
+.jogo-palco{margin-top:18px;padding:16px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);overflow-x:auto}
+
+.jogo-fala{
+  margin-top:14px;min-height:4.6em;padding:13px 16px;border-radius:8px;
+  background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--line-2);
+  font-size:.95rem;line-height:1.6;color:var(--ink-2)
+}
+.jogo-fala b{color:var(--ink)}
+.jogo-fala code{background:var(--surface-3);padding:1px 5px;border-radius:4px;font-size:.88em;color:var(--ink)}
+.jogo-fala.fala-ok{background:var(--ok-soft);border-color:var(--ok-line);border-left-color:var(--ok)}
+.jogo-fala.fala-erro{background:var(--err-soft);border-color:var(--err-line);border-left-color:var(--err)}
+.jogo-fala.fala-fim{background:var(--sinal-soft);border-color:var(--sinal-line);border-left-color:var(--sinal)}
+
+/* ── jogo: acerto ou falta (cache) ─────────────────────── */
+.cc-topo{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end;justify-content:space-between}
+.cc-end{display:flex;flex-direction:column;gap:2px}
+.cc-valor{font-family:var(--f-mono);font-size:1.7rem;letter-spacing:-.02em;color:var(--ink)}
+.cc-dec{font-family:var(--f-mono);font-size:12px;color:var(--ink-2)}
+.cc-corte{display:flex;flex-direction:column;gap:2px;text-align:right}
+.cc-corte code{font-size:.8rem;color:var(--ink-2)}
+
+.cc-grade{margin-top:16px;display:flex;flex-direction:column;gap:5px}
+.cc-conj{display:flex;align-items:center;gap:6px}
+.cc-rot{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);min-width:52px;flex:none}
+.cc-cel{
+  flex:1 1 0;min-width:74px;padding:7px 9px;border-radius:6px;text-align:center;
+  background:var(--surface);border:1px solid var(--line);
+  font-family:var(--f-mono);font-size:.78rem;color:var(--ink);white-space:nowrap
+}
+.cc-cel.vazia{color:var(--muted);border-style:dashed}
+.cc-cel.recente{border-color:var(--line-2)}
+.cc-cel.ativo{background:var(--sinal-soft);border-color:var(--sinal-line)}
+
+.cc-botoes{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+.cc-resp{min-width:116px}
+
+/* ── jogo: desentope o pipeline ────────────────────────── */
+.pp-conta{display:flex;gap:22px;flex-wrap:wrap}
+.pp-conta>span{display:flex;flex-direction:column;gap:1px}
+.pp-conta b{font-family:var(--f-mono);font-size:1.3rem;color:var(--ink)}
+
+.pp-lista{margin:16px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.pp-item{
+  display:flex;align-items:center;gap:10px;padding:6px 8px 6px 12px;border-radius:7px;
+  background:var(--surface);border:1px solid var(--line)
+}
+.pp-item code{font-size:.85rem;color:var(--ink)}
+.pp-tag{
+  font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--sinal);border:1px solid var(--sinal-line);border-radius:999px;padding:1px 7px
+}
+.pp-setas{margin-left:auto;display:flex;gap:4px;flex:none}
+.pp-seta{
+  width:28px;height:26px;border-radius:6px;cursor:pointer;line-height:1;
+  background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)
+}
+.pp-seta:hover:not(:disabled){border-color:var(--line-2);color:var(--ink)}
+.pp-seta:disabled{opacity:.35;cursor:default}
+
+.pp-diagrama{margin-top:18px;display:flex;flex-direction:column;gap:3px;min-width:fit-content}
+.pp-linha{display:flex;align-items:center;gap:3px}
+.pp-nome{
+  font-family:var(--f-mono);font-size:12px;color:var(--ink-2);min-width:28px;flex:none
+}
+.pp-cel{
+  width:40px;height:22px;flex:none;border-radius:4px;text-align:center;
+  font-family:var(--f-mono);font-size:12px;line-height:22px;color:transparent
+}
+.pp-cel.pp-num{color:var(--ink-2);height:16px;line-height:16px}
+.pp-cel.e-IF,.pp-cel.e-ID{background:var(--surface-3);color:var(--ink-2)}
+.pp-cel.e-EX{background:var(--sinal-soft);border:1px solid var(--sinal-line);color:var(--sinal-2);line-height:20px}
+.pp-cel.e-MEM,.pp-cel.e-WB{background:var(--surface-3);color:var(--ink-2)}
+.pp-cel.bolha{background:var(--err-soft);color:var(--err)}
+
+/* ── jogo: escolha o schedule ──────────────────────────── */
+.es-rodada{display:flex;flex-direction:column;gap:1px}
+.es-rodada b{font-family:var(--f-mono);font-size:1.1rem;color:var(--ink)}
+
+.es-custos{
+  margin-top:14px;height:86px;display:flex;align-items:flex-end;gap:2px;
+  padding:6px 8px;border-radius:7px;background:var(--surface);border:1px solid var(--line)
+}
+.es-barra{flex:1 1 0;background:var(--petrol);border-radius:2px 2px 0 0;min-height:3px}
+
+.es-escolha{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
+.es-pol{padding:7px 13px}
+.es-pol code{font-size:.85em}
+.es-pol.es-melhor{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.es-pol.es-pior{border-color:var(--err);background:var(--err-soft);color:var(--err)}
+.es-prox{margin-top:14px}
+
+.es-gantt{margin-top:18px;display:flex;flex-direction:column;gap:5px}
+.es-linha{display:flex;align-items:center;gap:8px}
+.es-nome{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);min-width:22px;flex:none}
+.es-faixa{position:relative;flex:1 1 auto;height:22px;background:var(--surface);border:1px solid var(--line);border-radius:5px}
+.es-fatia{
+  position:absolute;top:2px;bottom:2px;background:var(--petrol-soft);
+  border:1px solid var(--petrol);border-radius:3px;overflow:hidden
+}
+.es-tempo{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);min-width:40px;text-align:right;flex:none}
+
+.es-tabela{margin-top:18px;width:100%;border-collapse:collapse;font-size:.86rem}
+.es-tabela caption{
+  font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-2);text-align:left;padding-bottom:7px
+}
+.es-tabela th,.es-tabela td{padding:6px 9px;border-bottom:1px solid var(--line);text-align:right}
+.es-tabela th[scope="col"]{color:var(--ink-2);font-family:var(--f-mono);font-size:12px;
+  letter-spacing:.06em;text-transform:uppercase;font-weight:500}
+.es-tabela th[scope="col"]:first-child,.es-tabela th[scope="row"]{text-align:left}
+.es-tabela th[scope="row"]{font-weight:400;color:var(--ink)}
+.es-tabela tr.es-eu th,.es-tabela tr.es-eu td{background:var(--sinal-soft)}

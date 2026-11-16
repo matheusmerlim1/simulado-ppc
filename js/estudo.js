@@ -14,7 +14,8 @@ const ABAS_ESTUDO = {
   panorama:  "#abaPanorama",
   materia:   "#abaMateria",
   formulas:  "#abaFormulas",
-  animacoes: "#abaAnimacoes"
+  animacoes: "#abaAnimacoes",
+  jogos:     "#abaJogos"
 };
 
 /* abrirEstudo()               volta à última aba usada
@@ -27,6 +28,7 @@ function abrirEstudo(mod, aba) {
   montarNavMateria();
   renderMateria();
   montarNavAnimacoes();
+  montarNavJogos();
   mostrar("#telaEstudo");
   mostrarAba(aba || (mod ? "materia" : abaEstudo));
 }
@@ -41,6 +43,7 @@ function mostrarAba(aba) {
 
   if (aba !== "animacoes") { pausarAnimacao(); esconderVolta(); }
   if (aba === "animacoes" && !player.cena) abrirAnimacao(ANIMACOES[0].id);
+  if (aba === "jogos" && !jogoAberto.def) abrirJogo(JOGOS[0].id);
 }
 
 function treinarAssunto(mod) {
