@@ -59,6 +59,9 @@ Além do simulado, a tela de estudo tem quatro abas:
   ainda um **programa completo em C** — os vinte compilam com `gcc -Wall` e a saída publicada
   é a da execução real. A **lista de OpenMP** está resolvida algoritmo por algoritmo,
   cada um com o programa medido com 1, 2, 4 e 8 threads.
+  O assunto vem **em partes de quatro tópicos**, com sumário no topo e um botão
+  *continuar* no fim — que, no último tópico, atravessa para o assunto seguinte.
+  Os programas completos abrem sob demanda.
 - **Consulta rápida** — fichas de fórmulas e definições.
 - **Jogos** — três jogos curtos para treinar a conta da P2, cada um com uma lógica
   própria testada à parte:

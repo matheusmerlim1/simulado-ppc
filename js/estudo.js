@@ -22,7 +22,7 @@ const ABAS_ESTUDO = {
    abrirEstudo(mod)            matéria do assunto
    abrirEstudo(null, "aba")    aba específica                 */
 function abrirEstudo(mod, aba) {
-  if (mod) modMateria = mod;
+  if (mod) { modMateria = mod; parteMateria = 0; }
   montarPanorama();
   montarFormulas();
   montarNavMateria();
@@ -124,6 +124,7 @@ function montarEstacao(est, k) {
 
   botao("Ler em detalhe &rarr;", "", () => {
     modMateria = est.mod;
+    parteMateria = 0;
     montarNavMateria();
     renderMateria();
     mostrarAba("materia");
@@ -216,6 +217,7 @@ function montarNavMateria() {
 
       chip.addEventListener("click", () => {
         modMateria = bloco.mod;
+        parteMateria = 0;
         $$("#navMateria .chip").forEach(o =>
           o.setAttribute("aria-pressed", String(o === chip)));
         renderMateria();
@@ -230,6 +232,16 @@ function montarNavMateria() {
 }
 
 /* ── conteúdo do assunto escolhido ───────────────────────── */
+/* A matéria vem em partes: 32 mil pixels de OpenMP de uma vez não é
+   leitura, é rolagem. Cada parte tem alguns tópicos e um botão de
+   continuar; no fim do assunto, o botão leva ao assunto seguinte. */
+const TOPICOS_POR_PARTE = 4;
+let parteMateria = 0;
+
+function partesDe(bloco) {
+  return Math.max(1, Math.ceil(bloco.secoes.length / TOPICOS_POR_PARTE));
+}
+
 function renderMateria() {
   const alvo = $("#materiaConteudo");
   const bloco = MATERIA.find(m => m.mod === modMateria);
@@ -239,6 +251,11 @@ function renderMateria() {
   const meta = MODULOS[modMateria] || bloco;
   const quantasQuestoes = BANCO.filter(q => q.mod === modMateria).length;
   const comentados = bloco.secoes.filter(s => s.anotado).length;
+
+  const partes = partesDe(bloco);
+  parteMateria = Math.max(0, Math.min(partes - 1, parteMateria));
+  const ini = parteMateria * TOPICOS_POR_PARTE;
+  const fim = Math.min(bloco.secoes.length, ini + TOPICOS_POR_PARTE);
 
   const cabecalho = document.createElement("div");
   cabecalho.className = "materia-titulo";
@@ -250,20 +267,126 @@ function renderMateria() {
     meta.prova + "</span>";
   alvo.appendChild(cabecalho);
 
-  bloco.secoes.forEach(secao => alvo.appendChild(montarSecao(secao)));
+  if (bloco.secoes.length > TOPICOS_POR_PARTE) alvo.appendChild(montarSumario(bloco, ini, fim));
+
+  for (let i = ini; i < fim; i++)
+    alvo.appendChild(montarSecao(bloco.secoes[i], i + 1));
+
+  alvo.appendChild(montarPaginador(bloco, ini, fim, partes));
 
   marcarRolaveis(alvo);
   $("#btnTreinarAssunto").textContent = "Treinar " + meta.nome;
   $("#btnTreinarAssunto").disabled = quantasQuestoes === 0;
 }
 
+/* Todos os tópicos do assunto, numerados: dá para ver o caminho inteiro
+   sem precisar passar por ele. */
+function montarSumario(bloco, ini, fim) {
+  const caixa = document.createElement("details");
+  caixa.className = "mat-sumario";
+
+  const resumo = document.createElement("summary");
+  resumo.innerHTML = "sumário <span>" + bloco.secoes.length + " tópicos</span>";
+  caixa.appendChild(resumo);
+
+  const lista = document.createElement("ol");
+  bloco.secoes.forEach((secao, i) => {
+    const item = document.createElement("li");
+    if (i >= ini && i < fim) item.className = "aqui";
+
+    const ir = document.createElement("button");
+    ir.type = "button";
+    ir.innerHTML = secao.h;
+    ir.addEventListener("click", () => irParaTopico(i));
+    item.appendChild(ir);
+    lista.appendChild(item);
+  });
+
+  caixa.appendChild(lista);
+  return caixa;
+}
+
+/* Vai para a parte onde o tópico está e rola até ele. */
+function irParaTopico(i) {
+  parteMateria = Math.floor(i / TOPICOS_POR_PARTE);
+  renderMateria();
+  const secao = $$("#materiaConteudo .secao")[i % TOPICOS_POR_PARTE];
+  if (secao) secao.scrollIntoView({ block: "start" });
+}
+
+function trocarParteMateria(n) {
+  parteMateria = n;
+  renderMateria();
+  $("#materiaConteudo").scrollIntoView({ block: "start" });
+}
+
+/* ← anterior · tópicos 5–8 de 24 · continuar →
+   No fim do assunto, "continuar" atravessa para o assunto seguinte. */
+function montarPaginador(bloco, ini, fim, partes) {
+  const nav = document.createElement("nav");
+  nav.className = "mat-pager";
+  nav.setAttribute("aria-label", "Partes do assunto");
+
+  const anterior = document.createElement("button");
+  anterior.type = "button";
+  anterior.className = "btn btn-sec mat-ant";
+  anterior.innerHTML = "&larr; anterior";
+  anterior.disabled = parteMateria === 0;
+  anterior.addEventListener("click", () => trocarParteMateria(parteMateria - 1));
+  nav.appendChild(anterior);
+
+  const onde = document.createElement("span");
+  onde.className = "mat-onde";
+  onde.innerHTML = bloco.secoes.length > 1
+    ? "tópicos <b>" + (ini + 1) + "&ndash;" + fim + "</b> de " + bloco.secoes.length
+    : "tópico único";
+  nav.appendChild(onde);
+
+  const seguinte = document.createElement("button");
+  seguinte.type = "button";
+  seguinte.className = "btn btn-primario mat-prox";
+
+  if (parteMateria < partes - 1) {
+    seguinte.innerHTML = "continuar &rarr;";
+    seguinte.addEventListener("click", () => trocarParteMateria(parteMateria + 1));
+  } else {
+    const k = MATERIA.findIndex(m => m.mod === bloco.mod);
+    const proximo = MATERIA[k + 1];
+    if (proximo) {
+      const nome = (MODULOS[proximo.mod] || proximo).nome;
+      seguinte.innerHTML = nome + " &rarr;";
+      seguinte.title = "Continuar no próximo assunto";
+      seguinte.addEventListener("click", () => {
+        modMateria = proximo.mod;
+        parteMateria = 0;
+        montarNavMateria();
+        renderMateria();
+        $("#navMateria").scrollIntoView({ block: "start" });
+      });
+    } else {
+      seguinte.innerHTML = "voltar ao primeiro assunto &uarr;";
+      seguinte.addEventListener("click", () => {
+        modMateria = MATERIA[0].mod;
+        parteMateria = 0;
+        montarNavMateria();
+        renderMateria();
+        $("#navMateria").scrollIntoView({ block: "start" });
+      });
+    }
+  }
+  nav.appendChild(seguinte);
+
+  return nav;
+}
+
 /* Uma seção: título, texto, código anotado, código solto e caixa de destaque. */
-function montarSecao(secao) {
+function montarSecao(secao, numero) {
   const artigo = document.createElement("article");
   artigo.className = "secao";
 
   const titulo = document.createElement("h3");
-  titulo.innerHTML = "<span>" + secao.h + "</span>";
+  titulo.innerHTML = (numero ? '<i class="secao-n">' + numero + "</i>" : "") +
+    "<span>" + secao.h + "</span>";
   artigo.appendChild(titulo);
 
   if (secao.p) {
@@ -299,12 +422,15 @@ function montarSecao(secao) {
 }
 
 /* Programa pequeno e completo, do jeito que compila e roda.
-   programa = { arquivo, cod, compila, saida, nota? } */
+   programa = { arquivo, cod, compila, saida, nota? }
+
+   Vem fechado: é material de consulta, e aberto ele responde por quase
+   metade da altura da página (14 mil pixels só no OpenMP). */
 function montarPrograma(p) {
-  const bloco = document.createElement("div");
+  const bloco = document.createElement("details");
   bloco.className = "prog";
 
-  const cabecalho = document.createElement("div");
+  const cabecalho = document.createElement("summary");
   cabecalho.className = "prog-cab";
   cabecalho.innerHTML = '<span class="rot">programa completo</span><code>' + p.arquivo + "</code>";
   bloco.appendChild(cabecalho);
@@ -365,8 +491,10 @@ function mostrarVolta() {
     aba.insertBefore(faixa, aba.firstChild);
   }
 
-  const topico = voltaDaMateria && voltaDaMateria.secao
-    ? voltaDaMateria.secao.querySelector("h3").textContent.trim() : "";
+  /* "h3 span": o número do tópico fica num <i> ao lado e não entra no rótulo */
+  const titulo = voltaDaMateria && voltaDaMateria.secao
+    && voltaDaMateria.secao.querySelector("h3 span");
+  const topico = titulo ? titulo.textContent.trim() : "";
   faixa.querySelector("button").innerHTML =
     "&larr; voltar para " + (topico ? "&ldquo;" + topico + "&rdquo;" : "a matéria");
   faixa.classList.remove("hidden");
