@@ -1145,3 +1145,71 @@ code,kbd,pre,.cod,.anim-palco{font-variant-ligatures:none;font-feature-settings:
 .prog[open] summary::after{content:"esconder"}
 .prog summary{cursor:pointer}
 .prog summary:hover::after{text-decoration:underline}
+
+/* ── listas de exercícios ──────────────────────────────── */
+/* os dois PDFs de cada aula, nomeados e rotulados */
+.pdf-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:5px 12px;border-radius:999px;border:1px solid var(--line);
+  background:var(--surface);white-space:nowrap
+}
+.pdf-chip code{font-size:.8rem;color:var(--ink)}
+.pdf-chip .rot{letter-spacing:.1em}
+.pdf-chip.pdf-atv{border-color:var(--sinal-line);background:var(--sinal-soft)}
+.pdf-chip.pdf-atv .rot{color:var(--sinal-2)}
+.pdf-chip.pdf-cont{border-color:var(--line-2)}
+
+.materia-pdfs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:11px}
+.materia-pdfs .btn-mini{margin-left:auto}
+
+.lista-cab{
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:20px 22px;margin-top:11px
+}
+.lista-cab h2{font-size:1.3rem;letter-spacing:-.025em}
+.lista-pdfs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.lista-intro{margin-top:13px;font-size:.95rem;line-height:1.65;color:var(--ink-2)}
+.lista-intro code{background:var(--surface-3);padding:1px 5px;border-radius:4px;font-size:.88em;color:var(--ink)}
+.lista-cab .pan-acoes{margin-top:14px}
+
+.lista-questoes{margin:0;padding:0;list-style:none}
+.lq{
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:20px 22px;margin-top:11px
+}
+.lq-cab{display:flex;align-items:baseline;gap:11px}
+.lq-n{
+  font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--sinal-2);
+  min-width:22px;flex:none
+}
+.lq-cab h3{font-size:1.04rem;letter-spacing:-.015em}
+.lq-enun{
+  margin-top:12px;padding:13px 16px;border-radius:8px;
+  background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--line-2);
+  font-size:.95rem;line-height:1.65;color:var(--ink-2)
+}
+.lq-enun .rot{display:block;margin-bottom:5px}
+.lq-enun b{color:var(--ink)}
+.lq-enun code{background:var(--surface-3);padding:1px 5px;border-radius:4px;font-size:.88em;color:var(--ink)}
+
+.lq-res{margin-top:12px;border-top:1px solid var(--line);padding-top:4px}
+.lq-res summary{
+  padding:8px 0;cursor:pointer;list-style:none;
+  font-family:var(--f-mono);font-size:12px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--sinal-2);display:flex;align-items:center;gap:8px
+}
+.lq-res summary::-webkit-details-marker{display:none}
+.lq-res summary::before{content:"▸";font-size:11px}
+.lq-res[open] summary::before{content:"▾"}
+.lq-res summary:hover{text-decoration:underline}
+.lq-corpo{font-size:.95rem;line-height:1.68;color:var(--ink-2)}
+.lq-corpo p{margin:0 0 11px}
+.lq-corpo p:last-child{margin-bottom:0}
+.lq-corpo b{color:var(--ink)}
+.lq-corpo code{background:var(--surface-3);padding:1px 5px;border-radius:4px;font-size:.88em;color:var(--ink)}
+.lq-res .cod{margin-top:13px}
+.lq-res .pan-acoes{margin-top:13px}
+
+@media (max-width:560px){
+  .materia-pdfs .btn-mini{margin-left:0}
+}

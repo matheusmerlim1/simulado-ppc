@@ -15,7 +15,8 @@ const ABAS_ESTUDO = {
   materia:   "#abaMateria",
   formulas:  "#abaFormulas",
   animacoes: "#abaAnimacoes",
-  jogos:     "#abaJogos"
+  jogos:     "#abaJogos",
+  listas:    "#abaListas"
 };
 
 /* abrirEstudo()               volta à última aba usada
@@ -29,6 +30,7 @@ function abrirEstudo(mod, aba) {
   renderMateria();
   montarNavAnimacoes();
   montarNavJogos();
+  montarNavListas();
   mostrar("#telaEstudo");
   mostrarAba(aba || (mod ? "materia" : abaEstudo));
 }
@@ -44,6 +46,7 @@ function mostrarAba(aba) {
   if (aba !== "animacoes") { pausarAnimacao(); esconderVolta(); }
   if (aba === "animacoes" && !player.cena) abrirAnimacao(ANIMACOES[0].id);
   if (aba === "jogos" && !jogoAberto.def) abrirJogo(JOGOS[0].id);
+  if (aba === "listas" && !listaAberta) abrirLista(LISTAS[0].id);
 }
 
 function treinarAssunto(mod) {
@@ -266,6 +269,28 @@ function renderMateria() {
     (quantasQuestoes ? plural(quantasQuestoes, "questão", "questões") + " no banco · " : "") +
     meta.prova + "</span>";
   alvo.appendChild(cabecalho);
+
+  /* de que PDF este assunto saiu, e qual é a lista dele */
+  const lista = typeof LISTAS !== "undefined" ? listaDoModulo(modMateria) : null;
+  if (lista) {
+    const par = document.createElement("div");
+    par.className = "materia-pdfs";
+    par.innerHTML = montarChipPdf("conteúdo", lista.conteudo) +
+                    montarChipPdf("atividade", lista.atividade);
+
+    const ir = document.createElement("button");
+    ir.type = "button";
+    ir.className = "btn-mini anima";
+    ir.innerHTML = "resolução da lista &middot; " +
+      plural(lista.questoes.length, "questão", "questões") + " &rarr;";
+    ir.addEventListener("click", () => {
+      mostrarAba("listas");
+      abrirLista(lista.id);
+      $("#navListas").scrollIntoView({ block: "start" });
+    });
+    par.appendChild(ir);
+    alvo.appendChild(par);
+  }
 
   if (bloco.secoes.length > TOPICOS_POR_PARTE) alvo.appendChild(montarSumario(bloco, ini, fim));
 

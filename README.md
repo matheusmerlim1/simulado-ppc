@@ -62,6 +62,12 @@ Além do simulado, a tela de estudo tem quatro abas:
   O assunto vem **em partes de quatro tópicos**, com sumário no topo e um botão
   *continuar* no fim — que, no último tópico, atravessa para o assunto seguinte.
   Os programas completos abrem sob demanda.
+- **Listas** — as **8 listas de exercícios** da disciplina, uma por aula, com as
+  **39 questões** resolvidas. Cada lista mostra, nomeados e rotulados, o PDF da
+  *atividade* e o PDF do *conteúdo* a que ela corresponde, e cada questão traz o
+  enunciado com a resolução escondida atrás de um *ver resolução* — ler o enunciado e
+  tentar antes é o ponto. Onde cabe, um atalho leva ao tópico da matéria que
+  desenvolve o assunto, e o caminho inverso existe no cabeçalho de cada assunto.
 - **Consulta rápida** — fichas de fórmulas e definições.
 - **Jogos** — três jogos curtos para treinar a conta da P2, cada um com uma lógica
   própria testada à parte:
@@ -124,6 +130,8 @@ js/
 │   └── openmp.js           39
 ├── resumo.js           fichas da aba "consulta rápida"
 ├── materia.js          os 127 tópicos explicados
+├── listas.js           as 8 listas de exercícios, questão a questão
+├── listas-tela.js      a aba das listas
 ├── anotado/            código comentado linha a linha, ligado às seções pelo título
 ├── provas/             as duas provas resolvidas, questão a questão
 ├── panorama.js         a aba panorama
